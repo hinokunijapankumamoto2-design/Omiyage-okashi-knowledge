@@ -1,11 +1,19 @@
 ---
 name: second-brain
-description: Karpathy式個人ナレッジベース"Second Brain"を任意のObsidian Vault上に構築・運用するスキル。raw/wiki/outputs の3フォルダ構成で散在するメモ・記事・PDFをAIが整理し、質問→回答保存ループで複利的に成長する第二の脳を作る。ユーザーが「ナレッジベース」「セカンドブレイン」「Second Brain」「Karpathy式」「個人Wiki」「ナレッジ整理」「情報をまとめたい」などに言及した場合に発火。
+description: KENGOODメソッド（秋坂洋三郎 / お土産お菓子研究所 設計）の「第2の脳」を任意のObsidian Vault上に構築・運用するスキル。raw/wiki/outputs の3フォルダ構成で散在するメモ・記事・PDFをAIが整理し、質問→回答保存ループで複利的に成長する個人ナレッジベースを作る。ユーザーが「第2の脳」「セカンドブレイン」「ナレッジベース」「個人Wiki」「ナレッジ整理」「情報をまとめたい」「KENGOOD」などに言及した場合に発火。
 ---
 
-# Second Brain (Karpathy式)
+# 第2の脳（KENGOODメソッド）
 
-Andrej Karpathy (OpenAI創設メンバー) が提唱した個人ナレッジベース構築手法をObsidian Vault上で実現するスキル。
+秋坂洋三郎（お土産お菓子研究所）が設計した **KENGOODメソッド** の「第2の脳」コンポーネント。
+散在する素材をAIが整理し、質問で成長する個人Wikiを構築する。
+
+## 中核思想（KENGOODメソッド）
+
+- AIは効率化ツールではなく **認知負荷の再配分装置** である
+- 知識は **保存するためでなく、判断に使われるため** に蓄積する
+- **属人知を資産化** し、組織が再利用可能な知能へ変える
+- 使うほど **複利的に賢くなる** 設計
 
 ## Vault パスの解決手順
 
@@ -76,10 +84,6 @@ Andrej Karpathy (OpenAI創設メンバー) が提唱した個人ナレッジベ�
 
 ユーザーの依頼に応じて `{vault_path}/wiki/` の内容を編集し、`{vault_path}/outputs/` に保存（レポート、要約、記事、プレゼン素材など）。
 
-## 素材自動収集（オプション）
-
-大量のWebコンテンツを収集したい場合、Vercel Labs の `agent-browser` CLI を提案する（Playwright MCPの82%少ないトークンで動作）。ただし手動投入で十分な場合は不要。
-
 ## Vault側の CLAUDE.md スキーマ
 
-Vault 内の `CLAUDE.md` に詳細ルールが記述されている（初回セットアップ時に `templates/CLAUDE.md.template` から生成）。本スキル実行時は必ずそれを尊重すること。
+Vault 内の `CLAUDE.md` にKENGOODメソッドの詳細ルールが記述されている（初回セットアップ時に `templates/CLAUDE.md.template` から生成）。本スキル実行時は必ずそれを尊重すること。

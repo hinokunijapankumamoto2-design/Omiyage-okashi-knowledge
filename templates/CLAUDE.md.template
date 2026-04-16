@@ -1,17 +1,27 @@
 ---
 vault: {{VAULT_PATH}}
-systems:
-  - second-brain (Karpathy式)
-  - reflection-notes (Boris Cherny式)
+system: KENGOODメソッド
+creator: 秋坂洋三郎 / お土産お菓子研究所
 domain: お土産お菓子業界
 ---
 
-# Obsidian Vault ルール
+# Obsidian Vault ルール（KENGOODメソッド）
 
-このVaultは2つのナレッジシステムを同居させています。
+このVaultは **KENGOODメソッド** に基づく2つのナレッジシステムを同居させています。
 Claude Code はこのVaultを開いた際、本ファイルのルールに従ってください。
 
-## ❶ Second Brain（Karpathy式ナレッジベース）
+---
+
+## KENGOODメソッドの中核思想
+
+- AIは効率化ツールではなく **認知負荷の再配分装置** である
+- 知識は **保存するためでなく、判断に使われるため** に蓄積する
+- **属人知を資産化** し、組織が再利用可能な知能へ変える
+- 使うほど **複利的に賢くなる** 設計
+
+---
+
+## ❶ 第2の脳（KENGOODメソッド）
 
 ### フォルダ構成
 
@@ -46,7 +56,9 @@ Claude Code はこのVaultを開いた際、本ファイルのルールに従っ
 - 初回構築・再構築：`/second-brain` スキル
 - 日常の質問→蓄積：Claude Code でこのVaultを開いて質問するだけ
 
-## ❷ ミスルール（反省ノートシステム）
+---
+
+## ❷ 反省ノート（KENGOODメソッド）
 
 - `mistakes.md` を毎セッション参照し、記載されたルールに従うこと
 - 新しいミスを発見した場合、ルール化の3条件を満たすなら `mistakes.md` に追記すること
