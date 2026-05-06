@@ -195,3 +195,13 @@ temp/
 # ------------------------------------------
 # 特定ファイルだけ配布したい場合は !filename で解除可能
 # 例: !examples/sample.pdf
+
+# ========================================
+# workspace/ 配下の Claude Code 作業領域専用
+# ========================================
+workspace/**/.env
+workspace/**/post_history.jsonl
+workspace/**/.last_image_url.txt
+workspace/**/current_mode.txt
+workspace/**/__pycache__/
+workspace/**/*.pyc
