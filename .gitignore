@@ -24,6 +24,9 @@
 .anthropic-key
 .openai-key
 
+# 運用個別の transcribe 設定（example はコミット）
+harness/transcribe/config.json
+
 # ------------------------------------------
 # Claude Code（ユーザー環境依存）
 # ------------------------------------------

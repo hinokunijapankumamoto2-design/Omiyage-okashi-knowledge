@@ -1,0 +1,16 @@
+{
+  "audio_format": "LSB16K",
+  "audio": {
+    "sample_rate": 16000,
+    "bit_depth": 16,
+    "channels": 1,
+    "byte_order": "lsb",
+    "chunk_ms": 200
+  },
+  "diarization": {
+    "enabled": true,
+    "min_speakers": 2,
+    "max_speakers": 6
+  },
+  "confidence_unconfirmed_threshold": 0.6
+}
