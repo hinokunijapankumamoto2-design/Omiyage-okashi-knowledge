@@ -1,0 +1,19 @@
+{
+  "env": {
+    "TZ": "Asia/Tokyo",
+    "MEETING_ROOT": "./data/clients",
+    "KNOWLEDGE_ROOT": "./knowledge",
+    "HARNESS_ROOT": "./harness"
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "MultiEdit",
+      "Glob",
+      "Grep",
+      "LS"
+    ]
+  }
+}
