@@ -1,0 +1,13 @@
+{
+  "meeting_id": "2026-05-10-001",
+  "client_id": "sample-omiyage",
+  "datetime": "2026-05-10T14:00:00+09:00",
+  "participants": [
+    "秋坂洋三郎",
+    "先方社長",
+    "商品企画責任者"
+  ],
+  "meeting_type": "initial_hearing",
+  "recording_consent": true,
+  "source": "manual_upload"
+}
