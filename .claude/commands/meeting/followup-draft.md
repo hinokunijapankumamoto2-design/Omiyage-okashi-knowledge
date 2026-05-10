@@ -3,6 +3,10 @@ description: 面談後のフォローアップ文面を生成する
 argument-hint: client_id meeting_id
 ---
 
+参照:
+- @CLAUDE.md
+- @knowledge/templates/followup_draft.template.md
+
 対象 meeting の minutes.md と next_deal_plan.md を読み、followup_draft.md を作成する。
 
 必須:

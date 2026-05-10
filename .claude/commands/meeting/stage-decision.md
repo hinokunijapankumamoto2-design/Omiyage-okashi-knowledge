@@ -3,6 +3,12 @@ description: 商談ステージを判定し、今出すべき成果物を定義�
 argument-hint: client_id meeting_id
 ---
 
+参照:
+- @CLAUDE.md
+- @knowledge/core/proposal_conversion_rules.md
+- @knowledge/core/go_no_go_conditions.md
+- @knowledge/core/lost_deal_patterns.md
+
 商談ステージを以下から判定する。
 - 初回情報収集
 - 課題共有

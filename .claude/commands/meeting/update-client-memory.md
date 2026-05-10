@@ -3,6 +3,11 @@ description: 面談結果を顧客メモリへ差分反映する
 argument-hint: client_id meeting_id
 ---
 
+参照:
+- @CLAUDE.md
+- @knowledge/core/evidence_policy.md
+- @knowledge/templates/client_memory.template.md
+
 対象 meeting の value_structure.md を読み、以下を更新する。
 
 - data/clients/<client_id>/memory.md

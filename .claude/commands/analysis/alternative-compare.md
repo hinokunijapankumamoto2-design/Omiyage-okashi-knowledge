@@ -3,6 +3,12 @@ description: 同業ではなく代替手段との競争を整理する
 argument-hint: 企業名またはブランド名
 ---
 
+参照:
+- @CLAUDE.md
+- @knowledge/core/value_creation_knowledge.md
+- @knowledge/domain/omiyage_value_creation_knowledge.md
+- @knowledge/domain/use_case_patterns.md
+
 対象が顧客の中で何と代替されるかを整理する。
 
 例:

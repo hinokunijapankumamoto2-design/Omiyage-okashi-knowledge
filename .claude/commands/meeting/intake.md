@@ -3,6 +3,10 @@ description: 文字起こし済み会議を取り込み、処理対象ディレ�
 argument-hint: client_id meeting_id
 ---
 
+参照:
+- @CLAUDE.md
+- @knowledge/core/meeting_structuring_rules.md
+
 会議ディレクトリを確認し、処理可能状態か判定する。
 
 やること:

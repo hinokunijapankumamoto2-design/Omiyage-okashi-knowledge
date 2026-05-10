@@ -3,6 +3,12 @@ description: 相手に共有できる議事録を生成する
 argument-hint: client_id meeting_id
 ---
 
+参照:
+- @CLAUDE.md
+- @knowledge/core/evidence_policy.md
+- @knowledge/core/meeting_structuring_rules.md
+- @knowledge/templates/minutes.template.md
+
 対象 meeting の normalized_transcript.md と value_structure.md を読み、minutes.md を作成する。
 
 必須:
