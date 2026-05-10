@@ -20,19 +20,35 @@ AmiVoice WebSocket リアルタイム API への接続が成立し、`amivoice_e
 pip install -r harness/transcribe/requirements.txt
 ```
 
+## 1.5. 鍵の誤コミット防止フックを有効化（**最初に1回だけ実行**）
+
+```bash
+bash scripts/install-hooks.sh
+```
+
+これで以下が自動でブロックされる:
+- `.env` のコミット
+- ステージ済みファイル中の `AMIVOICE_APPKEY=<実値>` の追加
+- `appkey` / `api_key` / `token` / `secret` を含む行に40文字以上の長い英数字が現れた場合
+
 ## 2. .env 作成
 
 ```bash
 cp .env.example .env
 ```
 
-`.env` を編集:
+**`.env` の編集はターミナルではなくエディタ（VS Code等）で開いて貼る**こと。シェル履歴に鍵が残るのを避ける。
 
 ```
-AMIVOICE_APPKEY=<MyPage の APPKEY>
+AMIVOICE_APPKEY=<MyPage の APPKEY 実値>
 AMIVOICE_ENGINE=<MyPage の接続エンジン名>
 AMIVOICE_WS_ENDPOINT=wss://acp-api.amivoice.com/v1/nolog/
 ```
+
+注意:
+- APPKEY をチャットに貼らない
+- `<...>` プレースホルダのままだとスクリプトが起動時にエラー停止する（保険）
+- スクリプトは APPKEY を `***APPKEY_MASKED***` に置換してログ・events.jsonl に書き出す
 
 エンジン名は会議・商談用途なら「会話系・汎用」を推奨（正式名は MyPage の Connection Engine Name 列で確認）。
 

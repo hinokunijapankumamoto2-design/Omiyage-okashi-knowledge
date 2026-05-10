@@ -86,6 +86,17 @@ def build_s_command(audio_format: str, engine: str, appkey: str, diarization: di
     return " ".join(parts)
 
 
+def validate_appkey(appkey: str) -> None:
+    if not appkey:
+        raise SystemExit(".env の AMIVOICE_APPKEY が空です")
+    if any(ch.isspace() for ch in appkey):
+        raise SystemExit("AMIVOICE_APPKEY に空白が含まれています（コピペ事故の可能性）")
+    if len(appkey) < 16:
+        raise SystemExit(f"AMIVOICE_APPKEY が短すぎます（{len(appkey)}文字）。MyPage で再確認してください")
+    if appkey.startswith("<") or appkey.endswith(">"):
+        raise SystemExit("AMIVOICE_APPKEY が <...> プレースホルダのままです")
+
+
 @dataclass
 class SessionState:
     events: list[dict] = field(default_factory=list)
@@ -103,6 +114,7 @@ async def run(wav_path: Path, client_id: str, meeting_id: str) -> int:
     if not appkey or not engine:
         sys.stderr.write(".env の AMIVOICE_APPKEY と AMIVOICE_ENGINE を設定してください\n")
         return 2
+    validate_appkey(appkey)
 
     cfg = load_config()
     audio_cfg = cfg["audio"]
@@ -135,7 +147,7 @@ async def run(wav_path: Path, client_id: str, meeting_id: str) -> int:
                                 msg = msg.decode("utf-8", errors="replace")
                             except Exception:
                                 continue
-                        record = parse_event(msg)
+                        record = parse_event(msg, appkey)
                         events_fp.write(json.dumps(record, ensure_ascii=False) + "\n")
                         events_fp.flush()
                         state.events.append(record)
@@ -207,11 +219,16 @@ async def run(wav_path: Path, client_id: str, meeting_id: str) -> int:
     return 0
 
 
-def parse_event(msg: str) -> dict:
-    """AmiVoice の各イベントは先頭1文字（S/E/U/A/C/p/s/e 等）+ スペース + JSON or テキスト。"""
+def parse_event(msg: str, appkey: str | None = None) -> dict:
+    """AmiVoice の各イベントは先頭1文字（S/E/U/A/C/p/s/e 等）+ スペース + JSON or テキスト。
+
+    APPKEY が万一サーバ応答にエコーされた場合に備えて、保存時にマスクする保険。
+    """
     msg = msg.strip()
     if not msg:
         return {"kind": None, "raw": ""}
+    if appkey and appkey in msg:
+        msg = msg.replace(appkey, "***APPKEY_MASKED***")
     kind = msg[0]
     body = msg[1:].lstrip() if len(msg) > 1 else ""
     payload = None
