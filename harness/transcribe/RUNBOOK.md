@@ -2,6 +2,25 @@
 
 AmiVoice WebSocket リアルタイム API への接続が成立し、`amivoice_events.jsonl` / `amivoice_response.json` / `transcription_meta.json` が生成されるところまで確認する。
 
+---
+
+## 【Windows】かんたんルート（ターミナル不要）
+
+ターミナルを使わずに済ませる場合はこちら。
+
+1. **`.env` を用意**
+   - エクスプローラーで `.env.example` をコピーし、名前を `.env` に変える
+   - `.env` をメモ帳で開き、`AMIVOICE_APPKEY=` と `AMIVOICE_ENGINE=` の右に値を書いて保存
+2. **`run_amivoice_test.bat` をダブルクリック**
+   - pip install → テスト音声生成 → AmiVoice 接続テストまで自動実行
+   - 終了すると `amivoice_test.log` がメモ帳で開く
+3. **`amivoice_test.log` の中身を全部コピーしてチャットに貼る**
+   - APPKEY は自動マスクされるので安全
+
+うまくいかない場合は、開いた `amivoice_test.log` をそのまま貼ってください。以降の手動手順は参考用です。
+
+---
+
 > **このランブックは AmiVoice APPKEY を持つお手元環境で実行する。** 結果（`transcription_meta.json` の中身）を貼ってもらえれば、未確認だった仕様（segmenterProperties の正確な構文、speakerId の格納位置、推奨 chunk_ms など）を `harness/amivoice_spec.md` に書き戻します。
 
 ---
