@@ -1,0 +1,35 @@
+{
+  "brands": [
+    {
+      "id": "gomatamago",
+      "name": "銀座たまや（ごまたまご）",
+      "patterns": ["ごまたまご", "ごま たまご", "胡麻たまご", "ゴマタマゴ", "銀座たまや"],
+      "query": "(ごまたまご OR 銀座たまや) lang:ja -is:retweet",
+      "exclude_patterns": ["ごま油", "たまごかけ"]
+    },
+    {
+      "id": "nycsand",
+      "name": "N.Y.C.SAND",
+      "patterns": [
+        "NYCSAND",
+        "N.Y.C.SAND",
+        "nycサンド",
+        "NYキャラメルサンド",
+        "N.Y.キャラメルサンド",
+        "ニューヨークキャラメルサンド",
+        "ニューヨーク キャラメルサンド",
+        "ニューヨークシティサンド"
+      ],
+      "query": "(NYCSAND OR \"NYキャラメルサンド\" OR \"ニューヨークキャラメルサンド\" OR \"N.Y.キャラメルサンド\") lang:ja -is:retweet",
+      "exclude_patterns": ["サンドイッチ店", "ハンバーガー"]
+    },
+    {
+      "id": "caramer",
+      "name": "CARAMER",
+      "patterns": ["CARAMER", "キャラマー", "caramer"],
+      "query": "(CARAMER OR キャラマー) lang:ja -is:retweet",
+      "exclude_patterns": ["caramel macchiato"]
+    }
+  ],
+  "sales_area_prefs": ["東京", "神奈川", "埼玉", "千葉"]
+}
