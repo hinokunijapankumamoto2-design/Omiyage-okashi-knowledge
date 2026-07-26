@@ -142,7 +142,7 @@ async function main(): Promise<void> {
 
       out('')
       out('MCP / スキル（Claude 本体が実行するため、この CLI からは検証できません）:')
-      out('  - Kling MCP        工程4。未接続なら higgsfield の kling3_0 系で代替')
+      out('  - Kling            工程4。MCP コネクタ（kling.ai/mcp）または kling-cli スキル + kling login')
       out('  - Figma MCP        工程1。デザイントーンの参照元')
       out('  - video-use skill  工程5。~/.claude/skills/video-use に登録が必要')
       break

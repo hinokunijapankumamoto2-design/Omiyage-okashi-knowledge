@@ -38,9 +38,14 @@ export function clearAgentWork(project: Project): void {
 }
 
 export const TOOL_IDS = {
-  /** Kling MCP（kling.ai/app/mcp）。未接続なら higgsfield の kling3_0 系で代替できる */
-  klingGenerateVideo: 'mcp__kling__generate_video',
-  klingFallback: 'mcp__higgsfield__generate_video',
+  /**
+   * Kling。接続経路は 2 つあり、セッションでどちらが生きているかで使い分ける:
+   *  - MCP コネクタ（kling.ai/mcp を claude.ai の接続設定に追加）→ mcp__kling__* 系ツール
+   *  - kling-cli スキル（npx skills add klingai-tech/skills + kling login）→ Bash から `kling` コマンド
+   * ツール名の詳細は .agents/skills/kling-cli/SKILL.md を参照。
+   */
+  klingGenerateVideo: 'mcp__kling__image_to_video',
+  klingCliSkill: 'skill:kling-cli',
   figmaDesignContext: 'mcp__Figma__get_design_context',
   figmaExportVideo: 'mcp__Figma__export_video',
   figmaDownloadAssets: 'mcp__Figma__download_assets',

@@ -24,8 +24,10 @@ npm run studio -- status <projectId>
 ## agent 層の作業手順
 
 1. `project.json` の `agentTask.instruction` を読む
-2. `agentTask.tool` のツールを呼ぶ（Kling MCP が未接続なら `mcp__higgsfield__generate_video` に
-   `model: "kling3_0_turbo"` を渡して代替する）
+2. `agentTask.tool` のツールを呼ぶ。Kling は接続経路が 2 つある:
+   - MCP コネクタ接続済み → `mcp__kling__*` 系ツール（image_to_video / text_to_video / query_tasks）
+   - ローカルで `kling login` 済み → kling-cli スキル（`.agents/skills/kling-cli/SKILL.md`）に従い
+     Bash から `kling` コマンドを使う。generationId を query_tasks でポーリングし works[].url を取得
 3. 成果物を `projects/<id>/assets/<種別>/` に保存する
 4. `project.json` の `assets[]` に登録し、対応ショットの `assetIds` に追加する
 5. `agentTask` を `null` に戻す
@@ -37,7 +39,7 @@ npm run studio -- status <projectId>
 - **字幕は最後。** 合成のレイヤー順序（base → overlay → 字幕）を入れ替えない。
   先に焼くとオーバーレイに隠れて消える。これは好みではなく正しさの問題である。
 - **`durationInFrames` の合計を目標尺に一致させる。** 工程2 が誤差 1.5 秒でエラーにする。
-- **課金が発生する生成（Kling / higgsfield）は、ユーザーの承認を得てから実行する。**
+- **課金が発生する生成（Kling の画像・動画生成）は、ユーザーの承認を得てから実行する。**
   取り消せないため。
 - **実写編集では video-use の Hard Rules に従う。** 特にカットを単語境界にスナップすること、
   全カット境界に 30ms のオーディオフェードを入れること。
