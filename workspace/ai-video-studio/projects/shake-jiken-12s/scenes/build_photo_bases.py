@@ -1,10 +1,7 @@
-# 静止画（ポスター・久保さん写真）から各ビートのベース映像を生成する
-# 使い方: photos/poster.png を置いてから
-#   python3 scenes/build_photo_bases.py
-# 出力: assets/photo/b{1,2,3,4,5}_base.mp4（1080x1920/30fps、ゆっくりズームのフォトステージング）
-#
-# 素材が静止画のため、動きは「ズーム/パン + 透過オーバーレイ(b*o.webm) + SE」で作る。
-# 実写動画が届いたら、このベースを差し替えるだけで v2 になる。
+# 静止画から各ビートのベース映像を生成する（実素材版）
+# 素材: photos/poster.jpg（680x481 ポスター）/ photos/sheet.png（1024x1536 リファレンスシート）
+# 実行: python3 scenes/build_photo_bases.py
+# 出力: assets/photo/b{1..5}_base.mp4（1080x1920/30fps・ゆっくりズーム）
 
 import json
 import subprocess
@@ -13,79 +10,83 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 STUDIO = ROOT.parent.parent
-FFMPEG = json.loads(
-    subprocess.run(
-        ["node", "-e", "console.log(JSON.stringify(require('ffmpeg-static')))"],
-        capture_output=True, text=True, cwd=STUDIO,
-    ).stdout.strip()
-)
-FFPROBE = json.loads(
-    subprocess.run(
-        ["node", "-e", "console.log(JSON.stringify(require('ffprobe-static').path))"],
-        capture_output=True, text=True, cwd=STUDIO,
-    ).stdout.strip()
-)
 
-POSTER = ROOT / "photos" / "poster.png"
-if not POSTER.exists():
-    sys.exit("photos/poster.png がありません。ポスター画像を置いてから実行してください。")
 
-# 元画像の寸法
-probe = subprocess.run(
-    [FFPROBE, "-v", "error", "-select_streams", "v:0",
-     "-show_entries", "stream=width,height", "-of", "csv=p=0", str(POSTER)],
-    capture_output=True, text=True,
-)
-SW, SH = (int(x) for x in probe.stdout.strip().split(","))
-print(f"poster: {SW}x{SH}")
+def node_path(expr: str) -> str:
+    return json.loads(
+        subprocess.run(["node", "-e", f"console.log(JSON.stringify({expr}))"],
+                       capture_output=True, text=True, cwd=STUDIO).stdout.strip()
+    )
+
+
+FFMPEG = node_path("require('ffmpeg-static')")
+FFPROBE = node_path("require('ffprobe-static').path")
+
+SOURCES = {
+    "poster": ROOT / "photos" / "poster.jpg",
+    "sheet": ROOT / "photos" / "sheet.png",
+}
+for name, p in SOURCES.items():
+    if not p.exists():
+        sys.exit(f"素材がありません: {p}")
+
+DIMS = {}
+for name, p in SOURCES.items():
+    out = subprocess.run(
+        [FFPROBE, "-v", "error", "-select_streams", "v:0",
+         "-show_entries", "stream=width,height", "-of", "csv=p=0", str(p)],
+        capture_output=True, text=True,
+    ).stdout.strip().split(",")
+    DIMS[name] = (int(out[0]), int(out[1]))
+    print(f"{name}: {DIMS[name][0]}x{DIMS[name][1]}")
 
 W, H, FPS = 1080, 1920, 30
 
-# 各ビートの切り出し（元画像に対する比率）とズーム設定
-# poster 構図: 上部=暖簾+コピー / 右側=久保さん / 左下=シェイク2種
+# ビート定義。crop は元画像に対する比率 (x, y, w, h)
+# poster 構図: 暖簾=上部左〜中央 / 久保さん=右側 / シェイク2種=左下 / タグライン=下段
 BEATS = {
-    # (crop x, y, w, h [比率], 尺frames, zoom開始→終了, パン)
-    "b1": dict(crop=(0.42, 0.02, 0.56, 0.96), frames=45,  z0=1.00, z1=1.06),  # 久保さん全体
-    "b2": dict(crop=(0.00, 0.55, 0.34, 0.44), frames=75,  z0=1.02, z1=1.14),  # シェイク2種に寄る
-    "b3": dict(crop=(0.05, 0.00, 0.52, 0.62), frames=90,  z0=1.00, z1=1.05),  # 暖簾（ずんちゃ丸が乗る背景）
-    "b4": dict(crop=(0.45, 0.05, 0.50, 0.80), frames=75,  z0=1.06, z1=1.00),  # 久保さん（引き＝受け止め）
-    "b5": dict(crop=(0.40, 0.00, 0.60, 1.00), frames=75,  z0=1.00, z1=1.08),  # 久保さん+シェイク
+    "b1": dict(src="poster", crop=(0.55, 0.00, 0.45, 1.00), frames=45, z0=1.00, z1=1.07),  # 久保さん（シェイク持ち）
+    "b2": dict(src="poster", crop=(0.00, 0.58, 0.30, 0.42), frames=75, z0=1.04, z1=1.16),  # シェイク2種に寄る
+    "b3": dict(src="poster", crop=(0.30, 0.02, 0.44, 0.64), frames=90, z0=1.00, z1=1.05),  # 暖簾
+    "b4": dict(src="sheet",  crop=(0.015, 0.068, 0.27, 0.36), frames=75, z0=1.08, z1=1.00),  # 優しい微笑みの肖像（引き）
+    "b5": dict(src="poster", crop=(0.50, 0.00, 0.50, 1.00), frames=75, z0=1.02, z1=1.09),  # 久保さん+シェイク（締め）
 }
 
 out_dir = ROOT / "assets" / "photo"
 out_dir.mkdir(parents=True, exist_ok=True)
 
 for beat, cfg in BEATS.items():
+    SW, SH = DIMS[cfg["src"]]
+    src = SOURCES[cfg["src"]]
     rx, ry, rw, rh = cfg["crop"]
     cx, cy = int(SW * rx), int(SH * ry)
     cw, ch = int(SW * rw), int(SH * rh)
-    # 縦 9:16 に収まるよう切り出し領域を調整（不足分は縮めて中央合わせ）
-    target_ratio = W / H
-    if cw / ch > target_ratio:
-        new_cw = int(ch * target_ratio)
-        cx += (cw - new_cw) // 2
-        cw = new_cw
+    # 9:16 に収まるよう調整
+    target = W / H
+    if cw / ch > target:
+        ncw = int(ch * target)
+        cx += (cw - ncw) // 2
+        cw = ncw
     else:
-        new_ch = int(cw / target_ratio)
-        cy = min(cy, SH - new_ch)
-        ch = new_ch
+        nch = int(cw / target)
+        cy = min(cy, SH - nch)
+        ch = nch
+    cw -= cw % 2
+    ch -= ch % 2
 
-    frames = cfg["frames"]
-    z0, z1 = cfg["z0"], cfg["z1"]
-    # zoompan は入力を大きめに拡大してから使うとジッタが出にくい
+    frames, z0, z1 = cfg["frames"], cfg["z0"], cfg["z1"]
     zexpr = f"{z0}+({z1}-{z0})*on/{frames}"
     out = out_dir / f"{beat}_base.mp4"
-    cmd = [
+    subprocess.run([
         FFMPEG, "-hide_banner", "-loglevel", "error", "-y",
-        "-loop", "1", "-i", str(POSTER),
+        "-loop", "1", "-i", str(src),
         "-vf",
-        f"crop={cw}:{ch}:{cx}:{cy},scale=2160:3840,"
+        f"crop={cw}:{ch}:{cx}:{cy},scale=2160:3840:flags=lanczos,"
         f"zoompan=z='{zexpr}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'"
         f":d={frames}:s={W}x{H}:fps={FPS},format=yuv420p",
         "-frames:v", str(frames), "-c:v", "libx264", "-preset", "medium", "-crf", "18",
         str(out),
-    ]
-    subprocess.run(cmd, check=True)
-    print(f"{beat}: {out.name}  crop=({cx},{cy},{cw},{ch}) {frames}f zoom {z0}->{z1}")
+    ], check=True)
+    print(f"{beat}: crop=({cx},{cy},{cw},{ch}) src={cfg['src']} {frames}f zoom {z0}->{z1}")
 
-print("完了。次: node scenes/register_photo_v1.mjs でベース+オーバーレイを登録して合成へ")
+print("完了")

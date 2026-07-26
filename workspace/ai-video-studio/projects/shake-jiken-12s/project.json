@@ -30,7 +30,7 @@
         "url": null
       },
       "assetIds": [
-        "motion-b1"
+        "comp-b1"
       ]
     },
     {
@@ -47,7 +47,7 @@
         "url": null
       },
       "assetIds": [
-        "motion-b2"
+        "comp-b2"
       ]
     },
     {
@@ -61,7 +61,7 @@
       "motionPrompt": "scenes/b3 でオーサリング済み",
       "captureSpec": null,
       "assetIds": [
-        "motion-b3"
+        "comp-b3"
       ]
     },
     {
@@ -78,7 +78,7 @@
         "url": null
       },
       "assetIds": [
-        "motion-b4"
+        "comp-b4"
       ]
     },
     {
@@ -95,87 +95,70 @@
         "url": null
       },
       "assetIds": [
-        "motion-b5"
+        "comp-b5"
       ]
     }
   ],
   "assets": [
     {
-      "id": "motion-b1",
-      "kind": "motion",
-      "path": "assets/motion/b1.mp4",
-      "source": "hyperframes",
+      "id": "comp-b1",
+      "kind": "footage",
+      "path": "assets/photo/b1_comp.mp4",
+      "source": "photo-staging+overlay",
       "externalId": null,
       "url": null,
-      "createdAt": "2026-07-26T08:13:59.228Z",
+      "createdAt": "2026-07-26T08:52:26.190Z",
       "meta": {
-        "fps": 30,
-        "durationInFrames": 45
+        "note": "ffmpegでbase+透過オーバーレイを事前合成（Remotionの透過WebMデコード回避）"
       }
     },
     {
-      "id": "motion-b2",
-      "kind": "motion",
-      "path": "assets/motion/b2.mp4",
-      "source": "hyperframes",
+      "id": "comp-b2",
+      "kind": "footage",
+      "path": "assets/photo/b2_comp.mp4",
+      "source": "photo-staging+overlay",
       "externalId": null,
       "url": null,
-      "createdAt": "2026-07-26T08:13:59.228Z",
+      "createdAt": "2026-07-26T08:52:26.190Z",
       "meta": {
-        "fps": 30,
-        "durationInFrames": 75
+        "note": "ffmpegでbase+透過オーバーレイを事前合成（Remotionの透過WebMデコード回避）"
       }
     },
     {
-      "id": "motion-b3",
-      "kind": "motion",
-      "path": "assets/motion/b3.mp4",
-      "source": "hyperframes",
+      "id": "comp-b3",
+      "kind": "footage",
+      "path": "assets/photo/b3_comp.mp4",
+      "source": "photo-staging+overlay",
       "externalId": null,
       "url": null,
-      "createdAt": "2026-07-26T08:13:59.228Z",
+      "createdAt": "2026-07-26T08:52:26.190Z",
       "meta": {
-        "fps": 30,
-        "durationInFrames": 90
+        "note": "ffmpegでbase+透過オーバーレイを事前合成（Remotionの透過WebMデコード回避）"
       }
     },
     {
-      "id": "motion-b4",
-      "kind": "motion",
-      "path": "assets/motion/b4.mp4",
-      "source": "hyperframes",
+      "id": "comp-b4",
+      "kind": "footage",
+      "path": "assets/photo/b4_comp.mp4",
+      "source": "photo-staging+overlay",
       "externalId": null,
       "url": null,
-      "createdAt": "2026-07-26T08:13:59.228Z",
+      "createdAt": "2026-07-26T08:52:26.190Z",
       "meta": {
-        "fps": 30,
-        "durationInFrames": 75
+        "note": "ffmpegでbase+透過オーバーレイを事前合成（Remotionの透過WebMデコード回避）"
       }
     },
     {
-      "id": "motion-b5",
-      "kind": "motion",
-      "path": "assets/motion/b5.mp4",
-      "source": "hyperframes",
+      "id": "comp-b5",
+      "kind": "footage",
+      "path": "assets/photo/b5_comp.mp4",
+      "source": "photo-staging+overlay",
       "externalId": null,
       "url": null,
-      "createdAt": "2026-07-26T08:13:59.228Z",
+      "createdAt": "2026-07-26T08:52:26.190Z",
       "meta": {
-        "fps": 30,
-        "durationInFrames": 75
+        "note": "ffmpegでbase+透過オーバーレイを事前合成（Remotionの透過WebMデコード回避）"
       }
-    },
-    {
-      "externalId": null,
-      "url": null,
-      "meta": {
-        "cueCount": 5
-      },
-      "id": "subtitle-master",
-      "kind": "subtitle",
-      "path": "assets/subtitles/master.srt",
-      "source": "studio:subtitle",
-      "createdAt": "2026-07-26T08:13:59.718Z"
     },
     {
       "externalId": null,
@@ -189,7 +172,7 @@
       "kind": "video",
       "path": "out/final.mp4",
       "source": "remotion",
-      "createdAt": "2026-07-26T08:14:55.249Z"
+      "createdAt": "2026-07-26T08:53:22.337Z"
     }
   ],
   "steps": {
@@ -220,8 +203,8 @@
     "capture": {
       "status": "done",
       "startedAt": null,
-      "finishedAt": "2026-07-26T08:13:59.228Z",
-      "note": "アニマティック版（実写はシルエット代替）"
+      "finishedAt": "2026-07-26T08:49:35.410Z",
+      "note": "フォトステージング版（ポスター静止画）"
     },
     "subtitle": {
       "status": "done",
@@ -232,17 +215,17 @@
     "compose": {
       "status": "done",
       "startedAt": "2026-07-26T08:13:59.719Z",
-      "finishedAt": "2026-07-26T08:13:59.720Z",
+      "finishedAt": "2026-07-26T08:52:26.674Z",
       "note": "timeline.json を出力（5 ショット）"
     },
     "render": {
       "status": "done",
       "startedAt": "2026-07-26T08:13:59.721Z",
-      "finishedAt": "2026-07-26T08:14:55.250Z",
+      "finishedAt": "2026-07-26T08:53:22.337Z",
       "note": "final.mp4 を出力"
     }
   },
   "agentTask": null,
   "createdAt": "2026-07-26T08:07:55.456Z",
-  "updatedAt": "2026-07-26T08:14:55.250Z"
+  "updatedAt": "2026-07-26T08:53:22.337Z"
 }

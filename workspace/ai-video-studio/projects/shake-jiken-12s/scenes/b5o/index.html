@@ -35,20 +35,61 @@
     頭身: 約2.2頭身（頭部が全高の6割）
     表情グループ: #expr-normal / #expr-sneaky / #expr-happy を CSS で切り替える
   -->
+  <defs>
+    <!-- 参照シートの柔らかい立体感（ぬいぐるみ/3Dフィギュア風）を淡い陰影で再現 -->
+    <radialGradient id="g-hood" cx="0.38" cy="0.28" r="0.85">
+      <stop offset="0%" stop-color="#a8d97c"/>
+      <stop offset="55%" stop-color="#8BCB59"/>
+      <stop offset="100%" stop-color="#74af41"/>
+    </radialGradient>
+    <radialGradient id="g-face" cx="0.42" cy="0.35" r="0.8">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="78%" stop-color="#fdfbf6"/>
+      <stop offset="100%" stop-color="#f1ead9"/>
+    </radialGradient>
+    <radialGradient id="g-leaf" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0%" stop-color="#6fd05a"/>
+      <stop offset="100%" stop-color="#3f9c2e"/>
+    </radialGradient>
+    <radialGradient id="g-bean" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0%" stop-color="#8cc75a"/>
+      <stop offset="100%" stop-color="#5d9a28"/>
+    </radialGradient>
+    <linearGradient id="g-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9bd469"/>
+      <stop offset="100%" stop-color="#7cb84a"/>
+    </linearGradient>
+    <linearGradient id="g-apron" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7dbc41"/>
+      <stop offset="100%" stop-color="#63a233"/>
+    </linearGradient>
+    <radialGradient id="g-cheek" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FFC9C9"/>
+      <stop offset="70%" stop-color="#FFD9D9"/>
+      <stop offset="100%" stop-color="#FFD9D9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g-white" cx="0.4" cy="0.3" r="0.9">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#ece5d2"/>
+    </radialGradient>
+  </defs>
   <g id="zuncha" stroke-linecap="round" stroke-linejoin="round">
 
+    <!-- 接地の淡い影 -->
+    <ellipse cx="200" cy="516" rx="150" ry="20" fill="#000000" opacity="0.10"/>
+
     <!-- 足 -->
-    <ellipse cx="168" cy="508" rx="26" ry="15" fill="#FFFFFF" stroke="#3d6b1e" stroke-width="5"/>
-    <ellipse cx="232" cy="508" rx="26" ry="15" fill="#FFFFFF" stroke="#3d6b1e" stroke-width="5"/>
+    <ellipse cx="168" cy="508" rx="26" ry="15" fill="url(#g-white)" stroke="#3d6b1e" stroke-width="5"/>
+    <ellipse cx="232" cy="508" rx="26" ry="15" fill="url(#g-white)" stroke="#3d6b1e" stroke-width="5"/>
 
     <!-- 体（黄緑の和装） -->
     <path d="M 148 372 L 252 372 Q 270 372 274 402 L 282 462 Q 284 486 258 490 L 142 490 Q 116 486 118 462 L 126 402 Q 130 372 148 372 Z"
-          fill="#8BCB59" stroke="#3d6b1e" stroke-width="6"/>
+          fill="url(#g-body)" stroke="#3d6b1e" stroke-width="6"/>
     <!-- 衿合わせ -->
     <path d="M 200 372 L 178 400 M 200 372 L 222 400" fill="none" stroke="#FFFFFF" stroke-width="7"/>
     <!-- 前掛け（濃緑） -->
     <path d="M 150 414 L 250 414 Q 262 414 263 430 L 266 470 Q 266 486 248 487 L 152 487 Q 134 486 134 470 L 137 430 Q 138 414 150 414 Z"
-          fill="#6FB234" stroke="#3d6b1e" stroke-width="5"/>
+          fill="url(#g-apron)" stroke="#3d6b1e" stroke-width="5"/>
     <!-- 前掛けの紐結び -->
     <path d="M 188 414 Q 200 406 212 414 Q 206 420 200 418 Q 194 420 188 414 Z" fill="#4EBC3A" stroke="#3d6b1e" stroke-width="4"/>
     <!-- 前掛けの枝豆紋 -->
@@ -58,11 +99,12 @@
     </g>
 
     <!-- 腕（短い前足） -->
-    <ellipse cx="122" cy="412" rx="24" ry="17" fill="#FFFFFF" stroke="#3d6b1e" stroke-width="5" transform="rotate(-18 122 412)"/>
-    <ellipse cx="278" cy="412" rx="24" ry="17" fill="#FFFFFF" stroke="#3d6b1e" stroke-width="5" transform="rotate(18 278 412)"/>
+    <ellipse cx="122" cy="412" rx="24" ry="17" fill="url(#g-white)" stroke="#3d6b1e" stroke-width="5" transform="rotate(-18 122 412)"/>
+    <ellipse cx="278" cy="412" rx="24" ry="17" fill="url(#g-white)" stroke="#3d6b1e" stroke-width="5" transform="rotate(18 278 412)"/>
 
     <!-- フード（枝豆の黄緑） -->
-    <ellipse cx="200" cy="222" rx="168" ry="158" fill="#8BCB59" stroke="#3d6b1e" stroke-width="7"/>
+    <ellipse cx="200" cy="222" rx="168" ry="158" fill="url(#g-hood)" stroke="#3d6b1e" stroke-width="7"/>
+    <ellipse cx="138" cy="120" rx="52" ry="30" fill="#ffffff" opacity="0.35" transform="rotate(-24 138 120)"/>
 
     <!-- 葉っぱ（感情パーツ。アニメ時は #leaf-l / #leaf-r を回転させる。フードより前面） -->
     <g id="leaf-l" transform="rotate(-10 186 72)">
@@ -75,18 +117,18 @@
     </g>
 
     <!-- 顔（白・フードの中） -->
-    <ellipse cx="200" cy="248" rx="122" ry="112" fill="#FFFFFF" stroke="none"/>
+    <ellipse cx="200" cy="248" rx="122" ry="112" fill="url(#g-face)" stroke="none"/>
 
     <!-- 額の三粒のずんだ -->
-    <g fill="#6FB234" stroke="#3d6b1e" stroke-width="4">
+    <g fill="url(#g-bean)" stroke="#3d6b1e" stroke-width="4">
       <ellipse cx="152" cy="150" rx="17" ry="13" transform="rotate(-14 152 150)"/>
       <ellipse cx="200" cy="140" rx="18" ry="14"/>
       <ellipse cx="248" cy="150" rx="17" ry="13" transform="rotate(14 248 150)"/>
     </g>
 
     <!-- ほっぺ（共通） -->
-    <ellipse cx="118" cy="288" rx="20" ry="13" fill="#FFD9D9"/>
-    <ellipse cx="282" cy="288" rx="20" ry="13" fill="#FFD9D9"/>
+    <ellipse cx="118" cy="288" rx="24" ry="16" fill="url(#g-cheek)"/>
+    <ellipse cx="282" cy="288" rx="24" ry="16" fill="url(#g-cheek)"/>
 
     <!-- ===== 表情: 通常の微笑み ===== -->
     <g id="expr-normal">
