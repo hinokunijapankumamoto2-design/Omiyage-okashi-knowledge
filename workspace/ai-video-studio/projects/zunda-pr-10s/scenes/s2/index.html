@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="./gsap.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:1080px; height:1920px; overflow:hidden;
+    font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif; }
+  .sticker { filter: drop-shadow(0 0 6px rgba(255,255,255,.9)); }
+  .bubble {
+    position:absolute; padding:26px 44px; background:#fff; border:7px solid #3d6b1e;
+    border-radius:60px; font-size:64px; font-weight:900; color:#3d6b1e; white-space:nowrap;
+  }
+  
+  body { background:linear-gradient(180deg,#f6f3ea 0%,#f6f3ea 62%,#dcedc8 100%); }
+  .mark { position:absolute; top:120px; left:50%; transform:translateX(-50%); width:260px; }
+  .cup { position:absolute; bottom:210px; left:50%; width:640px; margin-left:-320px; }
+  .copy1 { position:absolute; top:330px; width:100%; text-align:center;
+    font-size:86px; font-weight:900; color:#3d6b1e; }
+  .copy2 { position:absolute; top:452px; width:100%; text-align:center;
+    font-size:74px; font-weight:900; color:#3d6b1e; line-height:1.35; }
+  .copy2 em { font-style:normal; color:#5e9c30; font-size:92px; }
+  .steam { position:absolute; bottom:960px; left:50%; width:14px; height:150px; border-radius:10px;
+    background:rgba(255,255,255,.85); }
+
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="s2" data-start="0" data-duration="2.5" data-fps="30" data-width="1080" data-height="1920">
+    <div id="stage" class="clip" data-start="0" data-duration="2.5" data-track-index="0">
+      
+<svg class="mark" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <path d="M 30 72 Q 12 58 20 40 Q 30 20 56 24 Q 66 12 84 14 Q 100 16 106 30 Q 128 26 142 38 Q 158 50 152 68 Q 144 88 118 86 Q 104 96 86 92 Q 70 88 66 76 Q 44 82 30 72 Z"
+        stroke="#6FB234" stroke-width="10" stroke-linejoin="round"/>
+</svg>
+      <div class="copy1" id="c1">私はいつも、</div>
+      <div class="copy2" id="c2">ずんだ茶寮の<br /><em>ずんだシェイク！</em></div>
+      <div class="steam" id="st1" style="margin-left:-90px"></div>
+      <div class="steam" id="st2" style="margin-left:60px; height:110px"></div>
+      
+<svg class="cup" viewBox="0 0 360 560" xmlns="http://www.w3.org/2000/svg">
+  <g stroke-linejoin="round" stroke-linecap="round">
+    <rect x="150" y="8" width="22" height="150" rx="10" fill="#8BCB59" stroke="#3d6b1e" stroke-width="6" transform="rotate(8 161 83)"/>
+    <path d="M 76 120 Q 96 74 148 70 Q 186 42 226 66 Q 274 60 286 108 Q 300 132 284 150 L 76 150 Q 62 134 76 120 Z"
+          fill="#eaf5da" stroke="#3d6b1e" stroke-width="7"/>
+    <path d="M 96 118 Q 130 96 180 100 Q 230 104 258 122" fill="none" stroke="#8BCB59" stroke-width="14" stroke-linecap="round"/>
+    <path d="M 70 150 L 290 150 L 262 530 Q 260 548 240 548 L 120 548 Q 100 548 98 530 Z"
+          fill="#6FB234" stroke="#3d6b1e" stroke-width="8"/>
+    <path d="M 84 240 L 276 240 L 266 380 L 94 380 Z" fill="#f6f9ef" stroke="none"/>
+    <text x="180" y="322" text-anchor="middle" font-size="52" font-weight="900" fill="#3d6b1e"
+          font-family="'Noto Sans JP','Hiragino Sans',sans-serif">ずんだ茶寮</text>
+    <g transform="translate(130,338) scale(0.5)">
+<svg width="200" height="110" viewBox="0 0 200 110" xmlns="http://www.w3.org/2000/svg" fill="none">
+  <path d="M 30 72 Q 12 58 20 40 Q 30 20 56 24 Q 66 12 84 14 Q 100 16 106 30 Q 128 26 142 38 Q 158 50 152 68 Q 144 88 118 86 Q 104 96 86 92 Q 70 88 66 76 Q 44 82 30 72 Z"
+        stroke="#6FB234" stroke-width="12" stroke-linejoin="round"/>
+</svg></g>
+  </g>
+</svg>
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.set(".cup", { y: 700, rotation: 6 })
+      .to(".cup", { y: 0, rotation: 0, duration: 0.75, ease: "back.out(1.2)" }, 0.1)
+      .from("#c1", { opacity: 0, y: 40, duration: 0.5, ease: "power3.out" }, 0.55)
+      .from("#c2", { opacity: 0, y: 40, duration: 0.5, ease: "power3.out" }, 0.75)
+      .fromTo("#st1", { opacity: 0, y: 30 }, { opacity: 1, y: -60, duration: 1.2, ease: "sine.out" }, 0.9)
+      .fromTo("#st2", { opacity: 0, y: 30 }, { opacity: 0.8, y: -80, duration: 1.2, ease: "sine.out" }, 1.15)
+      .to("#st1", { opacity: 0, duration: 0.4 }, 2.0)
+      .to("#st2", { opacity: 0, duration: 0.35 }, 2.1);
+    window.__timelines["s2"] = tl;
+  </script>
+</body>
+</html>

@@ -1,0 +1,57 @@
+{
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "totalFrames": 300,
+  "subtitlePath": "assets/subtitles/master.srt",
+  "entries": [
+    {
+      "shotId": "s1",
+      "index": 0,
+      "fromFrame": 0,
+      "durationInFrames": 75,
+      "base": {
+        "kind": "motion",
+        "path": "assets/motion/s1.mp4"
+      },
+      "overlay": null,
+      "caption": ""
+    },
+    {
+      "shotId": "s2",
+      "index": 1,
+      "fromFrame": 75,
+      "durationInFrames": 75,
+      "base": {
+        "kind": "motion",
+        "path": "assets/motion/s2.mp4"
+      },
+      "overlay": null,
+      "caption": ""
+    },
+    {
+      "shotId": "s3",
+      "index": 2,
+      "fromFrame": 150,
+      "durationInFrames": 75,
+      "base": {
+        "kind": "motion",
+        "path": "assets/motion/s3.mp4"
+      },
+      "overlay": null,
+      "caption": ""
+    },
+    {
+      "shotId": "s4",
+      "index": 3,
+      "fromFrame": 225,
+      "durationInFrames": 75,
+      "base": {
+        "kind": "motion",
+        "path": "assets/motion/s4.mp4"
+      },
+      "overlay": null,
+      "caption": ""
+    }
+  ]
+}
