@@ -1,11 +1,5 @@
 {
   "hooks": {
-    "SessionStart": [
-      {
-        "type": "command",
-        "command": "cat {{VAULT_PATH}}/mistakes.md 2>/dev/null || true"
-      }
-    ],
     "Stop": [
       {
         "type": "prompt",

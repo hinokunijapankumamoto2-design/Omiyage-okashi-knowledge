@@ -125,9 +125,7 @@ Omiyage-okashi-knowledge/
 ├── skills/                      ← Claude Code スキル
 │   ├── second-brain/
 │   │   └── SKILL.md
-│   ├── reflection-notes/
-│   │   └── SKILL.md
-│   └── awakening/               ← 覚醒モード（複雑タスク前の品質チェック）
+│   └── reflection-notes/
 │       └── SKILL.md
 ├── templates/                   ← 各種テンプレート
 │   ├── CLAUDE.md.template
@@ -140,8 +138,7 @@ Omiyage-okashi-knowledge/
 ├── examples/                    ← 業界特化サンプル
 │   └── omiyage-okashi-sample.md
 └── docs/                        ← 追加ドキュメント
-    ├── architecture.md
-    └── awakening-mode.md        ← 覚醒モード設計書
+    └── architecture.md
 ```
 
 ---
