@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="./gsap.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:1080px; height:1920px; overflow:hidden; background:transparent;
+    font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif; }
+  .sub { position:absolute; bottom:170px; width:100%; text-align:center;
+    font-size:58px; font-weight:900; color:#fff; -webkit-text-stroke:10px rgba(40,60,20,.85);
+    paint-order:stroke; letter-spacing:.02em; }
+  .bubble { position:absolute; padding:22px 40px; background:#fff; border:7px solid #3d6b1e;
+    border-radius:56px; font-size:56px; font-weight:900; color:#3d6b1e; white-space:nowrap; }
+  .hook { position:absolute; top:180px; width:100%; text-align:center; font-size:76px;
+    font-weight:900; color:#fff; -webkit-text-stroke:12px rgba(40,60,20,.9); paint-order:stroke; }
+  .straw { position:absolute; height:30px; background:#7ec14f; border:7px solid #3d6b1e;
+    border-radius:18px; transform-origin:left center; }
+  
+  #straw2 { top:1010px; left:120px; width:460px; transform:rotate(16deg); }
+
+</style></head>
+<body>
+  <div id="root" data-composition-id="b2o" data-start="0" data-duration="2.5" data-fps="30" data-width="1080" data-height="1920">
+    <div id="stage" class="clip" data-start="0" data-duration="2.5" data-track-index="0">
+      <div class="straw" id="straw2"></div>
+      <div class="sub" id="q" style="opacity:0">……ん？</div>
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.to("#straw2", { rotation: 17.5, duration: 0.1, yoyo: true, repeat: 5, ease: "sine.inOut" }, 0.2)
+      .to("#straw2", { rotation: 17.5, duration: 0.1, yoyo: true, repeat: 5, ease: "sine.inOut" }, 1.0)
+      .to("#q", { opacity: 1, duration: 0.3 }, 1.8);
+    window.__timelines["b2o"] = tl;
+  </script>
+</body></html>
