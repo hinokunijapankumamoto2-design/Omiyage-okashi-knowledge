@@ -1,7 +1,8 @@
 import path from 'node:path'
 import { existsSync } from 'node:fs'
 import { overlayTemplate, renderScene, scaffoldScene } from '../adapters/hyperframes.js'
-import { requestAgentWork, TOOL_IDS } from '../adapters/mcp-bridge.js'
+import { buildImageToVideoRequest, KLING_TOOLS } from '../adapters/kling.js'
+import { requestAgentWork } from '../adapters/mcp-bridge.js'
 import { addAsset, ASSET_DIRS, assetsOfShot } from '../project.js'
 import type { Shot, Step } from '../types.js'
 
@@ -39,16 +40,10 @@ export const motionStep: Step = {
 
       const image = assetsOfShot(project, shot.id, 'image')[0]
 
-      if (usesKling(shot, Boolean(image))) {
+      if (usesKling(shot, Boolean(image)) && image?.path) {
         klingRequests.push({
           shotId: shot.id,
-          params: {
-            model: 'kling3_0_turbo',
-            prompt: shot.motionPrompt,
-            duration: Math.max(5, Math.round(shot.durationInFrames / project.spec.fps)),
-            aspect_ratio: project.spec.height > project.spec.width ? '9:16' : '16:9',
-            startImagePath: image?.path ?? null,
-          },
+          params: { ...buildImageToVideoRequest(shot, project.spec, image.path) },
         })
         continue
       }
@@ -96,20 +91,22 @@ export const motionStep: Step = {
     if (klingRequests.length > 0) {
       requestAgentWork(project, {
         step: 'motion',
-        tool: TOOL_IDS.klingGenerateVideo,
+        tool: KLING_TOOLS.imageToVideo,
         instruction: [
           `${klingRequests.length} 件のショットを Kling でモーション化してください。`,
+          '生成は課金されます。実行前にユーザーの承認と',
+          `${KLING_TOOLS.credits} でのクレジット残高確認を必ず行うこと。`,
           '',
-          `第一候補: ${TOOL_IDS.klingGenerateVideo}（Kling MCP コネクタ）`,
-          `MCP 未接続の環境では ${TOOL_IDS.klingCliSkill}（kling コマンド、要 kling login 済み）で代替`,
-          '',
-          '各リクエストの startImagePath は projects/<id>/ からの相対パスです。',
-          '画像はまず file_upload 相当でアップロードし、返った参照を image_to_video に渡してください。',
-          '生成は generationId を query_tasks でポーリングし、works[].url からダウンロードします。',
-          '',
-          '完了したら、生成結果を assets/motion/<shotId>.mp4 に保存し、',
-          'project.json の assets[] に kind=motion / source=kling で登録、',
-          '対応ショットの assetIds に追加してから run を再開してください。',
+          '各リクエストの params は image_to_video にそのまま渡せる形になっています。手順:',
+          `1. params.localImagePath（projects/<id>/ からの相対パス）を ${KLING_TOOLS.fileUpload} で`,
+          '   アップロードする（チケット取得 → upload_url へ multipart POST: ticket + file）',
+          '2. 返った URL を params.inputs[0].url に差し替えて',
+          `   ${KLING_TOOLS.imageToVideo} を呼ぶ（model / arguments はそのまま使う）`,
+          `3. 返った generationId を ${KLING_TOOLS.queryTasks} でポーリングする`,
+          '4. 完了したら works[].url を assets/motion/<shotId>.mp4 に即ダウンロードする',
+          '   （URL は 24 時間で失効する）',
+          '5. project.json の assets[] に kind=motion / source=kling:<model> で登録し、',
+          '   対応ショットの assetIds に追加、agentTask を null に戻して run を再開する',
         ].join('\n'),
         requests: klingRequests,
       })

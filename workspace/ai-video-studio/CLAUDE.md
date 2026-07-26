@@ -24,10 +24,10 @@ npm run studio -- status <projectId>
 ## agent 層の作業手順
 
 1. `project.json` の `agentTask.instruction` を読む
-2. `agentTask.tool` のツールを呼ぶ。Kling は接続経路が 2 つある:
-   - MCP コネクタ接続済み → `mcp__kling__*` 系ツール（image_to_video / text_to_video / query_tasks）
-   - ローカルで `kling login` 済み → kling-cli スキル（`.agents/skills/kling-cli/SKILL.md`）に従い
-     Bash から `kling` コマンドを使う。generationId を query_tasks でポーリングし works[].url を取得
+2. `agentTask.tool` のツールを呼ぶ。requests[].params は実スキーマどおりの形で
+   組み立て済みなので、原則そのまま渡す（構築ロジックは `src/adapters/kling.ts`）。
+   Kling の手順詳細は `00_設計/Kling実装ノート.md` を参照。
+   MCP コネクタが無いローカル環境では kling-cli スキル（`.agents/skills/kling-cli/`）で代替できる
 3. 成果物を `projects/<id>/assets/<種別>/` に保存する
 4. `project.json` の `assets[]` に登録し、対応ショットの `assetIds` に追加する
 5. `agentTask` を `null` に戻す
