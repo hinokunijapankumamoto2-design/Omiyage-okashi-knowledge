@@ -1,6 +1,6 @@
 import { Composition } from 'remotion'
 import { MainVideo, mainVideoSchema, defaultProject } from './MainVideo.js'
-import { buildTimeline } from '../../src/steps/07-compose.js'
+import { buildTimeline } from '../../src/timeline.js'
 
 export const RemotionRoot: React.FC = () => {
   return (

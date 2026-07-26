@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+import { createRequire } from 'node:module'
 import { commandExists, execCommand } from './adapters/exec.js'
-import { resolveFfmpeg } from './adapters/ffmpeg.js'
+import { resolveFfmpeg, resolveFfprobe } from './adapters/ffmpeg.js'
+import { resolveBrowserExecutable } from './adapters/remotion.js'
 import { run, STEPS } from './orchestrator.js'
 import { createProject, loadProject } from './project.js'
 import { STEP_NAMES, type StepName } from './types.js'
@@ -109,12 +111,29 @@ async function main(): Promise<void> {
 
       const ffmpegPath = resolveFfmpeg()
       const ffmpegOk = (await execCommand(ffmpegPath, ['-version'])).code === 0
-      out(`${ffmpegOk ? '✅' : '❌'} ffmpeg               工程5（video-use の実写編集）`)
+      out(`${ffmpegOk ? '✅' : '❌'} ffmpeg               工程4・5（HyperFrames / video-use）`)
       out(`     → ${ffmpegPath}`)
+
+      const ffprobePath = resolveFfprobe()
+      const ffprobeOk = (await execCommand(ffprobePath, ['-version'])).code === 0
+      out(`${ffprobeOk ? '✅' : '❌'} ffprobe              工程4（HyperFrames の素材解析に必須）`)
+      out(`     → ${ffprobePath}`)
 
       const hf = await execCommand('npx', ['--no-install', 'hyperframes', '--version'])
       out(`${hf.code === 0 ? '✅' : '⚠️ '} hyperframes          工程4（HTML→動画のオーバーレイ）`)
       if (hf.code !== 0) out('     → npm install（package.json に含まれています）')
+
+      let gsapOk = true
+      try {
+        createRequire(import.meta.url).resolve('gsap/dist/gsap.min.js')
+      } catch {
+        gsapOk = false
+      }
+      out(`${gsapOk ? '✅' : '❌'} gsap                 工程4（CDN が使えないため同梱が必須）`)
+
+      const hfChrome = resolveBrowserExecutable()
+      out(`${hfChrome ? '✅' : '❌'} Chromium             工程4・8（HyperFrames / Remotion）`)
+      out(hfChrome ? `     → ${hfChrome}` : '     → npx hyperframes browser ensure')
 
       out(`${process.env.OPENAI_API_KEY ? '✅' : '⚠️ '} OPENAI_API_KEY       codex の画像生成に必要`)
       if (!process.env.OPENAI_API_KEY) out('     → 未設定の場合は codex login で認証してください')

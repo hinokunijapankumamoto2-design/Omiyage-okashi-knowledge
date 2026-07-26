@@ -1,7 +1,7 @@
 import { z } from 'zod'
 import { AbsoluteFill, Img, OffthreadVideo, Sequence, staticFile } from 'remotion'
 import { ProjectSchema, type Project } from '../../src/types.js'
-import { buildTimeline, type TimelineEntry } from '../../src/steps/07-compose.js'
+import { buildTimeline, type TimelineEntry } from '../../src/timeline.js'
 
 export const mainVideoSchema = z.object({
   project: ProjectSchema,

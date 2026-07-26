@@ -46,13 +46,59 @@ export async function ffmpeg(args: string[], cwd?: string): Promise<void> {
   }
 }
 
+let cachedProbe: string | null = null
+
 /**
- * video-use の Python ヘルパーは PATH 上の `ffmpeg` を呼ぶ。
- * ffmpeg-static のディレクトリを PATH 前方に足した env を返す。
+ * ffprobe のパスを解決する。
+ *
+ * HyperFrames は素材の尺・解像度を調べるのに ffprobe を必須とする。
+ * ffmpeg-static には ffprobe が含まれないため、ffprobe-static を別途使う。
+ */
+export function resolveFfprobe(): string {
+  if (cachedProbe) return cachedProbe
+
+  if (process.env.FFPROBE_PATH && existsSync(process.env.FFPROBE_PATH)) {
+    cachedProbe = process.env.FFPROBE_PATH
+    return cachedProbe
+  }
+
+  try {
+    const mod = require('ffprobe-static') as { path?: string } | string
+    const p = typeof mod === 'string' ? mod : mod.path
+    if (p && existsSync(p)) {
+      cachedProbe = p
+      return cachedProbe
+    }
+  } catch {
+    // ffprobe-static 未導入。システム ffprobe にフォールバックする
+  }
+
+  cachedProbe = 'ffprobe'
+  return cachedProbe
+}
+
+/**
+ * PATH 上の `ffmpeg` / `ffprobe` を呼ぶ外部ツール向けの env を返す。
+ *
+ * HyperFrames（レンダリング）と video-use の Python ヘルパー（実写編集）は
+ * どちらも PATH 経由でバイナリを探すため、静的バイナリのディレクトリを前方に足す。
+ * ffmpeg と ffprobe は別パッケージなので、2 つのディレクトリを追加する。
  */
 export function envWithFfmpeg(): NodeJS.ProcessEnv {
-  const bin = resolveFfmpeg()
-  if (bin === 'ffmpeg') return { ...process.env }
-  const dir = bin.slice(0, bin.lastIndexOf('/'))
-  return { ...process.env, PATH: `${dir}:${process.env.PATH ?? ''}`, FFMPEG_PATH: bin }
+  const ffmpegBin = resolveFfmpeg()
+  const ffprobeBin = resolveFfprobe()
+
+  const dirs = [ffmpegBin, ffprobeBin]
+    .filter((b) => b.includes('/'))
+    .map((b) => b.slice(0, b.lastIndexOf('/')))
+
+  const uniqueDirs = [...new Set(dirs)]
+  const prefix = uniqueDirs.length > 0 ? `${uniqueDirs.join(':')}:` : ''
+
+  return {
+    ...process.env,
+    PATH: `${prefix}${process.env.PATH ?? ''}`,
+    FFMPEG_PATH: ffmpegBin,
+    FFPROBE_PATH: ffprobeBin,
+  }
 }

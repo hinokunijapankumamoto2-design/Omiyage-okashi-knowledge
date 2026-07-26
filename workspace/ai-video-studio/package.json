@@ -21,6 +21,8 @@
     "@remotion/cli": "4.0.499",
     "@remotion/renderer": "4.0.499",
     "ffmpeg-static": "5.2.0",
+    "ffprobe-static": "^3.1.0",
+    "gsap": "^3.15.0",
     "hyperframes": "0.7.71",
     "react": "19.2.0",
     "react-dom": "19.2.0",

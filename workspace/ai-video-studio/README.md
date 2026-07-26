@@ -46,6 +46,7 @@ Node の子プロセスからは呼べない。呼べるのは Claude 本体だ�
 01_AIスタッフ/     各工程の担当者定義
 src/
   types.ts        project.json のスキーマ（全工程の契約）
+  timeline.ts     合成の組み立てロジック（Node 非依存。工程7 と Remotion が共有）
   orchestrator.ts 工程の実行制御と agent 層での停止
   steps/          8 工程の実装
   adapters/       各ツールへの接続

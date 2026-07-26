@@ -62,21 +62,24 @@ export const motionStep: Step = {
       await scaffoldScene(sceneDir, {
         name: shot.id,
         html: overlayTemplate({
+          compositionId: shot.id,
           headline: shot.caption || shot.description,
           sub: shot.narration ? undefined : project.plan?.keyMessage,
           width: project.spec.width,
           height: project.spec.height,
+          fps: project.spec.fps,
           durationSec,
         }),
         durationSec,
         width: project.spec.width,
         height: project.spec.height,
+        fps: project.spec.fps,
         // 実写・画像の上に重ねるので透過 WebM で出す
         format: 'webm',
       })
 
       log(`${shot.id}: HyperFrames でオーバーレイをレンダリング中…`)
-      await renderScene(sceneDir, outPath, { format: 'webm' })
+      await renderScene(sceneDir, outPath, { format: 'webm', fps: project.spec.fps })
 
       if (!existsSync(outPath)) {
         throw new Error(`HyperFrames の出力が見つかりません: ${outPath}`)

@@ -136,13 +136,9 @@ export function addAsset(
   return full
 }
 
-export function assetsOfShot(project: Project, shotId: string, kind?: Asset['kind']): Asset[] {
-  const shot = project.shots.find((s) => s.id === shotId)
-  if (!shot) return []
-  return project.assets.filter(
-    (a) => shot.assetIds.includes(a.id) && (kind === undefined || a.kind === kind),
-  )
-}
+// 素材の絞り込みは Node に依存しない純粋ロジックなので timeline.ts が持つ。
+// 既存の呼び出し側がここから import しているため再エクスポートする。
+export { assetsOfShot } from './timeline.js'
 
 /** 動画全体の総フレーム数 */
 export function totalFrames(project: Project): number {
