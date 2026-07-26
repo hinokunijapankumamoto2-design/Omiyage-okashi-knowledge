@@ -45,11 +45,11 @@ W, H, FPS = 1080, 1920, 30
 # ビート定義。crop は元画像に対する比率 (x, y, w, h)
 # poster 構図: 暖簾=上部左〜中央 / 久保さん=右側 / シェイク2種=左下 / タグライン=下段
 BEATS = {
-    "b1": dict(src="poster", crop=(0.55, 0.00, 0.45, 1.00), frames=45, z0=1.00, z1=1.07),  # 久保さん（シェイク持ち）
-    "b2": dict(src="poster", crop=(0.00, 0.58, 0.30, 0.42), frames=75, z0=1.04, z1=1.16),  # シェイク2種に寄る
+    "b1": dict(src="poster", crop=(0.55, 0.00, 0.45, 1.00), frames=45, z0=1.02, z1=1.16, pan=("right", 0.35)),  # 久保さん（シェイク持ち）
+    "b2": dict(src="poster", crop=(0.00, 0.58, 0.30, 0.42), frames=75, z0=1.06, z1=1.24, pan=("up", 0.3)),  # シェイク2種に寄る
     "b3": dict(src="poster", crop=(0.30, 0.02, 0.44, 0.64), frames=90, z0=1.00, z1=1.05),  # 暖簾
-    "b4": dict(src="sheet",  crop=(0.015, 0.068, 0.27, 0.36), frames=75, z0=1.08, z1=1.00),  # 優しい微笑みの肖像（引き）
-    "b5": dict(src="poster", crop=(0.50, 0.00, 0.50, 1.00), frames=75, z0=1.02, z1=1.09),  # 久保さん+シェイク（締め）
+    "b4": dict(src="sheet",  crop=(0.015, 0.068, 0.27, 0.36), frames=75, z0=1.16, z1=1.02, pan=("down", 0.25)),  # 優しい微笑みの肖像（引き）
+    "b5": dict(src="poster", crop=(0.50, 0.00, 0.50, 1.00), frames=75, z0=1.04, z1=1.15, pan=("left", 0.3)),  # 久保さん+シェイク（締め）
 }
 
 out_dir = ROOT / "assets" / "photo"
@@ -76,13 +76,25 @@ for beat, cfg in BEATS.items():
 
     frames, z0, z1 = cfg["frames"], cfg["z0"], cfg["z1"]
     zexpr = f"{z0}+({z1}-{z0})*on/{frames}"
+    # パン: 進行度に応じて注視点をずらす（幅は余剰領域に対する比率）
+    pan_dir, pan_amt = cfg.get("pan", (None, 0))
+    xexpr, yexpr = "iw/2-(iw/zoom/2)", "ih/2-(ih/zoom/2)"
+    prog = f"(on/{frames})"
+    if pan_dir == "right":
+        xexpr = f"iw/2-(iw/zoom/2)+(iw-iw/zoom)*{pan_amt}*{prog}/2"
+    elif pan_dir == "left":
+        xexpr = f"iw/2-(iw/zoom/2)-(iw-iw/zoom)*{pan_amt}*{prog}/2"
+    elif pan_dir == "down":
+        yexpr = f"ih/2-(ih/zoom/2)+(ih-ih/zoom)*{pan_amt}*{prog}/2"
+    elif pan_dir == "up":
+        yexpr = f"ih/2-(ih/zoom/2)-(ih-ih/zoom)*{pan_amt}*{prog}/2"
     out = out_dir / f"{beat}_base.mp4"
     subprocess.run([
         FFMPEG, "-hide_banner", "-loglevel", "error", "-y",
         "-loop", "1", "-i", str(src),
         "-vf",
         f"crop={cw}:{ch}:{cx}:{cy},scale=2160:3840:flags=lanczos,"
-        f"zoompan=z='{zexpr}':x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)'"
+        f"zoompan=z='{zexpr}':x='{xexpr}':y='{yexpr}'"
         f":d={frames}:s={W}x{H}:fps={FPS},format=yuv420p",
         "-frames:v", str(frames), "-c:v", "libx264", "-preset", "medium", "-crf", "18",
         str(out),
