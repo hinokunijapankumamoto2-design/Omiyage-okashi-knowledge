@@ -59,7 +59,8 @@ const ShotLayer: React.FC<{ entry: TimelineEntry }> = ({ entry }) => {
       ) : null}
 
       {entry.overlay ? (
-        <OffthreadVideo src={staticFile(entry.overlay.path)} style={fill} muted />
+        // HyperFrames の透過 WebM。transparent 指定が無いとアルファが黒く潰れる
+        <OffthreadVideo src={staticFile(entry.overlay.path)} style={fill} muted transparent />
       ) : null}
 
       {entry.caption ? <Caption text={entry.caption} /> : null}

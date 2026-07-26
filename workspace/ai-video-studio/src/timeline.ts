@@ -51,14 +51,20 @@ export function buildTimeline(project: Project): Timeline {
 
   for (const shot of [...project.shots].sort((a, b) => a.index - b.index)) {
     const footage = assetsOfShot(project, shot.id, 'footage')[0]
-    const motion = assetsOfShot(project, shot.id, 'motion')[0]
+    const motions = assetsOfShot(project, shot.id, 'motion')
     const image = assetsOfShot(project, shot.id, 'image')[0]
+
+    // base に使うモーションは生成系（Kling 等）を優先する。
+    // HyperFrames 由来は透過オーバーレイとして上に重ねる前提のため、
+    // 生成クリップが同じショットにあるときは base を譲る。
+    const generated = motions.find((m) => m.source !== 'hyperframes')
+    const motion = generated ?? motions[0]
 
     const baseAsset = footage ?? motion ?? image
     const baseKind = footage ? 'footage' : motion ? 'motion' : image ? 'image' : null
 
     const overlayAsset =
-      motion && motion.source === 'hyperframes' && baseAsset !== motion ? motion : null
+      motions.find((m) => m.source === 'hyperframes' && m !== baseAsset) ?? null
 
     // HyperFrames のシーンは見出しを HTML 側で焼き込んでいる。
     // ここで caption を渡すと Remotion が同じ文字をもう一度描いて二重になるため、

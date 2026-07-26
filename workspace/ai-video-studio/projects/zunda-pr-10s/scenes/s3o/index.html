@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="./gsap.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:1080px; height:1920px; overflow:hidden; background:transparent;
+    font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif; }
+  .bubble { position:absolute; padding:26px 44px; background:#fff; border:7px solid #3d6b1e;
+    border-radius:60px; font-size:64px; font-weight:900; color:#3d6b1e; white-space:nowrap; bottom:1310px; right:90px; transform:scale(0); transform-origin:bottom right; font-size:58px; }
+</style>
+</head>
+<body>
+  <div id="root" data-composition-id="s3o" data-start="0" data-duration="2.5" data-fps="30" data-width="1080" data-height="1920">
+    <div class="bubble clip" id="b" data-start="0" data-duration="2.5" data-track-index="0">つい、ひとくち……</div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.to("#b", { scale: 1, duration: 0.45, ease: "back.out(2.2)" }, 1.05);
+    window.__timelines["s3o"] = tl;
+  </script>
+</body>
+</html>
