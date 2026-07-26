@@ -1,0 +1,205 @@
+{
+  "id": "zunda-shake-15s",
+  "title": "ずんだシェイク 15秒PR",
+  "brief": "ずんだ茶寮のずんだシェイクを15秒の縦動画でPRする。暖簾の世界観・久保史緒里さんの実写・イラストのずんちゃ丸を組み合わせる",
+  "spec": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "targetDurationSec": 15
+  },
+  "plan": {
+    "concept": "ずんちゃ丸のいたずら・承認型コメディを15秒に圧縮し、ずんだシェイクの「つい飲みたくなる」魅力を伝える。暖簾の世界観で開き、久保さんの実写で信頼を作り、ずんちゃ丸の味見いたずらで笑いを挟み、タグラインで締める",
+    "targetAudience": "仙台観光を予定する20〜40代・SNSでスイーツ情報を追う層・訪日観光客",
+    "keyMessage": "元祖の美味しさ、そのままに。",
+    "tone": "ずんだグリーン（#8BCB59系）基調。やわらかい水彩調のずんちゃ丸と、清楚で上品な実写を暖簾の世界観でつなぐ（ポスター準拠）",
+    "figmaFileKey": null
+  },
+  "shots": [
+    {
+      "id": "s1",
+      "index": 0,
+      "description": "暖簾からずんちゃ丸が登場して挨拶",
+      "narration": "こんにちは〜！",
+      "caption": "こんにちは〜！",
+      "durationInFrames": 90,
+      "imagePrompt": "ずんだグリーンの暖簾（白抜きで枝豆マークと「ずんだ茶寮」の文字）が画面いっぱいに掛かる店先。暖簾の合わせ目の隙間から、ずんちゃ丸が顔だけをのぞかせている。うれしそうな通常の微笑み、頭の葉は上向きに開く",
+      "motionPrompt": "2頭身のマスコットが暖簾の隙間からころんと転がるように顔を出し、頭の二枚の葉がうれしそうに上向きに開く。カメラは固定",
+      "captureSpec": null,
+      "assetIds": []
+    },
+    {
+      "id": "s2",
+      "index": 1,
+      "description": "久保さん実写: シェイクを手に商品を指差して紹介（ポスター構図）",
+      "narration": "私はいつも、ずんだシェイク！",
+      "caption": "私はいつも、ずんだシェイク！",
+      "durationInFrames": 90,
+      "imagePrompt": "",
+      "motionPrompt": "",
+      "captureSpec": {
+        "task": "ポスターと同構図の実写: 白シャツの久保さんがずんだシェイクを左手に持ち、右手でシェイクを指差して優しく微笑む（表情01）。背景は店舗の陳列棚が浅くぼける。使用許諾のあるフッテージから3秒切り出し、ずんだグリーン基調にグレーディング",
+        "url": null
+      },
+      "assetIds": []
+    },
+    {
+      "id": "s3",
+      "index": 2,
+      "description": "いたずら: ずんちゃ丸がシェイクをこっそり味見",
+      "narration": "つい、ひとくち……",
+      "caption": "つい、ひとくち……",
+      "durationInFrames": 90,
+      "imagePrompt": "ずんちゃ丸が自分の体より大きいずんだシェイクのカップを両手で抱え、緑のストローでこっそりひと口飲んでいる。いたずら顔で目をそらし、頬は少しふくらむ。背景はずんだグリーンの暖簾がぼける",
+      "motionPrompt": "2頭身のマスコットが大きなシェイクカップを抱え、ストローでこっそりひと口飲み、頬をふくらませて目をそらす。頭の葉が小刻みに揺れる。カメラは固定",
+      "captureSpec": null,
+      "assetIds": []
+    },
+    {
+      "id": "s4",
+      "index": 3,
+      "description": "発覚→受容: 久保さんが気づき、優しく微笑んで受け止める",
+      "narration": "ばれちゃった？",
+      "caption": "ばれちゃった？",
+      "durationInFrames": 90,
+      "imagePrompt": "",
+      "motionPrompt": "",
+      "captureSpec": {
+        "task": "実写: 久保さんが画面下（ずんちゃ丸の位置）に気づいて驚き（表情06）、すぐに優しく見つめて微笑む（表情07）流れの3秒。ずんちゃ丸のしょんぼり→照れのオーバーレイを後段の合成で重ねる前提で、画面下側に余白を残す構図",
+        "url": null
+      },
+      "assetIds": []
+    },
+    {
+      "id": "s5",
+      "index": 4,
+      "description": "締め: タグラインのタイトルカード",
+      "narration": "",
+      "caption": "ずんだで、むすぶよ！",
+      "durationInFrames": 90,
+      "imagePrompt": "",
+      "motionPrompt": "タイトル文字が下から立ち上がり、枝豆マークがふわっと現れる",
+      "captureSpec": null,
+      "assetIds": []
+    }
+  ],
+  "assets": [],
+  "steps": {
+    "plan": {
+      "status": "done",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": "企画確定（ポスター準拠）"
+    },
+    "script": {
+      "status": "done",
+      "startedAt": "2026-07-26T05:48:36.453Z",
+      "finishedAt": "2026-07-26T05:48:36.453Z",
+      "note": "5 ショット"
+    },
+    "image": {
+      "status": "awaiting-agent",
+      "startedAt": "2026-07-26T05:48:48.842Z",
+      "finishedAt": null,
+      "note": "Kling MCP（gpt-image-2）による静止画生成待ち 2 件"
+    },
+    "motion": {
+      "status": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": null
+    },
+    "capture": {
+      "status": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": null
+    },
+    "subtitle": {
+      "status": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": null
+    },
+    "compose": {
+      "status": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": null
+    },
+    "render": {
+      "status": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": null
+    }
+  },
+  "agentTask": {
+    "step": "image",
+    "tool": "mcp__kling__text_to_image",
+    "instruction": "2 件のショットの静止画を Kling MCP の gpt-image-2 で生成してください。\n生成は課金されます。実行前にユーザーの承認と\nmcp__kling__query_membership_and_credits でのクレジット残高確認を必ず行うこと。\n\n各リクエストの params は text_to_image にそのまま渡せる形になっています。手順:\n1. mcp__kling__text_to_image を params の model / arguments で呼ぶ\n2. 返った generationId を mcp__kling__query_tasks でポーリングする\n3. 完了したら works[].url を assets/images/<shotId>.png に即ダウンロードする\n   （URL は 24 時間で失効する）\n4. project.json の assets[] に kind=image / source=kling:gpt-image-2 で登録し、\n   対応ショットの assetIds に追加、agentTask を null に戻して run を再開する",
+    "requests": [
+      {
+        "shotId": "s1",
+        "params": {
+          "tool": "mcp__kling__text_to_image",
+          "model": "gpt-image-2",
+          "arguments": [
+            {
+              "name": "prompt",
+              "value": "ずんだグリーンの暖簾（白抜きで枝豆マークと「ずんだ茶寮」の文字）が画面いっぱいに掛かる店先。暖簾の合わせ目の隙間から、ずんちゃ丸が顔だけをのぞかせている。うれしそうな通常の微笑み、頭の葉は上向きに開く\n\n全体の画風: ずんだグリーン（#8BCB59系）基調。やわらかい水彩調のずんちゃ丸と、清楚で上品な実写を暖簾の世界観でつなぐ（ポスター準拠）"
+            },
+            {
+              "name": "aspect_ratio",
+              "value": "9:16"
+            },
+            {
+              "name": "img_resolution",
+              "value": "2k"
+            },
+            {
+              "name": "quality",
+              "value": "medium"
+            },
+            {
+              "name": "imageCount",
+              "value": "1"
+            }
+          ]
+        }
+      },
+      {
+        "shotId": "s3",
+        "params": {
+          "tool": "mcp__kling__text_to_image",
+          "model": "gpt-image-2",
+          "arguments": [
+            {
+              "name": "prompt",
+              "value": "ずんちゃ丸が自分の体より大きいずんだシェイクのカップを両手で抱え、緑のストローでこっそりひと口飲んでいる。いたずら顔で目をそらし、頬は少しふくらむ。背景はずんだグリーンの暖簾がぼける\n\n全体の画風: ずんだグリーン（#8BCB59系）基調。やわらかい水彩調のずんちゃ丸と、清楚で上品な実写を暖簾の世界観でつなぐ（ポスター準拠）"
+            },
+            {
+              "name": "aspect_ratio",
+              "value": "9:16"
+            },
+            {
+              "name": "img_resolution",
+              "value": "2k"
+            },
+            {
+              "name": "quality",
+              "value": "medium"
+            },
+            {
+              "name": "imageCount",
+              "value": "1"
+            }
+          ]
+        }
+      }
+    ],
+    "createdAt": "2026-07-26T05:48:48.850Z"
+  },
+  "createdAt": "2026-07-26T05:47:21.990Z",
+  "updatedAt": "2026-07-26T05:48:48.850Z"
+}

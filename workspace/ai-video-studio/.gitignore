@@ -1,0 +1,4 @@
+node_modules/
+# プロジェクトはマニフェスト・メモのみ管理し、生成バイナリは除外
+projects/*/assets/
+projects/*/out/

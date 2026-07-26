@@ -1,0 +1,188 @@
+// 本番用: 実写フッテージに重ねる透過オーバーレイ5本を生成
+// 実行: node scenes/build-overlays.mjs → scenes/b*o/ を hyperframes render --format webm で出力
+// アニマティックとの違い: 背景・シルエット・「実写」ラベルを除去し、2Dレイヤーのみ透過で残す
+import { copyFileSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { createRequire } from 'node:module'
+
+const here = path.dirname(fileURLToPath(import.meta.url))
+const studioRoot = path.resolve(here, '..', '..', '..')
+const require = createRequire(import.meta.url)
+const W = 1080, H = 1920, FPS = 30
+
+const svgFile = readFileSync(path.join(studioRoot, '02_キャラクター', 'ずんちゃ丸', 'ずんちゃ丸.svg'), 'utf8')
+const inner = svgFile.slice(svgFile.indexOf('>') + 1, svgFile.lastIndexOf('</svg>'))
+const zuncha = (cls) => `<svg class="zuncha ${cls}" viewBox="0 0 400 540" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`
+
+const head = (extra) => `<!doctype html>
+<html lang="ja"><head><meta charset="UTF-8" />
+<meta name="viewport" content="width=${W}, height=${H}" />
+<script src="./gsap.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:${W}px; height:${H}px; overflow:hidden; background:transparent;
+    font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif; }
+  .sub { position:absolute; bottom:170px; width:100%; text-align:center;
+    font-size:58px; font-weight:900; color:#fff; -webkit-text-stroke:10px rgba(40,60,20,.85);
+    paint-order:stroke; letter-spacing:.02em; }
+  .bubble { position:absolute; padding:22px 40px; background:#fff; border:7px solid #3d6b1e;
+    border-radius:56px; font-size:56px; font-weight:900; color:#3d6b1e; white-space:nowrap; }
+  .hook { position:absolute; top:180px; width:100%; text-align:center; font-size:76px;
+    font-weight:900; color:#fff; -webkit-text-stroke:12px rgba(40,60,20,.9); paint-order:stroke; }
+  .straw { position:absolute; height:30px; background:#7ec14f; border:7px solid #3d6b1e;
+    border-radius:18px; transform-origin:left center; }
+  ${extra}
+</style></head>`
+
+const overlays = {
+  // b1o 1.5s: フック字幕＋伸びるストロー（実写: 久保さんが飲もうとする）
+  b1o: { dur: 1.5, html: (D) => `${head(`
+  #straw1 { top:1300px; left:300px; width:520px; transform:rotate(20deg) scaleX(0); }
+`)}
+<body>
+  <div id="root" data-composition-id="b1o" data-start="0" data-duration="${D}" data-fps="${FPS}" data-width="${W}" data-height="${H}">
+    <div id="stage" class="clip" data-start="0" data-duration="${D}" data-track-index="0">
+      <div class="straw" id="straw1"></div>
+      <div class="hook" id="hook">まだ飲んでないのに、<br/>減ってる。</div>
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.from("#hook", { opacity: 0, y: -30, duration: 0.35, ease: "power2.out" }, 0.05)
+      .to("#straw1", { scaleX: 1, duration: 0.65, ease: "power3.out" }, 0.45)
+      .to("#straw1", { rotation: 21.5, duration: 0.12, yoyo: true, repeat: 3, ease: "sine.inOut" }, 1.1);
+    window.__timelines["b1o"] = tl;
+  </script>
+</body></html>` },
+
+  // b2o 2.5s: ストロー＋「……ん？」（実写: カップ→暖簾へ視線。液面はカップの実物で表現）
+  b2o: { dur: 2.5, html: (D) => `${head(`
+  #straw2 { top:1010px; left:120px; width:460px; transform:rotate(16deg); }
+`)}
+<body>
+  <div id="root" data-composition-id="b2o" data-start="0" data-duration="${D}" data-fps="${FPS}" data-width="${W}" data-height="${H}">
+    <div id="stage" class="clip" data-start="0" data-duration="${D}" data-track-index="0">
+      <div class="straw" id="straw2"></div>
+      <div class="sub" id="q" style="opacity:0">……ん？</div>
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.to("#straw2", { rotation: 17.5, duration: 0.1, yoyo: true, repeat: 5, ease: "sine.inOut" }, 0.2)
+      .to("#straw2", { rotation: 17.5, duration: 0.1, yoyo: true, repeat: 5, ease: "sine.inOut" }, 1.0)
+      .to("#q", { opacity: 1, duration: 0.3 }, 1.8);
+    window.__timelines["b2o"] = tl;
+  </script>
+</body></html>` },
+
+  // b3o 3s: ずんちゃ丸発覚＋セリフ（実写: 暖簾。久保さんは画面外声 or 右半身）
+  b3o: { dur: 3, html: (D) => `${head(`
+  .zuncha { position:absolute; bottom:430px; left:50%; width:600px; margin-left:-300px; }
+  #straw3 { top:1000px; left:-40px; width:560px; transform:rotate(12deg); }
+  #line-z { bottom:1460px; left:50%; transform:translateX(-50%) scale(0); }
+`)}
+<body>
+  <div id="root" data-composition-id="b3o" data-start="0" data-duration="${D}" data-fps="${FPS}" data-width="${W}" data-height="${H}">
+    <div id="stage" class="clip" data-start="0" data-duration="${D}" data-track-index="0">
+      ${zuncha('')}
+      <div class="straw" id="straw3"></div>
+      <div class="bubble" id="line-z">飲んでないよ〜</div>
+      <div class="sub" id="line-k" style="opacity:0">「ずんちゃ丸、飲んだでしょ？」</div>
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#expr-normal", { display: "none" }, 0)
+      .set("#expr-puffed", { display: "block" }, 0)
+      .set(".zuncha", { x: -80, rotation: -4 }, 0)
+      .to(".zuncha", { x: 0, duration: 0.55, ease: "back.out(1.5)" }, 0.15)
+      .to("#line-k", { opacity: 1, duration: 0.3 }, 0.5)
+      .to(".zuncha", { rotation: 4, duration: 0.5, yoyo: true, repeat: 2, ease: "sine.inOut" }, 0.8)
+      .to("#line-z", { scale: 1, duration: 0.4, ease: "back.out(2)" }, 1.7);
+    window.__timelines["b3o"] = tl;
+  </script>
+</body></html>` },
+
+  // b4o 2.5s: 転倒→固まる（実写: 優しく見つめる久保さん）
+  b4o: { dur: 2.5, html: (D) => `${head(`
+  .zuncha { position:absolute; bottom:280px; left:50%; width:560px; margin-left:-280px; }
+  #straw4a { top:1260px; left:150px; width:330px; transform:rotate(38deg); }
+  #straw4b { top:1420px; left:330px; width:300px; transform:rotate(-24deg); }
+  #bang { position:absolute; top:1080px; left:720px; font-size:130px; font-weight:900; color:#e0524a;
+    -webkit-text-stroke:10px #fff; paint-order:stroke; transform:scale(0); }
+`)}
+<body>
+  <div id="root" data-composition-id="b4o" data-start="0" data-duration="${D}" data-fps="${FPS}" data-width="${W}" data-height="${H}">
+    <div id="stage" class="clip" data-start="0" data-duration="${D}" data-track-index="0">
+      <div class="straw" id="straw4a"></div><div class="straw" id="straw4b"></div>
+      ${zuncha('')}
+      <div id="bang">！</div>
+      <div class="sub" id="line-k4" style="opacity:0">「全部つながってるよ」</div>
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#expr-normal", { display: "none" }, 0)
+      .set("#expr-puffed", { display: "block" }, 0)
+      .set(".zuncha", { transformOrigin: "50% 88%" }, 0)
+      .to(".zuncha", { x: -60, duration: 0.4, ease: "power1.in" }, 0.1)
+      .to(".zuncha", { rotation: -74, y: 120, duration: 0.45, ease: "bounce.out" }, 0.5)
+      .to("#bang", { scale: 1, duration: 0.25, ease: "back.out(2.5)" }, 0.55)
+      .set("#expr-puffed", { display: "none" }, 1.05)
+      .set("#expr-x", { display: "block" }, 1.05)
+      .to("#line-k4", { opacity: 1, duration: 0.3 }, 1.15)
+      .to("#bang", { opacity: 0, duration: 0.3 }, 1.6);
+    window.__timelines["b4o"] = tl;
+  </script>
+</body></html>` },
+
+  // b5o 2.5s: わーい＋最終コピー（実写: ミニシェイクを置く久保さん）
+  b5o: { dur: 2.5, html: (D) => `${head(`
+  .zuncha { position:absolute; bottom:330px; left:170px; width:460px; }
+  #wai { bottom:1260px; left:150px; transform:scale(0); transform-origin:bottom center; }
+  .copycard { position:absolute; top:0; left:0; width:100%; height:100%;
+    background:rgba(94,156,48,.96); opacity:0;
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:36px; }
+  .copy-main { font-size:96px; font-weight:900; color:#fff; letter-spacing:.04em; }
+  .copy-sub { font-size:54px; font-weight:700; color:#eaf5da; }
+`)}
+<body>
+  <div id="root" data-composition-id="b5o" data-start="0" data-duration="${D}" data-fps="${FPS}" data-width="${W}" data-height="${H}">
+    <div id="stage" class="clip" data-start="0" data-duration="${D}" data-track-index="0">
+      ${zuncha('')}
+      <div class="bubble" id="wai">わーい！</div>
+      <div class="sub" id="line-k5" style="opacity:0">「次は一緒に飲もうね」</div>
+      <div class="copycard" id="card">
+        <div class="copy-main">隠せない、おいしさ。</div>
+        <div class="copy-sub">ずんだ茶寮　ずんだシェイク</div>
+      </div>
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#expr-normal", { display: "none" }, 0)
+      .set("#expr-happy", { display: "block" }, 0)
+      .to("#line-k5", { opacity: 1, duration: 0.25 }, 0.1)
+      .to("#wai", { scale: 1, duration: 0.35, ease: "back.out(2.2)" }, 0.6)
+      .to(".zuncha", { y: -30, duration: 0.25, yoyo: true, repeat: 3, ease: "sine.inOut" }, 0.6)
+      .to("#card", { opacity: 1, duration: 0.45 }, 1.6);
+    window.__timelines["b5o"] = tl;
+  </script>
+</body></html>` },
+}
+
+const gsapSrc = require.resolve('gsap/dist/gsap.min.js')
+for (const [id, s] of Object.entries(overlays)) {
+  const dir = path.join(here, id)
+  mkdirSync(dir, { recursive: true })
+  writeFileSync(path.join(dir, 'index.html'), s.html(s.dur))
+  copyFileSync(gsapSrc, path.join(dir, 'gsap.min.js'))
+  writeFileSync(path.join(dir, 'meta.json'), JSON.stringify({ id, name: `overlay ${id}`, createdAt: '2026-07-26T00:00:00Z' }, null, 2))
+  console.log('overlay:', id, s.dur + 's')
+}

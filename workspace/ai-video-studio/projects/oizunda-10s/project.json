@@ -1,0 +1,134 @@
+{
+  "id": "oizunda-10s",
+  "title": "追いずんだ 10秒（バズ超え設計）",
+  "brief": "実写×2Dステッカーコメディ。カピバラルル型の4ショット構造に、物語ループ・擬音ステッカー・二段反転・イースターエッグの4改良を加えた拡散用フォーマット",
+  "spec": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "targetDurationSec": 10
+  },
+  "plan": {
+    "concept": "73万インプ原型の構造踏襲＋4改良（物語ループ/擬音ステッカー/二段反転/イースターエッグ）。詳細は 03_テンプレート/シナリオ_追いずんだ10秒.md が正本",
+    "targetAudience": "SNSショート動画のミュート視聴層・ずんだミーム圏・仙台観光関心層",
+    "keyMessage": "追いずんだは、正義。（非言語で伝える）",
+    "tone": "超リアル実写POV×紙切り2Dステッカーのコントラスト。ずんだグリーン基調・セリフゼロ",
+    "figmaFileKey": null
+  },
+  "shots": [
+    {
+      "id": "b1",
+      "index": 0,
+      "description": "①追いずんだ: 開幕からずんだ滝が進行中（in medias res）",
+      "narration": "",
+      "caption": "",
+      "durationInFrames": 75,
+      "imagePrompt": "",
+      "motionPrompt": "ずんちゃ丸ステッカーが頭より大きい器を掲げ、とろとろのずんだを注ぐ。葉がわくわく揺れる。擬音ステッカー「とろ〜〜」",
+      "captureSpec": {
+        "task": "実写POV: 手がシェイク仕上げ中。カップ脇に追いずんだが落ちる余白を確保。10秒1テイクの0-2.5秒区間",
+        "url": null
+      },
+      "assetIds": []
+    },
+    {
+      "id": "b2",
+      "index": 1,
+      "description": "②発覚: そっと没収＋指で「めっ」",
+      "narration": "",
+      "caption": "",
+      "durationInFrames": 60,
+      "imagePrompt": "",
+      "motionPrompt": "ずんちゃ丸に赤い「！」が弾け、体がぷるんと揺れ、葉が直立、目が点になり口を隠して目をそらす",
+      "captureSpec": {
+        "task": "実写POV: 同テイク2.5-4.5秒。手が器をそっと取り上げ、人差し指で「めっ」",
+        "url": null
+      },
+      "assetIds": []
+    },
+    {
+      "id": "b3",
+      "index": 2,
+      "description": "③泣き→スプーンぽん: 制裁とケアは同じ手",
+      "narration": "",
+      "caption": "",
+      "durationInFrames": 90,
+      "imagePrompt": "",
+      "motionPrompt": "葉がしおれ渦巻き目、青い噴水涙「ふえ〜ん」→開いた口にスプーン「ぽん」→涙停止、頬ぱんぱん、目がとろんと半月",
+      "captureSpec": {
+        "task": "実写POV: 同テイク4.5-7.5秒。同じ手がスプーンでずんだをすくい、画面中央下（口の位置）へ運ぶ",
+        "url": null
+      },
+      "assetIds": []
+    },
+    {
+      "id": "b4",
+      "index": 3,
+      "description": "④幸せとろけ→こっそり承認→ループ点",
+      "narration": "",
+      "caption": "",
+      "durationInFrames": 75,
+      "imagePrompt": "",
+      "motionPrompt": "ふにゃ〜ところん、枝豆2粒がくるくる→葉がぴょこんと立ち起き上がり、再び器へ前足を伸ばす（冒頭姿勢＝ループ点）。8.0秒に湯気が6フレームだけ枝豆マーク型",
+      "captureSpec": {
+        "task": "実写POV: 同テイク7.5-10秒。手が周囲をうかがい、器からひとさじこっそりシェイクへ追加。終端フレームの手位置を冒頭と揃える",
+        "url": null
+      },
+      "assetIds": []
+    }
+  ],
+  "assets": [],
+  "steps": {
+    "plan": {
+      "status": "done",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": "シナリオ正本: 03_テンプレート/シナリオ_追いずんだ10秒.md"
+    },
+    "script": {
+      "status": "done",
+      "startedAt": "2026-07-26T06:02:24.275Z",
+      "finishedAt": "2026-07-26T06:02:24.275Z",
+      "note": "4 ショット"
+    },
+    "image": {
+      "status": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": null
+    },
+    "motion": {
+      "status": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": null
+    },
+    "capture": {
+      "status": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": null
+    },
+    "subtitle": {
+      "status": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": null
+    },
+    "compose": {
+      "status": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": null
+    },
+    "render": {
+      "status": "pending",
+      "startedAt": null,
+      "finishedAt": null,
+      "note": null
+    }
+  },
+  "agentTask": null,
+  "createdAt": "2026-07-26T06:02:23.701Z",
+  "updatedAt": "2026-07-26T06:02:24.275Z"
+}

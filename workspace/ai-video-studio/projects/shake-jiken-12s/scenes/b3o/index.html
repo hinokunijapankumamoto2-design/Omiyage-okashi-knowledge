@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="./gsap.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:1080px; height:1920px; overflow:hidden; background:transparent;
+    font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif; }
+  .sub { position:absolute; bottom:170px; width:100%; text-align:center;
+    font-size:58px; font-weight:900; color:#fff; -webkit-text-stroke:10px rgba(40,60,20,.85);
+    paint-order:stroke; letter-spacing:.02em; }
+  .bubble { position:absolute; padding:22px 40px; background:#fff; border:7px solid #3d6b1e;
+    border-radius:56px; font-size:56px; font-weight:900; color:#3d6b1e; white-space:nowrap; }
+  .hook { position:absolute; top:180px; width:100%; text-align:center; font-size:76px;
+    font-weight:900; color:#fff; -webkit-text-stroke:12px rgba(40,60,20,.9); paint-order:stroke; }
+  .straw { position:absolute; height:30px; background:#7ec14f; border:7px solid #3d6b1e;
+    border-radius:18px; transform-origin:left center; }
+  
+  .zuncha { position:absolute; bottom:430px; left:50%; width:600px; margin-left:-300px; }
+  #straw3 { top:1000px; left:-40px; width:560px; transform:rotate(12deg); }
+  #line-z { bottom:1460px; left:50%; transform:translateX(-50%) scale(0); }
+
+</style></head>
+<body>
+  <div id="root" data-composition-id="b3o" data-start="0" data-duration="3" data-fps="30" data-width="1080" data-height="1920">
+    <div id="stage" class="clip" data-start="0" data-duration="3" data-track-index="0">
+      <svg class="zuncha " viewBox="0 0 400 540" xmlns="http://www.w3.org/2000/svg">
+  <!--
+    ずんちゃ丸 ベクター正本（参照シート準拠のフラット2D・紙切り感）
+    パレット: #FFFFFF / #FFD9D9 / #8BCB59 / #6FB234 / #4EBC3A / 輪郭 #3d6b1e
+    頭身: 約2.2頭身（頭部が全高の6割）
+    表情グループ: #expr-normal / #expr-sneaky / #expr-happy を CSS で切り替える
+  -->
+  <defs>
+    <!-- 参照シートの柔らかい立体感（ぬいぐるみ/3Dフィギュア風）を淡い陰影で再現 -->
+    <radialGradient id="g-hood" cx="0.38" cy="0.28" r="0.85">
+      <stop offset="0%" stop-color="#a8d97c"/>
+      <stop offset="55%" stop-color="#8BCB59"/>
+      <stop offset="100%" stop-color="#74af41"/>
+    </radialGradient>
+    <radialGradient id="g-face" cx="0.42" cy="0.35" r="0.8">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="78%" stop-color="#fdfbf6"/>
+      <stop offset="100%" stop-color="#f1ead9"/>
+    </radialGradient>
+    <radialGradient id="g-leaf" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0%" stop-color="#6fd05a"/>
+      <stop offset="100%" stop-color="#3f9c2e"/>
+    </radialGradient>
+    <radialGradient id="g-bean" cx="0.35" cy="0.3" r="0.9">
+      <stop offset="0%" stop-color="#8cc75a"/>
+      <stop offset="100%" stop-color="#5d9a28"/>
+    </radialGradient>
+    <linearGradient id="g-body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#9bd469"/>
+      <stop offset="100%" stop-color="#7cb84a"/>
+    </linearGradient>
+    <linearGradient id="g-apron" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7dbc41"/>
+      <stop offset="100%" stop-color="#63a233"/>
+    </linearGradient>
+    <radialGradient id="g-cheek" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#FFC9C9"/>
+      <stop offset="70%" stop-color="#FFD9D9"/>
+      <stop offset="100%" stop-color="#FFD9D9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="g-white" cx="0.4" cy="0.3" r="0.9">
+      <stop offset="0%" stop-color="#FFFFFF"/>
+      <stop offset="100%" stop-color="#ece5d2"/>
+    </radialGradient>
+  </defs>
+  <g id="zuncha" stroke-linecap="round" stroke-linejoin="round">
+
+    <!-- 接地の淡い影 -->
+    <ellipse cx="200" cy="516" rx="150" ry="20" fill="#000000" opacity="0.10"/>
+
+    <!-- 足 -->
+    <ellipse cx="168" cy="508" rx="26" ry="15" fill="url(#g-white)" stroke="#3d6b1e" stroke-width="5"/>
+    <ellipse cx="232" cy="508" rx="26" ry="15" fill="url(#g-white)" stroke="#3d6b1e" stroke-width="5"/>
+
+    <!-- 体（黄緑の和装） -->
+    <path d="M 148 372 L 252 372 Q 270 372 274 402 L 282 462 Q 284 486 258 490 L 142 490 Q 116 486 118 462 L 126 402 Q 130 372 148 372 Z"
+          fill="url(#g-body)" stroke="#3d6b1e" stroke-width="6"/>
+    <!-- 衿合わせ -->
+    <path d="M 200 372 L 178 400 M 200 372 L 222 400" fill="none" stroke="#FFFFFF" stroke-width="7"/>
+    <!-- 前掛け（濃緑） -->
+    <path d="M 150 414 L 250 414 Q 262 414 263 430 L 266 470 Q 266 486 248 487 L 152 487 Q 134 486 134 470 L 137 430 Q 138 414 150 414 Z"
+          fill="url(#g-apron)" stroke="#3d6b1e" stroke-width="5"/>
+    <!-- 前掛けの紐結び -->
+    <path d="M 188 414 Q 200 406 212 414 Q 206 420 200 418 Q 194 420 188 414 Z" fill="#4EBC3A" stroke="#3d6b1e" stroke-width="4"/>
+    <!-- 前掛けの枝豆紋 -->
+    <g stroke="#e9f5dc" stroke-width="5" fill="none">
+      <path d="M 184 448 Q 186 438 196 437 Q 191 445 196 452 Q 186 452 184 448 Z"/>
+      <path d="M 204 437 Q 214 438 216 448 Q 214 452 204 452 Q 209 445 204 437 Z"/>
+    </g>
+
+    <!-- 腕（短い前足） -->
+    <ellipse cx="122" cy="412" rx="24" ry="17" fill="url(#g-white)" stroke="#3d6b1e" stroke-width="5" transform="rotate(-18 122 412)"/>
+    <ellipse cx="278" cy="412" rx="24" ry="17" fill="url(#g-white)" stroke="#3d6b1e" stroke-width="5" transform="rotate(18 278 412)"/>
+
+    <!-- フード（枝豆の黄緑） -->
+    <ellipse cx="200" cy="222" rx="168" ry="158" fill="url(#g-hood)" stroke="#3d6b1e" stroke-width="7"/>
+    <ellipse cx="138" cy="120" rx="52" ry="30" fill="#ffffff" opacity="0.35" transform="rotate(-24 138 120)"/>
+
+    <!-- 葉っぱ（感情パーツ。アニメ時は #leaf-l / #leaf-r を回転させる。フードより前面） -->
+    <g id="leaf-l" transform="rotate(-10 186 72)">
+      <path d="M 186 72 Q 172 20 128 10 Q 118 52 152 74 Q 172 82 186 72 Z" fill="#4EBC3A" stroke="#3d6b1e" stroke-width="5"/>
+      <path d="M 178 66 Q 160 44 140 26" fill="none" stroke="#3d6b1e" stroke-width="3"/>
+    </g>
+    <g id="leaf-r" transform="rotate(10 214 72)">
+      <path d="M 214 72 Q 228 20 272 10 Q 282 52 248 74 Q 228 82 214 72 Z" fill="#4EBC3A" stroke="#3d6b1e" stroke-width="5"/>
+      <path d="M 222 66 Q 240 44 260 26" fill="none" stroke="#3d6b1e" stroke-width="3"/>
+    </g>
+
+    <!-- 顔（白・フードの中） -->
+    <ellipse cx="200" cy="248" rx="122" ry="112" fill="url(#g-face)" stroke="none"/>
+
+    <!-- 額の三粒のずんだ -->
+    <g fill="url(#g-bean)" stroke="#3d6b1e" stroke-width="4">
+      <ellipse cx="152" cy="150" rx="17" ry="13" transform="rotate(-14 152 150)"/>
+      <ellipse cx="200" cy="140" rx="18" ry="14"/>
+      <ellipse cx="248" cy="150" rx="17" ry="13" transform="rotate(14 248 150)"/>
+    </g>
+
+    <!-- ほっぺ（共通） -->
+    <ellipse cx="118" cy="288" rx="24" ry="16" fill="url(#g-cheek)"/>
+    <ellipse cx="282" cy="288" rx="24" ry="16" fill="url(#g-cheek)"/>
+
+    <!-- ===== 表情: 通常の微笑み ===== -->
+    <g id="expr-normal">
+      <circle cx="152" cy="248" r="23" fill="#231f20"/>
+      <circle cx="248" cy="248" r="23" fill="#231f20"/>
+      <circle cx="145" cy="240" r="8" fill="#FFFFFF"/>
+      <circle cx="241" cy="240" r="8" fill="#FFFFFF"/>
+      <path d="M 186 298 Q 200 310 214 298" fill="none" stroke="#3d6b1e" stroke-width="6"/>
+    </g>
+
+    <!-- ===== 表情: いたずら顔（細め目・にんまり） ===== -->
+    <g id="expr-sneaky" style="display:none">
+      <path d="M 130 244 Q 152 232 174 244" fill="none" stroke="#231f20" stroke-width="8"/>
+      <path d="M 226 244 Q 248 232 270 244" fill="none" stroke="#231f20" stroke-width="8"/>
+      <path d="M 182 294 Q 200 306 220 292 Q 212 300 200 300 Q 190 300 182 294 Z" fill="#231f20"/>
+    </g>
+
+    <!-- ===== 表情: 照れ笑い（にこにこ目・頬ぷく） ===== -->
+    <g id="expr-happy" style="display:none">
+      <path d="M 132 250 Q 152 234 172 250" fill="none" stroke="#231f20" stroke-width="8"/>
+      <path d="M 228 250 Q 248 234 268 250" fill="none" stroke="#231f20" stroke-width="8"/>
+      <path d="M 188 296 Q 200 306 212 296" fill="none" stroke="#3d6b1e" stroke-width="6"/>
+      <ellipse cx="118" cy="288" rx="24" ry="16" fill="#FFC9C9"/>
+      <ellipse cx="282" cy="288" rx="24" ry="16" fill="#FFC9C9"/>
+    </g>
+
+    <!-- ===== 表情: 頬パンパン発覚顔（口いっぱい・目をそらす・口元に緑） ===== -->
+    <g id="expr-puffed" style="display:none">
+      <!-- ふくらんだ頬（大きく・ずんだ色がうっすら） -->
+      <ellipse cx="128" cy="292" rx="34" ry="26" fill="#FFD9D9"/>
+      <ellipse cx="272" cy="292" rx="34" ry="26" fill="#FFD9D9"/>
+      <ellipse cx="128" cy="296" rx="20" ry="12" fill="#d9edc0" opacity="0.8"/>
+      <ellipse cx="272" cy="296" rx="20" ry="12" fill="#d9edc0" opacity="0.8"/>
+      <!-- 目をそらす（右上を見る点目） -->
+      <circle cx="164" cy="240" r="17" fill="#231f20"/>
+      <circle cx="258" cy="238" r="17" fill="#231f20"/>
+      <circle cx="170" cy="234" r="6" fill="#FFFFFF"/>
+      <circle cx="264" cy="232" r="6" fill="#FFFFFF"/>
+      <!-- すぼめた口＋口元の緑（証拠） -->
+      <ellipse cx="200" cy="300" rx="12" ry="10" fill="#231f20"/>
+      <path d="M 182 312 Q 200 322 220 310 Q 212 320 198 320 Q 188 318 182 312 Z" fill="#8BCB59" opacity="0.9"/>
+      <!-- 口笛の音符 -->
+      <g id="whistle" transform="translate(300,196)">
+        <path d="M 0 26 Q 0 6 14 2 L 30 -2 L 30 20" fill="none" stroke="#3d6b1e" stroke-width="6"/>
+        <circle cx="-2" cy="28" r="9" fill="#3d6b1e"/>
+        <circle cx="28" cy="22" r="9" fill="#3d6b1e"/>
+      </g>
+    </g>
+
+    <!-- ===== 表情: 固まり（X目・棒口） ===== -->
+    <g id="expr-x" style="display:none">
+      <g stroke="#231f20" stroke-width="9" stroke-linecap="round">
+        <path d="M 136 232 L 170 264 M 170 232 L 136 264"/>
+        <path d="M 230 232 L 264 264 M 264 232 L 230 264"/>
+      </g>
+      <path d="M 184 302 L 216 302" fill="none" stroke="#3d6b1e" stroke-width="7"/>
+    </g>
+  </g>
+</svg>
+      <div class="straw" id="straw3"></div>
+      <div class="bubble" id="line-z">飲んでないよ〜</div>
+      <div class="sub" id="line-k" style="opacity:0">「ずんちゃ丸、飲んだでしょ？」</div>
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.set("#expr-normal", { display: "none" }, 0)
+      .set("#expr-puffed", { display: "block" }, 0)
+      .set(".zuncha", { x: -80, rotation: -4 }, 0)
+      .to(".zuncha", { x: 0, duration: 0.55, ease: "back.out(1.5)" }, 0.15)
+      .to("#line-k", { opacity: 1, duration: 0.3 }, 0.5)
+      .to(".zuncha", { rotation: 4, duration: 0.5, yoyo: true, repeat: 2, ease: "sine.inOut" }, 0.8)
+      .to("#line-z", { scale: 1, duration: 0.4, ease: "back.out(2)" }, 1.7);
+    window.__timelines["b3o"] = tl;
+  </script>
+</body></html>

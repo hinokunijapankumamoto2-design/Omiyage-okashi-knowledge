@@ -1,0 +1,231 @@
+{
+  "id": "shake-jiken-12s",
+  "title": "暖簾の向こうの犯人 12秒",
+  "brief": "ずんだシェイクが勝手に減る事件。実写の久保さん×2Dずんちゃ丸×暖簾。かわいい犯行＋優しい承認",
+  "spec": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "targetDurationSec": 12
+  },
+  "plan": {
+    "concept": "暖簾の向こうの犯人＝ずんだシェイクが勝手に減る事件。事件から始めて広告らしさを消し、かわいい犯行＋優しい承認で商品に着地する。正本: 03_テンプレート/シナリオ_暖簾の向こうの犯人12秒.md",
+    "targetAudience": "SNSショート動画層・仙台観光層",
+    "keyMessage": "隠せない、おいしさ。",
+    "tone": "実写×紙切り2Dの質感コントラスト。久保さんは怒らず静かに疑い優しく受け入れる",
+    "figmaFileKey": null
+  },
+  "shots": [
+    {
+      "id": "b1",
+      "index": 0,
+      "description": "事件発生: 飲もうとした瞬間、暖簾からストロー",
+      "narration": "",
+      "caption": "まだ飲んでないのに、減ってる。",
+      "durationInFrames": 45,
+      "imagePrompt": "",
+      "motionPrompt": "scenes/b1 でオーサリング済み",
+      "captureSpec": {
+        "task": "撮影指示書（シナリオ正本）の該当ビート参照。実写差し替え時は footage 登録で自動優先",
+        "url": null
+      },
+      "assetIds": [
+        "comp-b1"
+      ]
+    },
+    {
+      "id": "b2",
+      "index": 1,
+      "description": "中身が減る→視線移動",
+      "narration": "",
+      "caption": "……ん？",
+      "durationInFrames": 75,
+      "imagePrompt": "",
+      "motionPrompt": "scenes/b2 でオーサリング済み",
+      "captureSpec": {
+        "task": "撮影指示書（シナリオ正本）の該当ビート参照。実写差し替え時は footage 登録で自動優先",
+        "url": null
+      },
+      "assetIds": [
+        "comp-b2"
+      ]
+    },
+    {
+      "id": "b3",
+      "index": 2,
+      "description": "犯人発覚: 頬パンパン・口笛",
+      "narration": "",
+      "caption": "飲んでないよ〜",
+      "durationInFrames": 90,
+      "imagePrompt": "",
+      "motionPrompt": "scenes/b3 でオーサリング済み",
+      "captureSpec": null,
+      "assetIds": [
+        "comp-b3"
+      ]
+    },
+    {
+      "id": "b4",
+      "index": 3,
+      "description": "転倒→固まる",
+      "narration": "",
+      "caption": "全部つながってるよ",
+      "durationInFrames": 75,
+      "imagePrompt": "",
+      "motionPrompt": "scenes/b4 でオーサリング済み",
+      "captureSpec": {
+        "task": "撮影指示書（シナリオ正本）の該当ビート参照。実写差し替え時は footage 登録で自動優先",
+        "url": null
+      },
+      "assetIds": [
+        "comp-b4"
+      ]
+    },
+    {
+      "id": "b5",
+      "index": 4,
+      "description": "承認→わーい→最終コピー",
+      "narration": "",
+      "caption": "隠せない、おいしさ。",
+      "durationInFrames": 75,
+      "imagePrompt": "",
+      "motionPrompt": "scenes/b5 でオーサリング済み",
+      "captureSpec": {
+        "task": "撮影指示書（シナリオ正本）の該当ビート参照。実写差し替え時は footage 登録で自動優先",
+        "url": null
+      },
+      "assetIds": [
+        "comp-b5"
+      ]
+    }
+  ],
+  "assets": [
+    {
+      "id": "comp-b1",
+      "kind": "footage",
+      "path": "assets/photo/b1_comp.mp4",
+      "source": "photo-staging+overlay",
+      "externalId": null,
+      "url": null,
+      "createdAt": "2026-07-26T08:52:26.190Z",
+      "meta": {
+        "note": "ffmpegでbase+透過オーバーレイを事前合成（Remotionの透過WebMデコード回避）"
+      }
+    },
+    {
+      "id": "comp-b2",
+      "kind": "footage",
+      "path": "assets/photo/b2_comp.mp4",
+      "source": "photo-staging+overlay",
+      "externalId": null,
+      "url": null,
+      "createdAt": "2026-07-26T08:52:26.190Z",
+      "meta": {
+        "note": "ffmpegでbase+透過オーバーレイを事前合成（Remotionの透過WebMデコード回避）"
+      }
+    },
+    {
+      "id": "comp-b3",
+      "kind": "footage",
+      "path": "assets/photo/b3_comp.mp4",
+      "source": "photo-staging+overlay",
+      "externalId": null,
+      "url": null,
+      "createdAt": "2026-07-26T08:52:26.190Z",
+      "meta": {
+        "note": "ffmpegでbase+透過オーバーレイを事前合成（Remotionの透過WebMデコード回避）"
+      }
+    },
+    {
+      "id": "comp-b4",
+      "kind": "footage",
+      "path": "assets/photo/b4_comp.mp4",
+      "source": "photo-staging+overlay",
+      "externalId": null,
+      "url": null,
+      "createdAt": "2026-07-26T08:52:26.190Z",
+      "meta": {
+        "note": "ffmpegでbase+透過オーバーレイを事前合成（Remotionの透過WebMデコード回避）"
+      }
+    },
+    {
+      "id": "comp-b5",
+      "kind": "footage",
+      "path": "assets/photo/b5_comp.mp4",
+      "source": "photo-staging+overlay",
+      "externalId": null,
+      "url": null,
+      "createdAt": "2026-07-26T08:52:26.190Z",
+      "meta": {
+        "note": "ffmpegでbase+透過オーバーレイを事前合成（Remotionの透過WebMデコード回避）"
+      }
+    },
+    {
+      "externalId": null,
+      "url": null,
+      "meta": {
+        "width": 1080,
+        "height": 1920,
+        "fps": 30
+      },
+      "id": "final",
+      "kind": "video",
+      "path": "out/final.mp4",
+      "source": "remotion",
+      "createdAt": "2026-07-26T08:53:22.337Z"
+    }
+  ],
+  "steps": {
+    "plan": {
+      "status": "done",
+      "startedAt": null,
+      "finishedAt": "2026-07-26T08:13:59.228Z",
+      "note": null
+    },
+    "script": {
+      "status": "done",
+      "startedAt": null,
+      "finishedAt": "2026-07-26T08:13:59.228Z",
+      "note": null
+    },
+    "image": {
+      "status": "done",
+      "startedAt": null,
+      "finishedAt": "2026-07-26T08:13:59.228Z",
+      "note": null
+    },
+    "motion": {
+      "status": "done",
+      "startedAt": null,
+      "finishedAt": "2026-07-26T08:13:59.228Z",
+      "note": null
+    },
+    "capture": {
+      "status": "done",
+      "startedAt": null,
+      "finishedAt": "2026-07-26T08:49:35.410Z",
+      "note": "フォトステージング版（ポスター静止画）"
+    },
+    "subtitle": {
+      "status": "done",
+      "startedAt": "2026-07-26T08:13:59.717Z",
+      "finishedAt": "2026-07-26T08:13:59.718Z",
+      "note": "字幕キュー 5 件"
+    },
+    "compose": {
+      "status": "done",
+      "startedAt": "2026-07-26T08:13:59.719Z",
+      "finishedAt": "2026-07-26T08:52:26.674Z",
+      "note": "timeline.json を出力（5 ショット）"
+    },
+    "render": {
+      "status": "done",
+      "startedAt": "2026-07-26T08:13:59.721Z",
+      "finishedAt": "2026-07-26T08:53:22.337Z",
+      "note": "final.mp4 を出力"
+    }
+  },
+  "agentTask": null,
+  "createdAt": "2026-07-26T08:07:55.456Z",
+  "updatedAt": "2026-07-26T08:53:22.337Z"
+}

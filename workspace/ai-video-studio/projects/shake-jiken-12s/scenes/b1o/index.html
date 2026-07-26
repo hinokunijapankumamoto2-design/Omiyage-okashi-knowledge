@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="UTF-8" />
+<meta name="viewport" content="width=1080, height=1920" />
+<script src="./gsap.min.js"></script>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html, body { width:1080px; height:1920px; overflow:hidden; background:transparent;
+    font-family:"Noto Sans JP","Hiragino Sans","Yu Gothic",sans-serif; }
+  .sub { position:absolute; bottom:170px; width:100%; text-align:center;
+    font-size:58px; font-weight:900; color:#fff; -webkit-text-stroke:10px rgba(40,60,20,.85);
+    paint-order:stroke; letter-spacing:.02em; }
+  .bubble { position:absolute; padding:22px 40px; background:#fff; border:7px solid #3d6b1e;
+    border-radius:56px; font-size:56px; font-weight:900; color:#3d6b1e; white-space:nowrap; }
+  .hook { position:absolute; top:180px; width:100%; text-align:center; font-size:76px;
+    font-weight:900; color:#fff; -webkit-text-stroke:12px rgba(40,60,20,.9); paint-order:stroke; }
+  .straw { position:absolute; height:30px; background:#7ec14f; border:7px solid #3d6b1e;
+    border-radius:18px; transform-origin:left center; }
+  
+  #straw1 { top:1300px; left:300px; width:520px; transform:rotate(20deg) scaleX(0); }
+
+</style></head>
+<body>
+  <div id="root" data-composition-id="b1o" data-start="0" data-duration="1.5" data-fps="30" data-width="1080" data-height="1920">
+    <div id="stage" class="clip" data-start="0" data-duration="1.5" data-track-index="0">
+      <div class="straw" id="straw1"></div>
+      <div class="hook" id="hook">まだ飲んでないのに、<br/>減ってる。</div>
+    </div>
+  </div>
+  <script>
+    window.__timelines = window.__timelines || {};
+    const tl = gsap.timeline({ paused: true });
+    tl.from("#hook", { opacity: 0, y: -30, duration: 0.35, ease: "power2.out" }, 0.05)
+      .to("#straw1", { scaleX: 1, duration: 0.65, ease: "power3.out" }, 0.45)
+      .to("#straw1", { rotation: 21.5, duration: 0.12, yoyo: true, repeat: 3, ease: "sine.inOut" }, 1.1);
+    window.__timelines["b1o"] = tl;
+  </script>
+</body></html>

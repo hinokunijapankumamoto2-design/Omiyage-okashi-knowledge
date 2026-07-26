@@ -1,0 +1,38 @@
+{
+  "name": "ai-video-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "企画から最終レンダリングまでを一気通貫で実行する AI 動画制作スタジオ",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "studio": "tsx src/cli.ts",
+    "new": "tsx src/cli.ts new",
+    "run": "tsx src/cli.ts run",
+    "status": "tsx src/cli.ts status",
+    "doctor": "tsx src/cli.ts doctor",
+    "preview": "remotion studio remotion/src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/bundler": "4.0.499",
+    "@remotion/cli": "4.0.499",
+    "@remotion/renderer": "4.0.499",
+    "ffmpeg-static": "5.2.0",
+    "ffprobe-static": "^3.1.0",
+    "gsap": "^3.15.0",
+    "hyperframes": "0.7.71",
+    "react": "19.2.0",
+    "react-dom": "19.2.0",
+    "remotion": "4.0.499",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.2",
+    "@types/react": "19.2.0",
+    "tsx": "4.19.2",
+    "typescript": "5.7.2"
+  }
+}

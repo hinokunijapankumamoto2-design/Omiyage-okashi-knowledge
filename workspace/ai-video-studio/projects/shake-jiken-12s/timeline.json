@@ -1,0 +1,69 @@
+{
+  "width": 1080,
+  "height": 1920,
+  "fps": 30,
+  "totalFrames": 360,
+  "subtitlePath": null,
+  "entries": [
+    {
+      "shotId": "b1",
+      "index": 0,
+      "fromFrame": 0,
+      "durationInFrames": 45,
+      "base": {
+        "kind": "footage",
+        "path": "assets/photo/b1_comp.mp4"
+      },
+      "overlay": null,
+      "caption": "まだ飲んでないのに、減ってる。"
+    },
+    {
+      "shotId": "b2",
+      "index": 1,
+      "fromFrame": 45,
+      "durationInFrames": 75,
+      "base": {
+        "kind": "footage",
+        "path": "assets/photo/b2_comp.mp4"
+      },
+      "overlay": null,
+      "caption": "……ん？"
+    },
+    {
+      "shotId": "b3",
+      "index": 2,
+      "fromFrame": 120,
+      "durationInFrames": 90,
+      "base": {
+        "kind": "footage",
+        "path": "assets/photo/b3_comp.mp4"
+      },
+      "overlay": null,
+      "caption": "飲んでないよ〜"
+    },
+    {
+      "shotId": "b4",
+      "index": 3,
+      "fromFrame": 210,
+      "durationInFrames": 75,
+      "base": {
+        "kind": "footage",
+        "path": "assets/photo/b4_comp.mp4"
+      },
+      "overlay": null,
+      "caption": "全部つながってるよ"
+    },
+    {
+      "shotId": "b5",
+      "index": 4,
+      "fromFrame": 285,
+      "durationInFrames": 75,
+      "base": {
+        "kind": "footage",
+        "path": "assets/photo/b5_comp.mp4"
+      },
+      "overlay": null,
+      "caption": "隠せない、おいしさ。"
+    }
+  ]
+}
