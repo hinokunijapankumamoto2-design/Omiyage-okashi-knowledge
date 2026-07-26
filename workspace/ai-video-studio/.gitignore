@@ -1,3 +1,4 @@
 node_modules/
-projects/*/
-!projects/.gitkeep
+# プロジェクトはマニフェスト・メモのみ管理し、生成バイナリは除外
+projects/*/assets/
+projects/*/out/
