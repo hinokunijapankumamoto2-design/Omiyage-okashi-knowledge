@@ -1,0 +1,3 @@
+[submodule "vendor/pollinations"]
+	path = vendor/pollinations
+	url = https://github.com/pollinations/pollinations.git
