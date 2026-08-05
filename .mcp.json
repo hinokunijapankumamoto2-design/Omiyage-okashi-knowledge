@@ -3,6 +3,17 @@
     "koboyo-icons": {
       "type": "http",
       "url": "https://api.koboyo.com/v1-mcp"
+    },
+    "mcp-image": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "mcp-image"],
+      "env": {
+        "IMAGE_PROVIDER": "openai",
+        "OPENAI_API_KEY": "${OPENAI_API_KEY}",
+        "IMAGE_OUTPUT_DIR": "${IMAGE_OUTPUT_DIR:-./outputs}",
+        "IMAGE_QUALITY": "balanced"
+      }
     }
   }
 }
