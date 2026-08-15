@@ -79,7 +79,7 @@ Xアルゴリズム2026攻略ナレッジ準拠：**動画10秒（Quality Video 
 | 7.9–10.0秒 | 1位発表（2.1秒）：ドラム→写真＋理由1行 | 「1位 商品名」「＋選定理由」 |
 
 - 縦型 9:16 ／ テロップは上下セーフエリア内 ／ 音無しでも伝わる構成（サイレント視聴前提）
-- 生成手段：kling または higgsfield のimage-to-video・スライドショー合成（**1本ごとにクレジット消費のため、生成前に必ずユーザー承認を取る**）
+- 生成手段：**MiniMax H3**（Higgsfield `generate_video` model `minimax_h3`、9:16・10秒対応／代替: Comfy Cloud `partner_generate` model `minimax/hailuo-03-t2v`）。スタイル指定は `skills/mascot-explainer-video/SKILL.md` の生成プロンプト参照（**1本ごとにクレジット消費のため、生成前に必ずユーザー承認を取る**）
 - 素材写真が揃わない日は、写真が確認できた商品だけで「ベスト5」に縮小して成立させる
 
 ## 実際の写真の運用ルール（権利面・重要）
