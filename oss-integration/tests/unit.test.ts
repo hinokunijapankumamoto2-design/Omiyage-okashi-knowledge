@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 import { classifyEvidence, meetsStandard, confidenceFromEvidence } from '../src/evidence/engine.js';
 import { assessLicense, mayCopyCode, downgrade, knownLicenses } from '../src/license/gate.js';
-import { scanSecurity, securityRuleCount } from '../src/security/gate.js';
+import { scanSecurity, coveredRisks } from '../src/security/gate.js';
 import { assessHealth } from '../src/health/engine.js';
 import { CapabilityGraph } from '../src/graph/capability-graph.js';
 import { computeGap } from '../src/gap/engine.js';
@@ -224,8 +224,31 @@ test('licence: the gate covers permissive, weak-copyleft and strong-copyleft fam
   assert.equal(none.status, 'BLOCK');
 });
 
-test('security: every risk category named in the specification has at least one rule', () => {
-  assert.ok(securityRuleCount() >= 10, 'expected a rule for each of the ten risk categories');
+test('security: every risk category named in the specification is detectable', () => {
+  const covered = new Set(coveredRisks());
+  for (const risk of [
+    'arbitrary-command-execution',
+    'unsafe-shell-execution',
+    'credential-exposure',
+    'secret-collection',
+    'unexpected-network-access',
+    'destructive-file-operations',
+    'excessive-permissions',
+    'untrusted-install-script',
+    'suspicious-dependency',
+    'known-critical-vulnerability',
+  ] as const) {
+    assert.ok(covered.has(risk) || risk === 'known-critical-vulnerability', `no detection path for ${risk}`);
+  }
+  // The advisory category is driven by a caller-supplied list rather than a
+  // pattern, so it is asserted through behaviour instead.
+  const advisory = scanSecurity({
+    artifacts: { 'package.json': '{}' },
+    dependencies: ['bad-pkg'],
+    knownVulnerable: ['bad-pkg'],
+  });
+  assert.ok(advisory.findings.some((f) => f.risk === 'known-critical-vulnerability'));
+  assert.equal(advisory.status, 'BLOCK');
 });
 
 test('health: an unparseable date is UNKNOWN, not silently scored', () => {
@@ -261,4 +284,29 @@ test('scoring: differentiation reflects the real candidate field, not a constant
     sole.score.breakdown.differentiation.raw > contested.score.breakdown.differentiation.raw,
     'a sole supplier must out-score one of several suppliers of the same capability',
   );
+});
+
+test('conflicts: a runtime floor is resolved, a library major clash is not', async () => {
+  const { emptySurface } = await import('../src/types.js');
+  const mk = (id: string, deps: string[]) => ({
+    id, url: '', owner: id.split('/')[0] as string, name: id.split('/')[1] as string,
+    description: 'UNKNOWN' as const, kind: 'library' as const, licenseSpdx: 'MIT',
+    licenseEvidence: classifyEvidence(['source-inspection']), latestRelease: 'UNKNOWN' as const,
+    lastMeaningfulUpdate: 'UNKNOWN' as const, documentation: 'UNKNOWN' as const, tests: 'UNKNOWN' as const,
+    dependencies: deps, architecture: 'UNKNOWN' as const, installation: 'UNKNOWN' as const,
+    primaryCapability: 'testing', secondaryCapabilities: [], stars: null, inspected: [],
+    artifacts: {}, surface: emptySurface(), source: 'fixture' as const, capturedAt: 'UNKNOWN' as const,
+    dataProvenance: [],
+  });
+
+  const engine = detectConflicts([mk('a/one', ['node@20']), mk('b/two', ['node@18'])]);
+  const nodeConflict = engine.find((c) => c.subject === 'node');
+  assert.ok(nodeConflict, 'differing engine floors should still be reported');
+  assert.equal(nodeConflict.resolved, true, 'node 20 satisfies a node 18 floor, so this is resolvable');
+  assert.match(nodeConflict.resolution, />= 20/);
+
+  const library = detectConflicts([mk('a/one', ['react@17']), mk('b/two', ['react@18'])]);
+  const reactConflict = library.find((c) => c.subject === 'react');
+  assert.ok(reactConflict, 'a genuine library major clash must still be detected');
+  assert.equal(reactConflict.resolved, false, 'react 17 and 18 cannot both be satisfied');
 });

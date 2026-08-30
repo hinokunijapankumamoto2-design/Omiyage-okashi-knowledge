@@ -10,7 +10,7 @@ import { designArchitecture } from '../src/integration/architect.js';
 import { buildPlugin } from '../src/builder/plugin-builder.js';
 import { validatePluginPackage } from '../src/validation/package-validator.js';
 import { runBenchmark, type BenchmarkTask } from '../src/validation/benchmark.js';
-import { buildSubjects } from '../src/validation/reports.js';
+import { buildSubjects } from '../src/validation/subjects.js';
 import { projectRoot, readJson } from '../src/util/io.js';
 import { runBuild } from '../src/cli.js';
 
@@ -170,6 +170,34 @@ test('ACCEPTANCE 2: three supplied repositories produce every decision class and
     assert.match(text, /Reused code: None/i);
   });
 
+  await t.test('the generated plugin carries no dead component', () => {
+    const router = readFileSync(resolve(built.outputDir, 'skills', 'capability-router', 'SKILL.md'), 'utf8');
+    const manifest = readFileSync(resolve(built.outputDir, '.claude-plugin', 'plugin.json'), 'utf8');
+    const readme = readFileSync(resolve(built.outputDir, 'README.md'), 'utf8');
+    const reachable = router + manifest + readme;
+
+    for (const f of built.files) {
+      // Reports and provenance are documentation for the human, not runtime
+      // components, so they are not required to be referenced.
+      if (/\.md$/.test(f) && !f.startsWith('skills/') && !f.startsWith('agents/')) continue;
+      if (f === 'capability-manifest.json' || f.startsWith('.claude-plugin/')) continue;
+      const name = f.replace(/^(skills|agents)\//, '').replace(/\/SKILL\.md$|\.md$/, '');
+      assert.ok(
+        reachable.includes(name) || reachable.includes(f),
+        `${f} is generated but nothing references it — a component nobody can reach is dead weight`,
+      );
+    }
+    // The configuration file must be reachable too, or its defaults are fiction.
+    assert.ok(reachable.includes('config/default.json'), 'config/default.json is generated but never referenced');
+  });
+
+  await t.test('components are emitted only when the goal needs them', () => {
+    // namespace-guard exists only because these fixtures collide on names.
+    const hasConflicts = scout.stack.conflicts.length > 0;
+    const hasGuard = built.files.some((f) => f.includes('namespace-guard'));
+    assert.equal(hasGuard, hasConflicts, 'namespace-guard must appear exactly when there are conflicts to guard');
+  });
+
   await t.test('no third-party source is copied into the generated plugin', () => {
     // The blocked repository's own identifiers must not appear in the output.
     for (const f of built.files) {
@@ -187,11 +215,12 @@ test('ACCEPTANCE 2: three supplied repositories produce every decision class and
 test('ACCEPTANCE 3: the integrated plugin is benchmarked against each original', async (t) => {
   const scout = await runScout({ goal: GOAL, repos: REPOS });
   const plan = designArchitecture(scout.stack, { pluginName: 'benchmarked-plugin' });
-  const { subjects, integratedName } = buildSubjects(scout, plan);
-  const report = runBenchmark(tasks(), subjects, integratedName);
+  const { subjects, integratedName, unionName } = buildSubjects(scout, plan);
+  const report = runBenchmark(tasks(), subjects, { integratedName, unionName });
 
   await t.test('every original and the integrated plugin are run on the same tasks', () => {
-    assert.equal(subjects.length, 4);
+    // three originals, their union, and the integrated plugin
+    assert.equal(subjects.length, 5);
     for (const r of REPOS) {
       const id = r.replace('https://github.com/', '');
       assert.ok(report.subjects.includes(id), `${id} was not benchmarked`);
@@ -217,7 +246,7 @@ test('ACCEPTANCE 3: the integrated plugin is benchmarked against each original',
       assert.equal(m.countsTowardVerdict, false);
     }
     assert.ok(report.notMeasured.length > 0);
-    assert.match(report.kind, /not executed against a live target/i);
+    assert.match(report.kind, /No subject was executed against a real target/i);
   });
 
   await t.test('a metric excluded from the verdict must say why', () => {

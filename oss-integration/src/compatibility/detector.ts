@@ -100,6 +100,12 @@ function maxBy<T>(items: T[], key: (t: T) => number): { item: T; unique: boolean
   return { item: best, unique: ties === 0 };
 }
 
+/**
+ * Runtimes whose declared version is a minimum, not a pin. Two sources asking
+ * for different majors of these are not in conflict: the higher floor wins.
+ */
+const ENGINE_DEPS = new Set(['node', 'nodejs', 'npm', 'python', 'ruby', 'go', 'java', 'deno', 'bun']);
+
 /** Conflict Detector (rule 23). */
 export function detectConflicts(repos: RepositoryProfile[]): Conflict[] {
   const conflicts: Conflict[] = [];
@@ -125,17 +131,37 @@ export function detectConflicts(repos: RepositoryProfile[]): Conflict[] {
     }
   }
   for (const [pkg, byVersion] of versionsByPkg) {
-    const majors = new Set([...byVersion.keys()].filter((v) => v !== '*').map(majorOf));
-    if (majors.size > 1) {
+    const declared = [...byVersion.keys()].filter((v) => v !== '*');
+    const majors = new Set(declared.map(majorOf));
+    if (majors.size <= 1) continue;
+
+    const parties = [...new Set([...byVersion.values()].flat())];
+
+    // A runtime engine version is a FLOOR, not a pin: "node 18" means at least
+    // 18, so node 20 satisfies it. Treating those as incompatible majors was a
+    // false positive that left every multi-source stack permanently conflicted.
+    // Library majors are still genuine conflicts and are reported below.
+    if (ENGINE_DEPS.has(pkg.toLowerCase())) {
+      const floor = declared.map(majorOf).sort((a, b) => Number(b) - Number(a))[0];
       conflicts.push({
         kind: 'incompatible-dependency',
         subject: pkg,
-        parties: [...new Set([...byVersion.values()].flat())],
-        detail: `"${pkg}" is required at incompatible majors: ${[...byVersion.keys()].join(', ')}.`,
-        resolution: 'Pin one major in the generated plugin and record the drop; do not vendor both.',
-        resolved: false,
+        parties,
+        detail: `"${pkg}" is declared at different versions (${declared.join(', ')}), but these are runtime floors rather than pinned majors.`,
+        resolution: `Resolved: require ${pkg} >= ${floor}, which satisfies every declared floor. No capability is dropped.`,
+        resolved: true,
       });
+      continue;
     }
+
+    conflicts.push({
+      kind: 'incompatible-dependency',
+      subject: pkg,
+      parties,
+      detail: `"${pkg}" is required at incompatible majors: ${[...byVersion.keys()].join(', ')}.`,
+      resolution: 'Pin one major in the generated plugin and record the drop; do not vendor both.',
+      resolved: false,
+    });
   }
 
   // Runtime conflict: a stack that spans mutually exclusive runtimes.

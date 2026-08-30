@@ -430,6 +430,9 @@ export interface MetricResult {
   higherIsBetter: boolean;
   verdict: BenchmarkVerdict;
   note: string;
+  /** Whether a regression here blocks a PASS, per the pre-registered materiality rule. */
+  material?: boolean;
+  materialityNote?: string;
 }
 
 export interface BenchmarkReport {

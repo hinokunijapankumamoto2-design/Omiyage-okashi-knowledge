@@ -7,7 +7,10 @@ import { designArchitecture } from './integration/architect.js';
 import { buildPlugin } from './builder/plugin-builder.js';
 import { validatePluginPackage } from './validation/package-validator.js';
 import { runBenchmark, type BenchmarkTask } from './validation/benchmark.js';
-import { buildSubjects, renderIntegrationReport, renderValidationReport } from './validation/reports.js';
+import { runRealTaskSuite, executableTaskIds, type SuiteResult } from './validation/live-task-runner.js';
+import { renderIntegrationReport, renderValidationReport } from './validation/reports.js';
+import { renderBenchmarkReport, renderLiveRepositoryReport, renderSecurityReport } from './validation/extra-reports.js';
+import { buildSubjects } from './validation/subjects.js';
 import { renderGoalSpec, normalizeGoal } from './goal/engine.js';
 import { analyzeRepository } from './repository/analyzer.js';
 import { extractWithGates } from './capability/extractor.js';
@@ -30,6 +33,8 @@ interface Args {
   out: string | null;
   name: string | null;
   json: boolean;
+  realTasks: boolean;
+  repeats: number;
   positional: string[];
 }
 
@@ -42,6 +47,8 @@ function parseArgs(argv: string[]): Args {
     out: null,
     name: null,
     json: false,
+    realTasks: false,
+    repeats: 1,
     positional: [],
   };
   for (let i = 1; i < argv.length; i++) {
@@ -54,6 +61,8 @@ function parseArgs(argv: string[]): Args {
     else if (a === '--out') args.out = argv[++i] ?? null;
     else if (a === '--name') args.name = argv[++i] ?? null;
     else if (a === '--json') args.json = true;
+    else if (a === '--real-tasks') args.realTasks = true;
+    else if (a === '--repeats') args.repeats = Math.max(1, Number(argv[++i] ?? 1));
     else if (a && !a.startsWith('--')) args.positional.push(a);
   }
   return args;
@@ -82,6 +91,13 @@ Options
   --out <dir>     Output root for build (default: generated/plugins).
   --name <name>   Name of the generated plugin (default: derived from the goal).
   --json          Emit machine-readable JSON instead of prose.
+  --real-tasks    Execute the task suite in a real browser against a real page,
+                  for every subject under identical conditions. Turns Output
+                  Quality, Execution Time and Reliability from NOT_VERIFIED into
+                  measurements. Needs a Chromium binary; set OSS_CHROMIUM_PATH if
+                  it is not where Playwright expects it.
+  --repeats <n>   Repeats for --real-tasks. Reliability needs n > 1; with n = 1
+                  it stays NOT_VERIFIED rather than being assumed.
 `;
 }
 
@@ -155,7 +171,15 @@ async function cmdAnalyze(args: Args): Promise<number> {
   console.log(`Last meaningful update: ${profile.lastMeaningfulUpdate}`);
   console.log(`Documentation        : ${profile.documentation}`);
   console.log(`Tests                : ${profile.tests}`);
-  console.log(`Dependencies         : ${profile.dependencies.join(', ') || 'UNKNOWN'}`);
+  console.log(
+    `Dependencies         : ${
+      profile.dependencies.length > 0
+        ? profile.dependencies.join(', ')
+        : profile.inspected.includes('package-metadata')
+          ? '(none declared)'
+          : 'UNKNOWN'
+    }`,
+  );
   console.log(`Architecture         : ${profile.architecture}`);
   console.log(`Installation         : ${profile.installation}`);
   console.log(`Inspected artifacts  : ${profile.inspected.join(', ') || 'none'}`);
@@ -214,6 +238,8 @@ export interface BuildOutcome {
   outputDir: string;
   packageOk: boolean;
   benchmarkVerdict: string;
+  /** Regressions that block a PASS under the pre-registered materiality rule. */
+  materialRegressions: string[];
   reportPaths: string[];
 }
 
@@ -223,6 +249,8 @@ export async function runBuild(args: {
   live?: boolean;
   out?: string | null;
   name?: string | null;
+  realTasks?: boolean;
+  repeats?: number;
 }): Promise<BuildOutcome> {
   const scout = await runScout({ goal: args.goal, repos: args.repos }, { live: args.live ?? false });
 
@@ -234,19 +262,64 @@ export async function runBuild(args: {
 
   const pkg = validatePluginPackage(built.outputDir);
   const tasks = loadTasks();
-  const { subjects, integratedName } = buildSubjects(scout, plan);
-  const bench = runBenchmark(tasks, subjects, integratedName);
+  const { subjects, integratedName, unionName } = buildSubjects(scout, plan);
+
+  // Real execution, when asked for: every subject runs the same tasks against
+  // the same page in the same browser, so only the capability set differs.
+  let suite: SuiteResult | null = null;
+  // When the suite is executed, the benchmark must score the SAME tasks that
+  // ran. Scoring against tasks nobody could execute would silently deflate
+  // every subject's completion.
+  let benchTasks = tasks;
+  if (args.realTasks) {
+    const executable = new Set(executableTaskIds());
+    benchTasks = tasks.filter((t) => executable.has(t.id));
+    suite = await runRealTaskSuite(
+      subjects.map((s) => ({ name: s.name, capabilities: s.capabilities })),
+      benchTasks,
+      args.repeats ?? 1,
+    );
+    for (const s of subjects) {
+      const run = suite.runs.get(s.name);
+      if (run) s.executed = run.executed;
+    }
+  }
+
+  const bench = runBenchmark(benchTasks, subjects, { integratedName, unionName });
 
   const integrationPath = resolve(built.outputDir, 'INTEGRATION_REPORT.md');
   const validationPath = resolve(built.outputDir, 'VALIDATION_REPORT.md');
+  const benchmarkPath = resolve(built.outputDir, 'BENCHMARK_REPORT.md');
+  const securityPath = resolve(built.outputDir, 'SECURITY_REPORT.md');
   writeFileEnsured(integrationPath, renderIntegrationReport(scout, plan));
-  writeFileEnsured(validationPath, renderValidationReport(plan, pkg, bench, tasks));
+  writeFileEnsured(validationPath, renderValidationReport(plan, pkg, bench, benchTasks));
+  writeFileEnsured(
+    benchmarkPath,
+    renderBenchmarkReport(bench, benchTasks, subjects, suite, tasks.filter((t) => !benchTasks.includes(t))),
+  );
+  writeFileEnsured(securityPath, renderSecurityReport(scout, plan));
+
+  const reportPaths = [
+    integrationPath,
+    validationPath,
+    benchmarkPath,
+    securityPath,
+    resolve(built.outputDir, 'PROVENANCE.md'),
+  ];
+  if (args.live) {
+    const livePath = resolve(built.outputDir, 'LIVE_REPOSITORY_REPORT.md');
+    writeFileEnsured(livePath, renderLiveRepositoryReport(scout));
+    reportPaths.push(livePath);
+  }
 
   return {
     outputDir: built.outputDir,
     packageOk: pkg.ok,
     benchmarkVerdict: bench.overall,
-    reportPaths: [integrationPath, validationPath, resolve(built.outputDir, 'PROVENANCE.md')],
+    materialRegressions: bench.metrics
+      .filter((m) => m.verdict === 'REGRESSION' && m.material)
+      .map((m) => m.metric),
+    reportPaths,
   };
 }
 
@@ -262,12 +335,18 @@ async function cmdBuild(args: Args): Promise<number> {
     live: args.live,
     out: args.out,
     name: args.name,
+    realTasks: args.realTasks,
+    repeats: args.repeats,
   });
 
   console.log('=== BUILD COMPLETE ===\n');
   console.log('Plugin           : ' + outcome.outputDir);
   console.log('Package validator: ' + (outcome.packageOk ? 'PASS' : 'FAIL'));
   console.log('Benchmark verdict: ' + outcome.benchmarkVerdict);
+  console.log(
+    'Material regressions: ' +
+      (outcome.materialRegressions.length > 0 ? outcome.materialRegressions.join(', ') : 'none'),
+  );
   console.log('\nReports:');
   for (const p of outcome.reportPaths) console.log('  - ' + p);
   if (!outcome.packageOk) {

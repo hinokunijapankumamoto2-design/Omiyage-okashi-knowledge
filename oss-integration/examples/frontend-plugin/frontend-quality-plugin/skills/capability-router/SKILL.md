@@ -52,7 +52,25 @@ and stop - do not substitute a weaker check and present it as the same result.
 4. When a capability the request needs is not in the table above, say it is
    not in this plugin. Do not improvise it.
 
+## Components in this plugin
+
+Hand off to these rather than doing their work here. Nothing else exists: if a
+request needs something not listed, say so.
+
+- `skills/capability-router/SKILL.md` — Route a request for Claude Codeで最高品質のWebサイトを作れるPluginを作って to the right capability in this plugin, in the right order. Use when the user asks for work covering any of: frontend-implementation, visual-design, responsive-design, browser-automation, screenshot-capture, testing, accessibility-audit, performance-audit, image-comparison, visual-regression, visual-review.
+- `skills/build-surface/SKILL.md` — Produce or modify the web artifact this plugin is about, applying the design and implementation capabilities in the stack.
+- `skills/verification-runner/SKILL.md` — Run the verification capabilities against a URL and return measured results rather than impressions.
+- `skills/evidence-ledger/SKILL.md` — Record what was measured versus assumed for each capability result, and refuse to report an unmeasured claim as a fact.
+- `skills/namespace-guard/SKILL.md` — Own the single public command surface of this plugin so colliding names from the source projects are not re-emitted.
+- `agents/verification-agent.md` — subagent for verification work.
+- `agents/review-agent.md` — subagent for review work.
+- `config/default.json` — the single configuration surface every capability reads.
+- `capability-manifest.json` — what this plugin can do and how well each claim is evidenced.
+
 ## Configuration
+
+Defaults live in `config/default.json`. Read that file before running any
+capability, and treat a value the user has overridden as authoritative.
 
 - `baseUrl` (string): URL the verification capabilities run against. Required before any browser-backed check.
 - `viewports` (string[]): Viewport list used by responsive and screenshot capabilities, so every capability measures the same sizes.

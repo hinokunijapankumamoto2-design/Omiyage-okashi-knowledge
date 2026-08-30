@@ -1,52 +1,54 @@
-# Example — committed reference run
+# Example — SYNTHETIC_TEST
 
-The plugin in `frontend-quality-plugin/` was **generated**, not written by
-hand. It is committed so the output can be read without running anything, and
-so a change in generator behaviour shows up as a diff.
+`frontend-quality-plugin/` was generated from **three synthetic fixtures**, not
+from real repositories. `fixture-org` is not a real GitHub organisation.
 
-## The command that produced it
+**Nothing in this directory is a claim about any real project.** The stars,
+licences, security issues and maintainer activity of the three inputs are
+invented, deliberately, so that the offline regression test is deterministic and
+so that the hard gates have something to block. For findings about real
+repositories see `../live-plugin/`.
+
+## The command
 
 ```bash
-node dist/src/cli.js build \
+OSS_CHROMIUM_PATH=/path/to/chrome \
+node dist/src/cli.js build --real-tasks --repeats 3 \
   --goal "Claude Codeで最高品質のWebサイトを作れるPluginを作って" \
   --repo https://github.com/fixture-org/frontend-craft-plugin \
   --repo https://github.com/fixture-org/browser-qa-plugin \
   --repo https://github.com/fixture-org/a11y-guard-plugin \
-  --name frontend-quality-plugin \
-  --out examples/frontend-plugin
+  --name frontend-quality-plugin --out examples/frontend-plugin
 ```
 
-The three inputs are the **synthetic fixtures** in `tests/fixtures/repos/`, so
-this run is offline and reproducible. `fixture-org` is not a real GitHub
-organisation; see `ASSUMPTIONS.md` (A6).
+## What is real here and what is not
 
-## What to look at
-
-| File | Why it is interesting |
+| Real | Synthetic |
 | --- | --- |
-| `INTEGRATION_REPORT.md` | The whole decision trail: gates, graph, gap, near misses, duplicates, conflicts, KEEP/REPLACE/ADD/REMOVE, the stack, the optimizer's consolidation, and an UNKNOWN section. |
-| `VALIDATION_REPORT.md` | Originals vs integrated on the same nine tasks — including the two metrics that **regressed**, which are reported rather than tuned away. |
-| `PROVENANCE.md` | Per capability: the concept source, `Reused Code: None`, and what is original. |
-| `skills/capability-router/SKILL.md` | The generated routing table, with an evidence class and a concept source per capability. |
-| `skills/evidence-ledger/SKILL.md` | The original component that keeps "measured" and "assumed" apart at runtime. |
-| `capability-manifest.json` | The machine-readable version of all of the above. |
+| The browser, the page, the axe-core run, the pixel diff, the navigation timings, the execution times | The three input repositories and every fact about them |
+| The capability graph, gates, selection, conflict resolution and generation logic | The capability sets the fixtures declare |
+
+The **capability sets** are synthetic; the **execution** measuring what those
+capability sets can achieve is real, in a real browser against a real page.
 
 ## What the run demonstrates
 
 - **A BLOCK outranks a score.** `a11y-guard-plugin` has the most stars of the
-  three inputs (4,300). It is unlicensed and its README pipes a network script
-  into `sudo bash`. Both hard gates fire and none of its capabilities enter the
-  stack.
-- **Gaps are closed by going shopping.** `accessibility-audit`,
-  `performance-audit` and `image-comparison` were missing after the gates, so
-  discovery supplied Lighthouse and jest-image-snapshot.
-- **A combination unlocks something nobody supplied.** `visual-regression` is
-  unlocked once browser automation, screenshot capture and image comparison are
-  all present; `visual-review` is delivered by the combination itself and is
-  marked `INFERRED`, not `VERIFIED`, because it was reasoned about rather than
-  executed.
-- **Collisions are resolved, not carried.** All three inputs declare a `review`
-  command and two write to `.qa/`. The generated plugin exposes one surface.
-- **The verdict is not flattering.** Overall is `REGRESSION`, driven by error
-  rate and setup efficiency, with the causes named. That is the validator
-  working, not failing.
+  three fixtures. It is unlicensed and its README pipes a network script into
+  `sudo bash`. Both hard gates fire and none of its capabilities enter the stack.
+- **Gaps are closed by going shopping**, and a combination unlocks
+  `visual-review`, which no input supplies.
+- **Collisions are resolved, not carried**: all three declare a `review`
+  command and two write to `.qa/`.
+- **The verdict is not flattering.** Two material regressions are reported
+  rather than tuned away. See `BENCHMARK_REPORT.md`.
+
+## Files worth reading
+
+| File | Why |
+| --- | --- |
+| `BENCHMARK_REPORT.md` | Pre-registered metric definitions beside the results, per-task outcomes, and the rubric with its evidence. |
+| `VALIDATION_REPORT.md` | Package validation and the regression section. |
+| `INTEGRATION_REPORT.md` | The whole decision trail, including the optimizer and the UNKNOWN section. |
+| `SECURITY_REPORT.md` | Every finding, and every source that was **not** scanned. |
+| `PROVENANCE.md` | Per capability: concept source, `Reused Code: None`, original contribution. |

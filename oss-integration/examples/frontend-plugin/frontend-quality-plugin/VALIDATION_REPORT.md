@@ -10,9 +10,9 @@ _No structural issue found._
 
 ## 2. Benchmark
 
-**Kind:** static-capability-coverage (v0.1). The generated plugin was not executed against a live target.
+**Kind:** mixed: executed task results where a subject was run against a real target, static capability coverage elsewhere. Per-metric measurementMethod says which.
 
-**Tasks (9)**
+**Tasks (8)**
 
 - `T1` Build a responsive landing page from a brief — requires: frontend-implementation, responsive-design
 - `T2` Critique the visual design of an existing page — requires: visual-design
@@ -20,37 +20,41 @@ _No structural issue found._
 - `T4` Report WCAG violations on a live page — requires: browser-automation, accessibility-audit
 - `T5` Report loading performance metrics — requires: browser-automation, performance-audit
 - `T6` Detect unintended visual change against a baseline — requires: browser-automation, screenshot-capture, image-comparison, visual-regression
-- `T7` Review the diff for correctness and convention — requires: code-review
 - `T8` Run the end-to-end test suite — requires: testing
 - `T9` Give an evidence-backed verdict on whether the page is ready to ship — requires: visual-review, accessibility-audit, performance-audit
 
-| Metric | Direction | fixture-org/frontend-craft-plugin | fixture-org/browser-qa-plugin | fixture-org/a11y-guard-plugin | frontend-quality-plugin | Verdict |
-| --- | --- | --- | --- | --- | --- | --- |
-| Task Completion | higher better | 0.222 | 0.222 | 0 | 0.889 | IMPROVED |
-| Error Rate | lower better | 0 | 0 | 1 | 0.5 | REGRESSION |
-| Security | lower better | 0 | 0 | 2 | 0 | EQUIVALENT |
-| Maintainability | lower better | 3 | 6 | 5 | 1 | IMPROVED |
-| Install Sources | lower better | 1 | 1 | 1 | 5 | REGRESSION (informational) |
-| Capability Coverage per Install Source | higher better | 0.222 | 0.222 | 0 | 0.178 | REGRESSION |
-| Output Quality | not measured | n/a | n/a | n/a | n/a | NOT_VERIFIED (informational) |
-| Reliability | not measured | n/a | n/a | n/a | n/a | NOT_VERIFIED (informational) |
-| UX | not measured | n/a | n/a | n/a | n/a | NOT_VERIFIED (informational) |
-| Token Usage | not measured | n/a | n/a | n/a | n/a | NOT_VERIFIED (informational) |
-| Execution Time (plugin runtime) | not measured | n/a | n/a | n/a | n/a | NOT_VERIFIED (informational) |
-> **Install Sources is informational.** Not a like-for-like comparison: the subjects deliver different numbers of capabilities, so comparing raw install counts rewards the subject that does least. The normalized metric below is the one that counts. The raw numbers are still reported, and a rise in them is called out in the regression section.
+| Metric | Direction | fixture-org/frontend-craft-plugin | fixture-org/browser-qa-plugin | fixture-org/a11y-guard-plugin | originals-union | frontend-quality-plugin | Verdict | Material? |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Task Completion | ↑ better | 0.25 | 0.25 | 0 | 0.5 | 1 | IMPROVED | — |
+| Error Rate | ↓ better | 0 | 0 | n/a | 0 | 0 | EQUIVALENT | — |
+| Security Findings (high/critical) | ↓ better | 0 | 0 | 2 | 2 | 0 | EQUIVALENT | — |
+| Integration Debt | ↓ better | 3 | 6 | 5 | 6 | 1 | IMPROVED | — |
+| Install Actions | ↓ better | 1 | 2 | 1 | 4 | 2 | REGRESSION | no |
+| Distinct Upstream Projects | ↓ better | 1 | 1 | 1 | 3 | 5 | REGRESSION | **YES** |
+| Task Coverage per Install Action | ↑ better | 0.25 | 0.125 | 0 | 0.125 | 0.5 | IMPROVED | — |
+| Output Quality | ↑ better | n/a | n/a | n/a | 1 | 1 | EQUIVALENT | — |
+| Quality Criteria Covered | ↑ better | 1 | 3 | 0 | 4 | 7 | IMPROVED | — |
+| Execution Time | ↓ better | 483 | 469 | n/a | 460 | 831 | REGRESSION | **YES** |
+| Reliability | ↑ better | 1 | 1 | n/a | 1 | 1 | EQUIVALENT | — |
+| UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
+| Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
+| Token Usage | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
+
+> **Install Actions regressed.** Not material: 2 is better than the realistic alternative (originals-union = 4). It regresses only against the single cheapest original, which cannot do the same work.
+
+> **Distinct Upstream Projects regressed.** MATERIAL: 5 is worse than the realistic alternative (originals-union = 3), so integrating costs more than what it replaces.
+
+> **Execution Time regressed.** MATERIAL: 831 is worse than the realistic alternative (originals-union = 460), so integrating costs more than what it replaces.
 
 **Overall: REGRESSION**
 
-REGRESSION DETECTED on at least one measured metric. The integration architecture must be revisited before this plugin is presented as an improvement.
+REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects, Execution Time. Rule 21: the overall verdict is REGRESSION whenever any measured metric regresses, whether or not that regression is material.
 
 ## 3. What was NOT measured
 
-- Output Quality — needs a rubric-scored run against real pages; not run in v0.1.
-- Reliability — needs repeated runs to measure variance; not run in v0.1.
-- UX — needs human subjects; not run in v0.1.
-- Execution Time (plugin runtime) — the pipeline build time is measured, but the generated plugin was not executed against a live target.
-- Token Usage — the generated plugin was not executed, so no token accounting exists.
-- Setup Time — install-source count is reported as a proxy; wall-clock setup was not timed.
+- UX — NOT MEASURABLE in this project. It needs human subjects, which are not available. It stays NOT_VERIFIED and no proxy is substituted. Reporting this as improved would be a guess.
+- Setup Time — NOT MEASURED. Install Actions is reported as a separate measured metric in its own right; it is NOT presented as a measurement of setup time. Reporting this as improved would be a guess.
+- Token Usage — NOT MEASURED. The task suite is executed as deterministic code, not through a model, so no token accounting exists. Estimating it would be a fabrication. Reporting this as improved would be a guess.
 
 Any of the above reported as an improvement would be a guess. They are
 **IMPROVEMENT NOT VERIFIED**.
@@ -59,8 +63,8 @@ Any of the above reported as an improvement would be a guess. They are
 
 **REGRESSION DETECTED** on:
 
-- Error Rate: {"fixture-org/frontend-craft-plugin":0,"fixture-org/browser-qa-plugin":0,"fixture-org/a11y-guard-plugin":1,"frontend-quality-plugin":0.5}
-- Install Sources: {"fixture-org/frontend-craft-plugin":1,"fixture-org/browser-qa-plugin":1,"fixture-org/a11y-guard-plugin":1,"frontend-quality-plugin":5}
-- Capability Coverage per Install Source: {"fixture-org/frontend-craft-plugin":0.222,"fixture-org/browser-qa-plugin":0.222,"fixture-org/a11y-guard-plugin":0,"frontend-quality-plugin":0.178}
+- Install Actions: {"fixture-org/frontend-craft-plugin":1,"fixture-org/browser-qa-plugin":2,"fixture-org/a11y-guard-plugin":1,"originals-union":4,"frontend-quality-plugin":2}
+- Distinct Upstream Projects: {"fixture-org/frontend-craft-plugin":1,"fixture-org/browser-qa-plugin":1,"fixture-org/a11y-guard-plugin":1,"originals-union":3,"frontend-quality-plugin":5}
+- Execution Time: {"fixture-org/frontend-craft-plugin":483,"fixture-org/browser-qa-plugin":469,"fixture-org/a11y-guard-plugin":null,"originals-union":460,"frontend-quality-plugin":831}
 
 The integration architecture must account for this before the plugin is presented as better than its sources.

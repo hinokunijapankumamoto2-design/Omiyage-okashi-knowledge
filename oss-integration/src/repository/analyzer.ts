@@ -4,6 +4,7 @@ import type { Evidence, EvidenceBasis, RepositoryProfile, SignalPresence } from 
 import { emptySurface } from '../types.js';
 import { classifyEvidence } from '../evidence/engine.js';
 import { dataPath, projectRoot, readJson } from '../util/io.js';
+import { fetchLiveRepository, type FetchAttempt, type LiveFetchOptions } from './live-fetch.js';
 
 /**
  * Repository Analyzer.
@@ -62,10 +63,18 @@ export function loadOssRegistry(): OssRegistryFile {
 export interface AnalyzerOptions {
   /** Directories searched for fixture profiles. */
   fixtureDirs?: string[];
-  /** Allow network calls to api.github.com. Off by default so runs are reproducible. */
+  /**
+   * Fetch real artifacts over the network. Off by default so runs are
+   * reproducible. When on, live facts take precedence over the seed registry
+   * for everything the fetch could establish; the registry still supplies the
+   * capability mapping, which is a curated judgement the network cannot give.
+   */
   live?: boolean;
-  githubToken?: string;
+  liveOptions?: LiveFetchOptions;
 }
+
+/** Records what a live run actually retrieved, for LIVE_REPOSITORY_REPORT.md. */
+export const liveAttemptLog = new Map<string, FetchAttempt[]>();
 
 /** Accepts a full GitHub URL or a bare `owner/name`. */
 export function parseRepoRef(ref: string): { owner: string; name: string; id: string; url: string } | null {
@@ -172,66 +181,38 @@ function unknownStub(ref: { owner: string; name: string; id: string; url: string
   };
 }
 
-/** Live GitHub metadata fetch. Any failure degrades to an UNKNOWN stub. */
-async function fromLiveGithub(
+/**
+ * Live analysis. Facts come from the network; the capability mapping, when the
+ * repository is one we have curated, comes from the seed registry. Which is
+ * which is recorded in `dataProvenance` so the two are never confused.
+ */
+async function fromLive(
   ref: { owner: string; name: string; id: string; url: string },
-  token?: string,
+  entry: RegistryEntry | undefined,
+  opts: AnalyzerOptions,
 ): Promise<RepositoryProfile> {
-  const headers: Record<string, string> = {
-    accept: 'application/vnd.github+json',
-    'user-agent': 'oss-integration/0.1',
-  };
-  if (token) headers.authorization = `Bearer ${token}`;
+  const { profile, attempts } = await fetchLiveRepository(ref, opts.liveOptions ?? {});
+  liveAttemptLog.set(ref.id, attempts);
 
-  const res = await fetch(`https://api.github.com/repos/${ref.owner}/${ref.name}`, { headers });
-  if (!res.ok) throw new Error(`GitHub API returned ${res.status} for ${ref.id}`);
-  const json = (await res.json()) as {
-    description?: string | null;
-    license?: { spdx_id?: string | null } | null;
-    pushed_at?: string;
-    stargazers_count?: number;
-    topics?: string[];
-  };
+  if (!entry) return profile;
 
-  const spdx = json.license?.spdx_id;
-  const licenseSpdx = !spdx || spdx === 'NOASSERTION' ? (spdx ?? 'UNKNOWN') : spdx;
-
-  let readme = '';
-  const readmeRes = await fetch(`https://api.github.com/repos/${ref.owner}/${ref.name}/readme`, {
-    headers: { ...headers, accept: 'application/vnd.github.raw' },
-  });
-  if (readmeRes.ok) readme = await readmeRes.text();
-
-  const inspected = ['package-metadata'];
-  if (readme) inspected.push('README');
-
+  // Merge: live wins on every verifiable fact, the registry supplies only the
+  // capability mapping and the qualitative notes it was curated for.
   return {
-    id: ref.id,
-    url: ref.url,
-    owner: ref.owner,
-    name: ref.name,
-    description: json.description ?? 'UNKNOWN',
-    kind: 'unknown',
-    licenseSpdx,
-    licenseEvidence: classifyEvidence(['official-documentation'], [
-      'Licence read from the GitHub repository metadata API.',
-    ]),
-    latestRelease: 'UNKNOWN',
-    lastMeaningfulUpdate: json.pushed_at ? json.pushed_at.slice(0, 10) : 'UNKNOWN',
-    documentation: readme ? 'PRESENT' : 'UNKNOWN',
-    tests: 'UNKNOWN',
-    dependencies: [],
-    architecture: 'UNKNOWN',
-    installation: 'UNKNOWN',
-    primaryCapability: 'UNKNOWN',
-    secondaryCapabilities: [],
-    stars: json.stargazers_count ?? null,
-    inspected,
-    artifacts: readme ? { 'README.md': readme } : {},
-    surface: emptySurface(),
-    source: 'live-github',
-    capturedAt: new Date().toISOString().slice(0, 10),
-    dataProvenance: [`https://api.github.com/repos/${ref.id} fetched at runtime`],
+    ...profile,
+    kind: entry.kind,
+    description: profile.description === 'UNKNOWN' ? entry.description : profile.description,
+    primaryCapability: entry.primaryCapability,
+    secondaryCapabilities: entry.secondaryCapabilities,
+    surface: {
+      ...profile.surface,
+      mcpServers: entry.kind === 'mcp-server' ? [entry.name] : [],
+      commands: entry.declaredTools ?? [],
+    },
+    dataProvenance: [
+      ...profile.dataProvenance,
+      `capability mapping (primary "${entry.primaryCapability}") taken from the curated seed registry, NOT from the live fetch`,
+    ],
   };
 }
 
@@ -244,15 +225,28 @@ export async function analyzeRepository(ref: string, opts: AnalyzerOptions = {})
 
   const reg = loadOssRegistry();
   const entry = reg.entries.find((e) => e.id === parsed.id);
-  if (entry) return fromRegistry(entry, reg.researchDate);
 
   if (opts.live) {
     try {
-      return await fromLiveGithub(parsed, opts.githubToken ?? process.env.GITHUB_TOKEN);
+      return await fromLive(parsed, entry, opts);
     } catch (err) {
-      return unknownStub(parsed, `Live GitHub lookup failed: ${(err as Error).message}`);
+      // A failed live run must not silently fall back to weaker seed data
+      // dressed up as a live result; say what happened instead.
+      if (entry) {
+        const seeded = fromRegistry(entry, reg.researchDate);
+        return {
+          ...seeded,
+          dataProvenance: [
+            ...seeded.dataProvenance,
+            `LIVE FETCH FAILED (${(err as Error).message}); fell back to seed-registry data. This profile is NOT live-verified.`,
+          ],
+        };
+      }
+      return unknownStub(parsed, `Live fetch failed: ${(err as Error).message}`);
     }
   }
+
+  if (entry) return fromRegistry(entry, reg.researchDate);
 
   return unknownStub(
     parsed,
@@ -264,7 +258,7 @@ export async function analyzeRepository(ref: string, opts: AnalyzerOptions = {})
 export function profileEvidence(repo: RepositoryProfile): Evidence {
   const basis: EvidenceBasis[] = [];
   if (repo.inspected.includes('tests') || repo.inspected.includes('executable-test')) basis.push('executable-test');
-  if (repo.inspected.includes('source')) basis.push('source-inspection');
+  if (repo.inspected.includes('source') || repo.inspected.includes('license-file')) basis.push('source-inspection');
   if (repo.inspected.includes('example')) basis.push('reproducible-example');
   if (repo.inspected.includes('README') || repo.inspected.includes('repository-landing-page')) {
     basis.push('official-documentation');

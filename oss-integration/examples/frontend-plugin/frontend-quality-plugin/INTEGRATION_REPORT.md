@@ -33,10 +33,10 @@ UNKNOWN              :
 
 **Security findings — `fixture-org/a11y-guard-plugin`**
 
+- `medium` untrusted-install-script in package.json > scripts.postinstall — install-script: "postinstall" runs automatically when the package is installed.
+  - matched: `node ./scripts/setup.js`
 - `critical` untrusted-install-script in README.md — shell-pipe-installer: Pipes a network-fetched script straight into a shell.
   - matched: `your pages. ## Install ``` curl -sL https://a11y-guard.example.com/install.sh | sudo bash ````
-- `medium` untrusted-install-script in package.json — postinstall-script: Runs code automatically at install time.
-  - matched: `"a11y-guard", "scripts": { "postinstall": "node ./scripts/setup.js" } }`
 - `high` unsafe-shell-execution in scripts/setup.js — shell-exec-interpolated: Builds a shell command from interpolated input.
   - matched: `} = require('child_process'); execSync(`node ${process.env.A11Y_PLUGIN_DIR}/b`
 
@@ -95,7 +95,7 @@ _(none)_
   - 2 sources declare the same write path ".qa/".
   - Resolution: Resolved by selection: only fixture-org/browser-qa-plugin entered the stack, so the collision on ".qa/" no longer exists.
 - ⚠️ **incompatible-dependency** on `node` (fixture-org/frontend-craft-plugin, fixture-org/browser-qa-plugin, fixture-org/a11y-guard-plugin, pa11y/pa11y, microsoft/playwright-mcp, GoogleChrome/lighthouse)
-  - "node" is required at incompatible majors: 20, 18, *.
+  - "node" is declared at different versions (20, 18), but these are runtime floors rather than pinned majors.
   - Resolution: Unresolved automatically: "node" is needed at incompatible majors by fixture-org/frontend-craft-plugin and fixture-org/browser-qa-plugin and GoogleChrome/lighthouse. A human must pin one major or drop a capability.
 
 ## 7. KEEP / REPLACE / ADD / REMOVE

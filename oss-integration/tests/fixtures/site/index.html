@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kaede Studio — Product Landing Page</title>
+<style>
+  :root {
+    --ink: #14181f;
+    --muted: #5a6472;
+    --bg: #ffffff;
+    --accent: #1d4ed8;
+    --line: #e3e7ee;
+    --space: 1.25rem;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font: 16px/1.6 system-ui, -apple-system, "Segoe UI", sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+  }
+  .wrap { max-width: 66rem; margin: 0 auto; padding: 0 var(--space); }
+  header { border-bottom: 1px solid var(--line); }
+  header .wrap { display: flex; align-items: center; justify-content: space-between; gap: var(--space); padding-block: var(--space); }
+  .brand { font-weight: 700; letter-spacing: -0.01em; }
+  nav ul { display: flex; gap: var(--space); list-style: none; margin: 0; padding: 0; }
+  nav a { color: var(--muted); text-decoration: none; }
+  nav a:hover, nav a:focus-visible { color: var(--accent); text-decoration: underline; }
+  .hero { padding-block: 3rem 2rem; }
+  .hero h1 { font-size: clamp(1.9rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 0.75rem; letter-spacing: -0.02em; }
+  .hero p { font-size: 1.125rem; color: var(--muted); max-width: 44ch; margin: 0 0 1.5rem; }
+  .cta {
+    display: inline-block; background: var(--accent); color: #fff;
+    padding: 0.7rem 1.3rem; border-radius: 8px; text-decoration: none; font-weight: 600;
+  }
+  .cta:focus-visible { outline: 3px solid #93b4ff; outline-offset: 2px; }
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space); padding-block: 2rem 3rem; }
+  .card { border: 1px solid var(--line); border-radius: 10px; padding: var(--space); }
+  .card h2 { font-size: 1.05rem; margin: 0 0 0.4rem; }
+  .card p { margin: 0; color: var(--muted); font-size: 0.95rem; }
+  footer { border-top: 1px solid var(--line); padding-block: var(--space); color: var(--muted); font-size: 0.9rem; }
+  @media (max-width: 900px) { .features { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 620px) {
+    .features { grid-template-columns: 1fr; }
+    header .wrap { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">Kaede Studio</div>
+    <nav aria-label="Primary">
+      <ul>
+        <li><a href="#features">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#docs">Docs</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero wrap">
+    <h1>Ship interfaces you can prove are good.</h1>
+    <p>Design, build and verify a web page in one pass — with accessibility, performance and visual checks that produce evidence instead of opinions.</p>
+    <a class="cta" href="#start" id="cta">Start building</a>
+  </section>
+
+  <section class="features wrap" id="features">
+    <article class="card">
+      <h2>Measured, not guessed</h2>
+      <p>Every claim about the page cites the check that produced it.</p>
+    </article>
+    <article class="card">
+      <h2>Responsive by default</h2>
+      <p>Layout is verified at each viewport, not eyeballed at one.</p>
+    </article>
+    <article class="card">
+      <!-- Deliberate defect: an image with no alt text, so the accessibility
+           check has a real violation to find. Without one, a zero-violation
+           result would prove only that the page was trivial. -->
+      <img src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" width="24" height="24">
+      <h2>Fails loudly</h2>
+      <p>A check that cannot run is reported as unknown, never as a pass.</p>
+    </article>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">© 2026 Kaede Studio</div>
+</footer>
+</body>
+</html>

@@ -17,7 +17,7 @@ export interface DiscoveryHit {
   repositoryId: string;
   capabilityId: string;
   isPrimary: boolean;
-  via: 'registry' | 'github-search';
+  via: 'registry' | 'live-search';
 }
 
 export interface DiscoveryResult {
@@ -69,13 +69,13 @@ export async function discoverForCapabilities(
 
   if (opts.live && stillMissing.length > 0) {
     for (const capabilityId of [...stillMissing]) {
-      const found = await searchGithub(capabilityId, opts);
+      const found = await searchLive(capabilityId, opts);
       if (found.length > 0) {
         for (const id of found.slice(0, maxPer)) {
-          hits.push({ repositoryId: id, capabilityId, isPrimary: false, via: 'github-search' });
+          hits.push({ repositoryId: id, capabilityId, isPrimary: false, via: 'live-search' });
         }
         stillMissing.splice(stillMissing.indexOf(capabilityId), 1);
-        notes.push(`GitHub search supplied candidates for "${capabilityId}".`);
+        notes.push(`Live npm-registry search supplied candidates for "${capabilityId}"; their capability mapping is UNKNOWN because nothing curated it.`);
       }
     }
   } else if (stillMissing.length > 0) {
@@ -90,19 +90,34 @@ export async function discoverForCapabilities(
   return { hits, profiles, stillMissing, notes };
 }
 
-async function searchGithub(capabilityId: string, opts: DiscoveryOptions): Promise<string[]> {
-  const headers: Record<string, string> = {
-    accept: 'application/vnd.github+json',
-    'user-agent': 'oss-integration/0.1',
-  };
-  const token = opts.githubToken ?? process.env.GITHUB_TOKEN;
-  if (token) headers.authorization = `Bearer ${token}`;
-  const q = encodeURIComponent(`${capabilityId.replace(/-/g, ' ')} in:name,description,readme`);
+/**
+ * Live discovery.
+ *
+ * The GitHub search API is not reachable from every network this runs on (it
+ * is blocked in this project's sandbox), so live discovery searches the npm
+ * registry instead and maps hits back to their GitHub repository. A capability
+ * that neither the seed registry nor this search can supply stays MISSING -
+ * it is never filled with a guess.
+ */
+async function searchLive(capabilityId: string, opts: DiscoveryOptions): Promise<string[]> {
+  const text = capabilityId.replace(/-/g, ' ');
+  const url = `https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(text)}&size=5`;
   try {
-    const res = await fetch(`https://api.github.com/search/repositories?q=${q}&sort=stars&per_page=5`, { headers });
+    const res = await fetch(url, {
+      signal: AbortSignal.timeout(20_000),
+      headers: { 'user-agent': 'oss-integration/0.1 (+discovery)' },
+    });
     if (!res.ok) return [];
-    const json = (await res.json()) as { items?: { full_name: string }[] };
-    return (json.items ?? []).map((i) => i.full_name);
+    const json = (await res.json()) as {
+      objects?: { package?: { links?: { repository?: string } } }[];
+    };
+    const ids: string[] = [];
+    for (const o of json.objects ?? []) {
+      const repo = o.package?.links?.repository;
+      const m = repo ? /github\.com\/([^/]+)\/([^/#?]+)/i.exec(repo) : null;
+      if (m && m[1] && m[2]) ids.push(`${m[1]}/${m[2].replace(/\.git$/, '')}`);
+    }
+    return [...new Set(ids)];
   } catch {
     return [];
   }

@@ -46,11 +46,46 @@ deterministic and offline. They are not claims about any real project — in
 particular `fixture-org/a11y-guard-plugin` is deliberately unlicensed and
 unsafe so the hard gates have something real to block.
 
+## Live-verified sources
+
+Repositories analysed with `--live` are verified at run time and recorded in
+each build's `LIVE_REPOSITORY_REPORT.md`, which lists every URL fetched, whether
+it succeeded, and what remains `UNKNOWN`. Licences are read from the **licence
+text that ships with the project**, not from a metadata field; where the two
+disagree the file wins.
+
+Verified in the committed live reference run (`examples/live-plugin/`):
+
+| Repository | Licence, from its LICENSE file | Reused Code |
+| --- | --- | --- |
+| dequelabs/axe-core | MPL-2.0 | None |
+| americanexpress/jest-image-snapshot | Apache-2.0 | None |
+| GoogleChrome/lighthouse | Apache-2.0 | None |
+
+## How "Reused Code: None" is verified
+
+It is not taken on the generator's word. `tests/provenance-audit.test.ts`
+compares every generated file against every upstream artifact the analyser
+actually held, using 8-word shingles, and fails if any run of eight consecutive
+words is shared. The claim is therefore checked **from the artifacts**, which is
+what rule 15 asks for. If that check could not run, the claim would be reported
+as `NOT_VERIFIED` rather than asserted.
+
 ## Dependencies
 
 | Package | Purpose | Licence | Scope |
 | --- | --- | --- | --- |
 | typescript | Build | Apache-2.0 | devDependency |
-| @types/node | Types | MIT | devDependency |
+| @types/node, @types/pngjs | Types | MIT | devDependency |
+| ajv | JSON Schema validation in tests | MIT | devDependency |
+| playwright | Real browser for the executed task suite | Apache-2.0 | devDependency |
+| axe-core | Real accessibility engine for the executed task suite | MPL-2.0 | devDependency |
+| pixelmatch, pngjs | Real pixel diffing for the executed task suite | ISC / MIT | devDependency |
+
+All are **devDependencies**: they run the benchmark, and none of them is
+vendored into a generated plugin. The generated plugin still contains no
+third-party source. `axe-core` is MPL-2.0, which is file-level copyleft — it is
+invoked as an installed dependency and no file of it is copied or modified,
+so the obligation is not triggered.
 
 No runtime dependency. Tests run on Node's built-in `node:test`.

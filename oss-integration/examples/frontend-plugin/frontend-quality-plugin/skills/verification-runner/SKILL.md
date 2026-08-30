@@ -19,8 +19,9 @@ Turns claims about the page into measured facts.
 
 ## Procedure
 
-1. Read `baseUrl` and `viewports` from the plugin configuration. If
-   `baseUrl` is not set, stop and ask for it. Do not guess a URL.
+1. Read `baseUrl` and `viewports` from `config/default.json`, applying any
+   user override. If `baseUrl` is not set, stop and ask for it. Do not guess
+   a URL.
 2. For each viewport, drive the browser to the page and collect the raw
    artifacts the selected capabilities need.
 3. Run each capability's check and record its numeric or boolean result.

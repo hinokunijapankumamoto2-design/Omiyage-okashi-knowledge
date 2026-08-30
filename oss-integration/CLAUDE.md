@@ -91,18 +91,48 @@ src/
 6. **The builder never copies upstream source.** If that ever changes, the
    licence gate's `mayCopyCode()` must gate it and PROVENANCE must stop saying
    `Reused Code: None`.
-7. **A benchmark metric excluded from the verdict must say why.** See
-   `MetricResult.countsTowardVerdict` / `excludedBecause`.
+7. **A benchmark metric excluded from the verdict must say why**, and only
+   "no subject measured it" is an acceptable reason. Excluding a metric because
+   its result is unflattering is forbidden. See `MetricResult.countsTowardVerdict`.
+8. **Metric definitions live in `data/benchmark-metrics.json`, not in code**,
+   and are pre-registered before measurement. Changing one requires a
+   `changedFromV01` entry naming the measurement DEFECT it fixes. "The number
+   looked bad" is not a defect.
+9. **Every subject is measured by the same rule.** Two of this project's worst
+   bugs were asymmetric measurement — charging the integrated plugin for its
+   upstreams while charging originals nothing, and scoring each subject over its
+   own rubric subset so that seeing more made you score worse.
+10. **A subject that attempted nothing has no error rate and no execution
+    time.** Report `null`, not `0`. Inaction must never look like a clean, fast
+    record.
+11. **The optimizer may never weaken a gate or an evidence class** to reduce
+    the project count. Tidiness is not worth a security gate.
+12. **Self-review is not independent review.** If Codex is unavailable, record
+    `CODEX REVIEW: NOT_RUN / CODEX_UNAVAILABLE` and log the pass separately as
+    `CLAUDE SELF REVIEW`.
 
 ## Reproducing a run
 
 ```bash
 npm install
 npm run build
-npm test                      # 63 tests: unit, goal cases, schema conformance, acceptance
+npm test                      # 84 offline tests
+
+# opt-in, network:  real public repositories
+OSS_LIVE_TEST=1 node --test "dist/tests/live-repository.test.js"
+
+# opt-in, browser:  real page, real axe-core, real pixel diff
+OSS_REAL_TASK=1 OSS_CHROMIUM_PATH=/path/to/chrome \
+  node --test "dist/tests/real-task.test.js"
 node dist/src/cli.js build --goal "…" --repo … --repo …
 ```
 
 Runs are offline and deterministic by default. `--live` is the only thing that
 touches the network; without it an unresolvable repository becomes an explicit
-UNKNOWN rather than a guess.
+UNKNOWN rather than a guess. `--real-tasks` is the only thing that starts a
+browser.
+
+**Synthetic and live results are never mixed.** A fixture under `fixture-org` is
+not a real project, and no fact about one may be reported as a fact about a real
+repository. Every report classifies its sources as `LIVE_VERIFIED`,
+`SEED_REGISTRY` or `SYNTHETIC`.

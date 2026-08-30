@@ -1,0 +1,41 @@
+{
+  "name": "live-web-quality",
+  "displayName": "live-web-quality",
+  "version": "0.1.0",
+  "description": "Goal-optimized plugin covering 8 selected capabilities for: Claude Codeで最高品質のWebサイトを作れるPluginを作って",
+  "keywords": [
+    "image-comparison",
+    "visual-regression",
+    "performance-audit",
+    "testing",
+    "browser-automation",
+    "screenshot-capture",
+    "accessibility-audit",
+    "visual-review"
+  ],
+  "agents": [
+    "./agents/"
+  ],
+  "userConfig": {
+    "baseUrl": {
+      "type": "string",
+      "title": "baseUrl",
+      "description": "URL the verification capabilities run against. Required before any browser-backed check."
+    },
+    "viewports": {
+      "type": "string",
+      "title": "viewports",
+      "description": "Viewport list used by responsive and screenshot capabilities, so every capability measures the same sizes."
+    },
+    "evidenceStandard": {
+      "type": "string",
+      "title": "evidenceStandard",
+      "description": "Minimum evidence class a capability result must reach before it is reported as a fact."
+    },
+    "failOn": {
+      "type": "string",
+      "title": "failOn",
+      "description": "Severity at which the verification workflow stops and reports failure."
+    }
+  }
+}

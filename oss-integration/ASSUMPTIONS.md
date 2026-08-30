@@ -44,6 +44,19 @@ Each one is a decision, not a fact. Overturn any of them by saying so.
 | A15 | Raw **Install Sources** is reported but excluded from the overall verdict, with the exclusion and its justification printed in the report. The normalized *Capability Coverage per Install Source* is what counts. | Comparing raw install counts across subjects that deliver 2 vs 8 tasks rewards the subject that does least. The raw number is still shown, and any rise in it is called out. | Set `countsTowardVerdict: true` in `src/validation/benchmark.ts`. |
 | A16 | Subjects are compared against the **best** individual original, not the average. | The bar should be the strongest thing the user already has. | — |
 
+## Verification round (v0.2 of the assumptions)
+
+| # | Assumption | Why | How to overturn |
+| --- | --- | --- | --- |
+| A18 | `--live` uses **`raw.githubusercontent.com` and `registry.npmjs.org`**, not the GitHub REST API. | The REST API returns HTTP 403 through this environment's egress proxy. The two reachable sources establish licence text, README, package metadata, release, publish date, dependencies, install scripts and the published source. | If the REST API is reachable for you, add an adapter; the analyzer's resolution order already isolates the fetch behind `fromLive`. |
+| A19 | The **latest commit SHA is always `UNKNOWN`** and the default branch is recorded as "the branch that served content", not a confirmed default. | Neither is obtainable from the two reachable sources. Recording a probe result as a confirmed default would be a guess. | See A18. |
+| A20 | The real-task suite runs against a **locally served fixture page**, not a remote site. | Remote sites are unreachable here, and a page that changes under the benchmark would make it unreproducible. The browser, axe-core, pixel diff and timings are all real. | Point `startSite()` at a different origin. |
+| A21 | For the executed suite, a subject's **capability set** is the variable under test; all subjects share the same page, implementations and viewports. | Rule 10 requires identical task conditions. | — |
+| A22 | **Reliability requires `--repeats > 1`.** With a single run it stays `NOT_VERIFIED` rather than being reported as 1.0. | One run cannot measure variance. | Pass `--repeats`. |
+| A23 | Two metrics carry **no verdict**: `UX` and `Setup Time` and `Token Usage`. They are not measured *for any subject*, so there is no result to exclude. | Rule 22 forbids excluding a regression. A metric with no measurement for anyone has no verdict to exclude. | Measure them. |
+| A24 | The **materiality rule was pre-registered before re-measurement** and is applied as written, including where it works against the integrated plugin. | Rule 22. | It is data, in `data/benchmark-metrics.json`. |
+| A25 | Three metric definitions were corrected this round (`install-actions`, `upstream-projects`, `output-quality`). Each correction fixes an **asymmetry or ambiguity** that measured different subjects by different rules, and each is recorded in `changedFromV01` with its justification. The `upstream-projects` correction makes the integrated plugin's number **larger**. | A definition that measures subject A by one rule and subject B by another is defective regardless of which way the defect points. | Read `changedFromV01` in `data/benchmark-metrics.json` and disagree in writing. |
+
 ## Not built (deferred per rule 43)
 
 SaaS, authentication, billing, enterprise governance, web UI, microservices,
@@ -54,4 +67,4 @@ management.
 
 | # | Assumption | Why |
 | --- | --- | --- |
-| A17 | Codex was **not available** in this environment, so the independent review in rule 34 was performed as a self-directed adversarial pass with findings recorded in `CHANGELOG.md`. Development did not stop, per the same rule. | Rule 34's own fallback clause. |
+| A17 | Codex was **not available**. `CODEX REVIEW = NOT_RUN, REASON = CODEX_UNAVAILABLE`. The adversarial pass performed instead is recorded as **CLAUDE SELF REVIEW** in `CHANGELOG.md` and is explicitly *not* an independent review — it was done by the author of the code. The earlier build report called it independent; that was wrong. | Rule 34's fallback clause allows development to continue; it does not allow self-review to be relabelled. |

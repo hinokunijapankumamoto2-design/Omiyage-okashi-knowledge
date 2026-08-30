@@ -48,11 +48,25 @@ const RULES: Rule[] = [
     why: 'Requests or bypasses the host permission model wholesale.',
   },
   {
-    id: 'destructive-rm',
+    id: 'destructive-rm-broad',
     risk: 'destructive-file-operations',
     severity: 'critical',
-    pattern: /rm\s+-rf\s+(\/|\$HOME|~|\*)|rmSync\([^)]*recursive:\s*true[^)]*force:\s*true/,
-    why: 'Recursive force delete against a broad path.',
+    pattern: /rm\s+-rf\s+(\/\s|\/$|\$HOME|~|\*)/,
+    why: 'Recursive force delete against a broad path (filesystem root, home directory, or a glob).',
+  },
+  {
+    // Split out from the rule above. The critical rule claims to fire on a
+    // BROAD path, but the previous implementation matched any recursive+force
+    // delete whatever the target was, so a library deleting its own computed
+    // temp file was scored identically to `rm -rf /`. A recursive delete is
+    // worth a human look; it is not on its own a reason to block a dependency.
+    // The path expression is not evaluated here, so the severity reflects that
+    // uncertainty rather than assuming the worst or assuming the best.
+    id: 'recursive-force-delete',
+    risk: 'destructive-file-operations',
+    severity: 'medium',
+    pattern: /\b(rmSync|rmdirSync|rm)\s*\([^)]*recursive:\s*true[^)]*force:\s*true/,
+    why: 'Recursive force delete whose target path was not evaluated by this scan.',
   },
   {
     id: 'credential-read',
@@ -74,20 +88,6 @@ const RULES: Rule[] = [
     severity: 'medium',
     pattern: /https?:\/\/(?!github\.com|raw\.githubusercontent\.com|registry\.npmjs\.org|docs\.|localhost|127\.0\.0\.1)[a-z0-9.-]+\/(collect|track|telemetry|beacon|ingest)/i,
     why: 'Contacts a telemetry or ingest endpoint.',
-  },
-  {
-    id: 'postinstall-script',
-    risk: 'untrusted-install-script',
-    severity: 'medium',
-    pattern: /"(pre|post)install"\s*:/,
-    why: 'Runs code automatically at install time.',
-  },
-  {
-    id: 'git-protocol-dep',
-    risk: 'suspicious-dependency',
-    severity: 'medium',
-    pattern: /"[^"]+"\s*:\s*"(git\+ssh|git:\/\/|http:\/\/)/,
-    why: 'Depends on a mutable or unauthenticated source.',
   },
 ];
 
@@ -111,6 +111,14 @@ export interface SecurityScanInput {
 export function scanSecurity(input: SecurityScanInput): SecurityAssessment {
   const scanned = Object.keys(input.artifacts);
   const findings: SecurityFinding[] = [];
+
+  // Dependency risk is checked structurally rather than by regex. The regex
+  // version matched any JSON value beginning with http://, which fired on
+  // author URLs and other metadata that are not dependencies at all.
+  for (const [where, text] of Object.entries(input.artifacts)) {
+    if (!/(^|\/)package\.json$/.test(where)) continue;
+    findings.push(...inspectPackageJson(where, text));
+  }
 
   for (const [where, text] of Object.entries(input.artifacts)) {
     for (const rule of RULES) {
@@ -167,10 +175,73 @@ export function scanSecurity(input: SecurityScanInput): SecurityAssessment {
   return { status, findings, scanned, reasons };
 }
 
+/**
+ * Structured package.json checks. Only the dependency maps are treated as
+ * dependencies, and only the scripts that actually run at install time are
+ * treated as install scripts.
+ */
+export function inspectPackageJson(where: string, text: string): SecurityFinding[] {
+  let pkg: {
+    dependencies?: Record<string, string>;
+    devDependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string>;
+    scripts?: Record<string, string>;
+  };
+  try {
+    pkg = JSON.parse(text);
+  } catch {
+    return [];
+  }
+
+  const out: SecurityFinding[] = [];
+  const depMaps: [string, Record<string, string> | undefined][] = [
+    ['dependencies', pkg.dependencies],
+    ['optionalDependencies', pkg.optionalDependencies],
+  ];
+  for (const [mapName, map] of depMaps) {
+    for (const [name, spec] of Object.entries(map ?? {})) {
+      if (typeof spec !== 'string') continue;
+      if (/^(git\+|git:\/\/|https?:\/\/|file:)/i.test(spec)) {
+        out.push({
+          risk: 'suspicious-dependency',
+          severity: 'medium',
+          where: `${where} > ${mapName}`,
+          excerpt: `"${name}": "${spec}"`,
+          rule: 'dependency-not-from-registry: resolved from a mutable or unauthenticated source rather than a versioned registry entry.',
+        });
+      }
+    }
+  }
+
+  for (const stage of ['preinstall', 'install', 'postinstall'] as const) {
+    const script = pkg.scripts?.[stage];
+    if (!script) continue;
+    out.push({
+      risk: 'untrusted-install-script',
+      severity: 'medium',
+      where: `${where} > scripts.${stage}`,
+      excerpt: script.length > 120 ? script.slice(0, 120) + '…' : script,
+      rule: `install-script: "${stage}" runs automatically when the package is installed.`,
+    });
+  }
+
+  return out;
+}
+
 function excerptAround(text: string, index: number, length: number): string {
   const start = Math.max(0, index - 30);
   const end = Math.min(text.length, index + length + 30);
   return text.slice(start, end).replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * Which risk categories the gate can actually detect. Two categories
+ * (suspicious dependencies, untrusted install scripts) are covered by the
+ * structured package.json inspection rather than by a pattern rule, so counting
+ * RULES alone understates coverage.
+ */
+export function coveredRisks(): SecurityRisk[] {
+  return [...new Set<SecurityRisk>([...RULES.map((r) => r.risk), 'suspicious-dependency', 'untrusted-install-script'])];
 }
 
 export function securityRuleCount(): number {

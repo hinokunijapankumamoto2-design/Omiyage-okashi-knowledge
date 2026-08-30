@@ -1,0 +1,10 @@
+{
+  "baseUrl": null,
+  "viewports": [
+    "360x800",
+    "768x1024",
+    "1440x900"
+  ],
+  "evidenceStandard": "SUPPORTED",
+  "failOn": "high"
+}

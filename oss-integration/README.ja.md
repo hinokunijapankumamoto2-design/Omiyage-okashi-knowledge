@@ -53,7 +53,9 @@ node dist/src/cli.js analyze --repo https://github.com/fixture-org/a11y-guard-pl
 
 | フラグ | 意味 |
 | --- | --- |
-| `--live` | GitHub APIへのアクセスを許可。**既定はオフ**（再現性のため）。オフのとき、未知のRepositoryは推測せず明示的に `UNKNOWN` になります。レート制限対策に `GITHUB_TOKEN` を設定してください。 |
+| `--live` | `raw.githubusercontent.com` と `registry.npmjs.org` から実Artifact（License本文・README・Package Metadata・公開Source）を取得してScanします。**既定はオフ**（再現性のため）。オフのとき未知のRepositoryは推測せず `UNKNOWN` になります。 |
+| `--real-tasks` | Task Suiteを実ブラウザ・実ページで、全Subject同一条件で実行します。Chromiumの場所が異なる場合は `OSS_CHROMIUM_PATH` を設定してください。 |
+| `--repeats <n>` | `--real-tasks` の反復回数。Reliabilityは `n > 1` が必要で、`n = 1` では `NOT_VERIFIED` のままです。 |
 | `--out <dir>` | 出力先（既定 `generated/plugins`）。 |
 | `--name <name>` | 生成Plugin名。 |
 | `--json` | 機械可読出力。 |
@@ -94,38 +96,80 @@ REJECTされます。BLOCKはScoreより優先されるからです。
 公開仕様のみで、実装は独立に行います。v0.1は第三者コードを一切コピーしないため、
 `Reused Code: None` は約束ではなく構造的な事実です。
 
-**測っていない改善を主張しない。** v0.1のBenchmarkは静的なCapability Coverageです。
-Output Quality / Reliability / UX / Token Usage は `NOT_VERIFIED` と報告し、
-測定された悪化は `REGRESSION DETECTED` として報告します。
+**測っていない改善を主張しない。** Output Quality / Execution Time / Reliability は
+実ブラウザでSuiteを実行して測定済みです。UX / Setup Time / Token Usage は
+代替指標で埋めずに `NOT_VERIFIED` のまま残し、測定された悪化はMaterialityとともに
+すべて報告します。
 
-## 参照ビルドのBenchmark結果
+## 検証ステータス
 
-| 指標 | 元Pluginの最良値 | 統合Plugin | 判定 |
-| --- | --- | --- | --- |
-| Task Completion（9タスク） | 0.222 | **0.889** | IMPROVED |
-| Maintainability（重複＋未解決Conflict） | 3 | **1** | IMPROVED |
-| Security（high/critical件数） | 0 | 0 | EQUIVALENT |
-| Error Rate | 0 | 0.5 | REGRESSION |
-| Capability Coverage / Install Source | 0.222 | 0.178 | REGRESSION |
-| Output Quality / Reliability / UX / Token Usage | — | — | NOT_VERIFIED |
+**STATUS: CONDITIONAL。** End-to-Endフローは動作し、生成Pluginは検証をPASSし、
+実在Repositoryをliveで解析し、Task Suiteを実ブラウザで実行しました。ただし
+**Material Regressionが2件残っており、隠さずそのまま報告します。**
 
-**総合: REGRESSION**。これは実行の失敗ではなく、正直な結果です。統合Pluginは
-4倍のタスクを1/6のIntegration Debtでカバーしますが、2つの実コストがあります。
+### SYNTHETIC_TEST — 実行による直接比較
 
-- **Error Rate**: 実行可能タスクの半分が、Sourceのセキュリティ走査を一度も
-  受けていないCapabilityに依存します。オフライン実行では走査対象のArtifactが
-  存在しないため `securityStatus: UNKNOWN` となり、UNKNOWNはPASSではありません。
-- **Install Sourceあたりのカバレッジ**: v0.1のNo-Vendoring方針により、生成Pluginは
-  Upstreamツールを内包せずオーケストレーションするため、選択したSourceはそれぞれ
-  別インストールのまま残ります。
+入力はFixture 3件。`fixture-org` は**実在しない**組織であり、この実行結果は
+実在プロジェクトに関する主張ではありません。
 
-いずれも [CHANGELOG.md](./CHANGELOG.md) に対処方針を記載しています。指標を
-調整せずそのまま報告することが、ルール30の趣旨です。
+| 指標 | 元Plugin最良 | originals-union | 統合Plugin | 判定 | Material? |
+| --- | --- | --- | --- | --- | --- |
+| Task Completion | 0.25 | 0.5 | **1.0** | IMPROVED | — |
+| Integration Debt | 3 | 6 | **1** | IMPROVED | — |
+| Quality Criteria Covered | 3 | 4 | **7** | IMPROVED | — |
+| Task Coverage / Install Action | 0.25 | 0.125 | **0.5** | IMPROVED | — |
+| Output Quality（共通基準） | n/a | 1.0 | 1.0 | EQUIVALENT | — |
+| Error Rate | 0 | 0 | 0 | EQUIVALENT | — |
+| Security Findings (high/critical) | 0 | 2 | 0 | EQUIVALENT | — |
+| Reliability（3回反復） | 1.0 | 1.0 | 1.0 | EQUIVALENT | — |
+| Install Actions | 1 | 4 | 2 | REGRESSION | no |
+| **Distinct Upstream Projects** | 1 | 3 | **5** | REGRESSION | **YES** |
+| **Execution Time** | 459 ms | 454 ms | **869 ms** | REGRESSION | **YES** |
+| UX / Setup Time / Token Usage | — | — | — | NOT_VERIFIED | — |
+
+### LIVE_REPOSITORY_TEST — 実在する公開Repository 3件
+
+`dequelabs/axe-core`（MPL-2.0）、`americanexpress/jest-image-snapshot`
+（Apache-2.0）、`GoogleChrome/lighthouse`（Apache-2.0）。Licenseは各プロジェクトに
+同梱されるLicense本文から判定し、公開Sourceを取得してScanしています。
+Material Regressionは1件（Distinct Upstream Projects: 5 vs 3）。
+
+### 残存するMaterial Regression（隠していません）
+
+**Distinct Upstream Projects（5 vs 3）。** 構造的な事実であり、チューニングで
+消せるものではありません。生成Pluginは、オーケストレーション対象のProjectの
+「上に」載るProject自身であるため、Supply Chainの面積は元Pluginを全部入れるより
+大きくなります。Stack Optimizerは削減可能な範囲で削減し（live実行ではProjectを
+1件まるごと除去）、**それ以上は拒否します** — さらに減らすにはSecurity Gateが
+弱いSourceへCapabilityを移す必要があり、整理整頓のためにGateを弱めることは
+しないためです。
+
+**Execution Time（869 ms vs 454 ms）。** これは実際の作業量です。統合Pluginは
+元Pluginが実行できないAccessibility・Performance・Screenshot・Pixel Diffを
+実行しています。4倍のTaskを1.9倍の時間で完了しています。事前登録した
+Materiality Ruleは生のコストを現実的な代替手段と比較するため、Task当たりの
+レートがほぼ同等であっても Material として記録します。
+
+数値は一切調整しておらず、Verdictから除外したMetricもありません。定義は
+再計測前に `data/benchmark-metrics.json` へ事前登録済みで、統合Pluginに不利に
+働くMateriality Ruleも含みます。
+
+### レビュー状況
+
+```
+CODEX REVIEW    STATUS: NOT_RUN    REASON: CODEX_UNAVAILABLE
+CLAUDE SELF REVIEW  16件の欠陥を発見・修正 — CHANGELOG.md 参照
+```
+
+このSelf Reviewはコードを書いた本人によるものです。**Independent Reviewでは
+ありません。** 特定の欠陥を発見した証拠ではありますが、コードが正しいことの
+証拠ではありません。
 
 ## v0.1 完成条件
 
-24項目すべて充足。`npm run verify` でビルドと全テストが通り、`build` コマンドは
-構造検証をPASSするPluginを生成します。
+24項目すべて充足。`npm run verify` でビルドと84件のテストが通り、`build` コマンドは
+構造検証をPASSするPluginを生成します。総合ステータスは PASS ではなく
+**CONDITIONAL** です（上記のMaterial Regression 2件が残存）。
 
 ## ライセンス
 

@@ -1,0 +1,262 @@
+{
+  "$comment": "PRE-REGISTERED metric definitions. Written in PHASE 1 before any implementation change or re-measurement, so that no definition can be tuned after seeing a result. Rule 22: definitions must not be changed to make a benchmark pass. Where a definition IS changed from v0.1, the change and its justification are recorded in `changedFromV01` and must describe a measurement DEFECT, never a preference.",
+  "version": "0.2.0",
+  "registeredOn": "2026-08-30",
+  "materialityRule": {
+    "statement": "A regression is MATERIAL if it degrades the user's ability to achieve the stated goal, or degrades safety or legality. A regression in a COST metric is material only if the integrated subject's cost exceeds the cost of the realistic alternative — installing the original plugins that together cover the same tasks (the `originals-union` subject).",
+    "why": "Rule 20 makes PASS depend on there being no MATERIAL regression, and rule 21 makes the overall benchmark verdict depend on any regression at all. These are two different questions, so materiality is recorded separately from the verdict and never removes a metric from it.",
+    "preRegistered": true,
+    "appliesTo": "final STATUS only. Every measured metric counts toward the benchmark OVERALL verdict regardless of materiality."
+  },
+  "subjects": {
+    "baselines": [
+      "each original plugin alone",
+      "originals-union: all originals installed together"
+    ],
+    "integrated": "the generated plugin",
+    "note": "`originals-union` was added in v0.2 because the realistic alternative to an integrated plugin is installing all the originals, not installing only the best one. Comparing against the best single original alone flatters nothing — it is simply the wrong counterfactual for cost metrics."
+  },
+  "metrics": [
+    {
+      "id": "task-completion",
+      "name": "Task Completion",
+      "definition": "Fraction of the benchmark tasks the subject can complete, where a task is completable only if the subject holds every capability the task requires.",
+      "formula": "count(tasks where requires ⊆ subject.capabilities) / count(tasks)",
+      "direction": "higher-is-better",
+      "measurementMethod": "STATIC: capability-set containment. In the live-task suite this is replaced by EXECUTED: the task is actually run and its assertions checked.",
+      "material": true,
+      "materialWhy": "It is the goal itself. A subject that completes fewer tasks is worse at what the user asked for.",
+      "countsTowardVerdict": true
+    },
+    {
+      "id": "error-rate",
+      "name": "Error Rate",
+      "definition": "Of the tasks a subject can complete, the fraction that depend on at least one capability whose hard gates did not come back clean (security not PASS, or licence LEGAL_REVIEW/BLOCK).",
+      "formula": "count(completable tasks touching a gate-degraded capability) / count(completable tasks)",
+      "direction": "lower-is-better",
+      "measurementMethod": "STATIC: derived from the per-capability gate results recorded at selection time. In the live-task suite this is replaced by EXECUTED: fraction of attempted tasks that threw, timed out, or failed their assertions.",
+      "material": true,
+      "materialWhy": "A result that cannot be trusted is not a result. This directly degrades goal achievement.",
+      "countsTowardVerdict": true,
+      "notes": "UNKNOWN counts as degraded, not as PASS. Rule 6 of CLAUDE.md: scanning nothing is UNKNOWN, never PASS."
+    },
+    {
+      "id": "security-findings",
+      "name": "Security Findings (high/critical)",
+      "definition": "Count of high- or critical-severity findings from the security gate, across every source the subject requires.",
+      "formula": "sum over required sources of count(findings where severity ∈ {high, critical})",
+      "direction": "lower-is-better",
+      "measurementMethod": "Static pattern scan over artifacts that were actually fetched. A source with no fetched artifact contributes 0 findings but is separately reported as UNSCANNED — absence of findings is not evidence of safety.",
+      "material": true,
+      "materialWhy": "Safety.",
+      "countsTowardVerdict": true
+    },
+    {
+      "id": "integration-debt",
+      "name": "Integration Debt",
+      "definition": "Count of things a maintainer would still have to reconcile by hand: conflicts that were detected but not resolved, plus any capability supplied by more than one implementation in the same subject.",
+      "formula": "count(unresolved conflicts) + count(duplicate implementations of one capability)",
+      "direction": "lower-is-better",
+      "measurementMethod": "Counted from the conflict detector and the final stack.",
+      "material": true,
+      "materialWhy": "It is unfinished work handed to the user.",
+      "countsTowardVerdict": true,
+      "changedFromV01": {
+        "was": "Maintainability",
+        "change": "RENAMED ONLY. The formula and the numbers are identical.",
+        "why": "\"Maintainability\" implied a broad quality judgement the number does not support — it counts two specific unreconciled things. The old name invited the reader to conclude more than was measured. Renaming to what is actually counted removes that. No value changed."
+      }
+    },
+    {
+      "id": "install-actions",
+      "name": "Install Actions",
+      "definition": "Number of distinct install steps a user must perform to obtain the subject's capabilities: one per package they install by hand, plus one per external runtime that needs its own separate install step (for example browser binaries). Transitive library dependencies resolved automatically by the package manager are NOT counted, because the user does not perform them.",
+      "formula": "1 (the subject package) + count(distinct external runtimes requiring a separate manual install step across the subject's required sources)",
+      "direction": "lower-is-better",
+      "measurementMethod": "Counted from declared dependencies of every source the subject requires.",
+      "material": false,
+      "materialWhy": "A one-time setup cost, not a property of goal achievement — UNLESS it exceeds the `originals-union` cost, per the materiality rule above, at which point integration is costing more than the alternative it replaces.",
+      "countsTowardVerdict": true,
+      "changedFromV01": {
+        "was": "Install Sources = 1 for every original, but 1 + count(upstream sources) for the integrated plugin.",
+        "change": "DEFECT FIX. The v0.1 implementation measured the two kinds of subject differently: originals were charged only for themselves while their own runtime dependencies were ignored, and the integrated plugin was charged for every upstream. That is an asymmetric measurement, not a definition preference.",
+        "why": "Rule 22 forbids changing a definition to pass a benchmark. It does not require preserving an implementation that measured different subjects by different rules. The corrected definition is applied identically to every subject, the raw upstream count is still reported separately as `upstream-projects`, and both count toward the verdict."
+      }
+    },
+    {
+      "id": "upstream-projects",
+      "name": "Distinct Upstream Projects",
+      "definition": "Number of distinct third-party projects whose code must be present at runtime for the subject's capabilities to work, counting every project involved including the subject's own package(s).",
+      "formula": "count(distinct projects: the subject's own package(s) ∪ the source repositories its capabilities come from)",
+      "direction": "lower-is-better",
+      "measurementMethod": "Counted from the final stack.",
+      "material": false,
+      "materialWhy": "A supply-chain surface measure. It is reported and counted so that the Install Actions correction cannot hide the fact that the integrated plugin does draw on more projects.",
+      "countsTowardVerdict": true,
+      "changedFromV01": {
+        "was": "count(distinct source repositories the subject's capabilities come from, EXCLUDING the subject itself)",
+        "change": "DEFECT FIX (ambiguity, not a threshold change). The phrase 'excluding the subject itself' has no meaning for the composite `originals-union` subject, whose 'self' is three projects. Read literally it scored the union 0 and a single original 0, while scoring the integrated plugin by a different rule — the same asymmetry corrected in `install-actions`.",
+        "why": "The corrected definition names one rule that applies to every subject. It makes the integrated plugin's number LARGER, not smaller: it now carries its own package plus every upstream. This correction works against the integrated subject, which is how you can tell it was not made to pass a benchmark."
+      }
+    },
+    {
+      "id": "coverage-per-install",
+      "name": "Task Coverage per Install Action",
+      "definition": "Task Completion divided by Install Actions: how much capability each install step buys.",
+      "formula": "task-completion / install-actions",
+      "direction": "higher-is-better",
+      "measurementMethod": "Derived from the two metrics above.",
+      "material": false,
+      "materialWhy": "An efficiency ratio, subject to the same cost-materiality threshold as Install Actions.",
+      "countsTowardVerdict": true
+    },
+    {
+      "id": "output-quality",
+      "name": "Output Quality",
+      "definition": "Rubric score computed over the criteria that BOTH the integrated subject and the realistic alternative (`originals-union`) were able to evaluate, so the two are scored on the same questions. A subject that could not evaluate all of those criteria reports n/a rather than a score over a smaller set.",
+      "formula": "sum(criterion scores over the common evaluated criteria) / sum(max over those criteria)",
+      "direction": "higher-is-better",
+      "measurementMethod": "EXECUTED against a real page. Each criterion cites the artifact that produced its score. A criterion no subject could evaluate, or that only some subjects could evaluate, is excluded from the composite and reported separately under `quality-criteria-covered`.",
+      "material": true,
+      "materialWhy": "The user asked for a high-quality result.",
+      "countsTowardVerdict": true,
+      "changedFromV01": {
+        "was": "Rubric score over the criteria each subject could evaluate individually, with unevaluable criteria excluded from that subject's own denominator.",
+        "change": "DEFECT FIX (comparability). Scoring each subject over its OWN criterion subset compares different questions and produces a perverse result: a subject that can check accessibility and finds a real page defect scores LOWER than a subject that cannot check accessibility at all. That measures blindness, not quality.",
+        "why": "The composite is now computed over the criteria every compared subject could evaluate, so the comparison is like-for-like. Breadth is not discarded — it moves to `quality-criteria-covered`, a metric of its own that counts toward the verdict, and every per-criterion score remains printed in full in BENCHMARK_REPORT.md."
+      }
+    },
+    {
+      "id": "quality-criteria-covered",
+      "name": "Quality Criteria Covered",
+      "definition": "Number of Output Quality rubric criteria the subject was able to evaluate at all, from evidence it produced itself.",
+      "formula": "count(rubric criteria with a non-null score)",
+      "direction": "higher-is-better",
+      "measurementMethod": "EXECUTED. A criterion counts only when the subject held the capability and the check actually ran.",
+      "material": true,
+      "materialWhy": "Being unable to check something is not the same as it being fine. A subject that can evaluate fewer criteria tells the user less about their page, which directly degrades goal achievement.",
+      "countsTowardVerdict": true
+    },
+    {
+      "id": "execution-time",
+      "name": "Execution Time",
+      "definition": "Wall-clock milliseconds to execute the task suite.",
+      "formula": "sum of per-task wall-clock durations",
+      "direction": "lower-is-better",
+      "measurementMethod": "EXECUTED. Measured on one machine in one session; treat as indicative, not as a portable figure.",
+      "material": false,
+      "materialWhy": "A cost metric under the same threshold rule.",
+      "countsTowardVerdict": true
+    },
+    {
+      "id": "reliability",
+      "name": "Reliability",
+      "definition": "Variance in task outcome across repeated identical runs.",
+      "formula": "count(tasks with an identical outcome across all repeats) / count(tasks)",
+      "direction": "higher-is-better",
+      "measurementMethod": "EXECUTED: the suite is run N times and outcomes compared. With N=1 this is NOT_VERIFIED.",
+      "material": true,
+      "materialWhy": "An unreliable result is not usable.",
+      "countsTowardVerdict": true
+    },
+    {
+      "id": "ux",
+      "name": "UX",
+      "definition": "Quality of the interaction for a human operator.",
+      "formula": "n/a",
+      "direction": "higher-is-better",
+      "measurementMethod": "NOT MEASURABLE in this project. It needs human subjects, which are not available. It stays NOT_VERIFIED and no proxy is substituted.",
+      "material": false,
+      "materialWhy": "Not measured, so it cannot be material either way.",
+      "countsTowardVerdict": false,
+      "excludedBecause": "Never measured, by any subject, so there is nothing to compare. This is not the exclusion of an unfavourable result — no result exists. Rule 22 forbids excluding a REGRESSION; a metric with no measurement for any subject has no verdict to exclude."
+    },
+    {
+      "id": "setup-time",
+      "name": "Setup Time",
+      "definition": "Wall-clock time for a user to get the subject working from nothing.",
+      "formula": "n/a",
+      "direction": "lower-is-better",
+      "measurementMethod": "NOT MEASURED. Install Actions is reported as a separate measured metric in its own right; it is NOT presented as a measurement of setup time.",
+      "material": false,
+      "materialWhy": "Not measured.",
+      "countsTowardVerdict": false,
+      "excludedBecause": "Never measured for any subject."
+    },
+    {
+      "id": "token-usage",
+      "name": "Token Usage",
+      "definition": "Model tokens consumed to complete the task suite.",
+      "formula": "sum of prompt + completion tokens",
+      "direction": "lower-is-better",
+      "measurementMethod": "NOT MEASURED. The task suite is executed as deterministic code, not through a model, so no token accounting exists. Estimating it would be a fabrication.",
+      "material": false,
+      "materialWhy": "Not measured.",
+      "countsTowardVerdict": false,
+      "excludedBecause": "Never measured for any subject."
+    }
+  ],
+  "outputQualityRubric": {
+    "$comment": "Rule 11. Every criterion must be backed by an artifact produced during execution. A criterion with no evidence is NOT_VERIFIED, never scored 0 and never scored generously.",
+    "scale": "0 = fails, 1 = partially meets, 2 = fully meets. NOT_VERIFIED criteria are excluded from both numerator and denominator.",
+    "criteria": [
+      {
+        "id": "requirement-satisfaction",
+        "name": "Requirement Satisfaction",
+        "evidence": "The task's own assertions passed."
+      },
+      {
+        "id": "visual-consistency",
+        "name": "Visual Consistency",
+        "evidence": "Screenshots captured at every configured viewport without error."
+      },
+      {
+        "id": "responsive-behavior",
+        "name": "Responsive Behavior",
+        "evidence": "Measured layout width tracks the viewport width, with no horizontal overflow."
+      },
+      {
+        "id": "accessibility",
+        "name": "Accessibility",
+        "evidence": "axe-core violation count on the rendered DOM."
+      },
+      {
+        "id": "functional-correctness",
+        "name": "Functional Correctness",
+        "evidence": "DOM assertions against the served page."
+      },
+      {
+        "id": "visual-regression",
+        "name": "Visual Regression",
+        "evidence": "Pixel diff ratio against a captured baseline."
+      },
+      {
+        "id": "performance",
+        "name": "Performance",
+        "evidence": "Navigation timing collected from the browser."
+      },
+      {
+        "id": "code-quality",
+        "name": "Code Quality",
+        "evidence": "NOT_VERIFIED — the task suite exercises a rendered page, not a codebase under review."
+      }
+    ]
+  },
+  "externalRuntimes": [
+    {
+      "id": "chromium-browser-binaries",
+      "triggeredBy": [
+        "playwright",
+        "playwright-core",
+        "@playwright/mcp",
+        "puppeteer",
+        "puppeteer-core",
+        "chromium",
+        "chrome-launcher",
+        "lighthouse",
+        "pa11y"
+      ],
+      "why": "These need a browser binary that npm does not install: the user runs a separate download step (for example `npx playwright install`) or supplies a system Chrome. Counted once no matter how many of them a subject uses, because one browser install serves them all."
+    }
+  ]
+}

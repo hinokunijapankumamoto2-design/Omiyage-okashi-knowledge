@@ -66,6 +66,20 @@ export function buildPlugin(plan: ArchitecturePlan, opts: BuildOptions = {}): Bu
   return { outputDir, files, provenance, advisoryOnly };
 }
 
+/** The plugin's own component index, so the router can hand off by name. */
+function componentIndex(plan: ArchitecturePlan): string {
+  const lines: string[] = [];
+  for (const name of componentNames(plan, 'skill')) {
+    lines.push(`- \`skills/${name}/SKILL.md\` — ${skillDescription(name, plan)}`);
+  }
+  for (const name of componentNames(plan, 'agent')) {
+    lines.push(`- \`agents/${name}.md\` — subagent for ${name.replace(/-agent$/, '')} work.`);
+  }
+  lines.push('- `config/default.json` — the single configuration surface every capability reads.');
+  lines.push('- `capability-manifest.json` — what this plugin can do and how well each claim is evidenced.');
+  return lines.join('\n');
+}
+
 function componentNames(plan: ArchitecturePlan, kind: string): string[] {
   const names = new Set<string>();
   for (const layer of plan.layers) {
@@ -206,7 +220,17 @@ and stop - do not substitute a weaker check and present it as the same result.
 4. When a capability the request needs is not in the table above, say it is
    not in this plugin. Do not improvise it.
 
+## Components in this plugin
+
+Hand off to these rather than doing their work here. Nothing else exists: if a
+request needs something not listed, say so.
+
+${componentIndex(plan)}
+
 ## Configuration
+
+Defaults live in \`config/default.json\`. Read that file before running any
+capability, and treat a value the user has overridden as authoritative.
 
 ${Object.entries(plan.unifiedConfig)
   .map(([k, v]) => `- \`${k}\` (${v.type}): ${v.description}`)
@@ -238,8 +262,9 @@ ${caps || '- (none selected)'}
 
 ## Procedure
 
-1. Read \`baseUrl\` and \`viewports\` from the plugin configuration. If
-   \`baseUrl\` is not set, stop and ask for it. Do not guess a URL.
+1. Read \`baseUrl\` and \`viewports\` from \`config/default.json\`, applying any
+   user override. If \`baseUrl\` is not set, stop and ask for it. Do not guess
+   a URL.
 2. For each viewport, drive the browser to the page and collect the raw
    artifacts the selected capabilities need.
 3. Run each capability's check and record its numeric or boolean result.

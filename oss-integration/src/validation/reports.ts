@@ -1,78 +1,8 @@
 import type { ArchitecturePlan, BenchmarkReport } from '../types.js';
-import type { ScoutResult, AnalyzedRepo } from '../pipeline.js';
+import type { ScoutResult } from '../pipeline.js';
 import type { PackageValidation } from './package-validator.js';
-import { renderBenchmark, type BenchmarkSubject, type BenchmarkTask } from './benchmark.js';
+import { renderBenchmark, type BenchmarkTask } from './benchmark.js';
 import { renderGoalSpec } from '../goal/engine.js';
-
-/** Builds the benchmark subjects: each original source alone, then the integrated plugin. */
-export function buildSubjects(scout: ScoutResult, plan: ArchitecturePlan): {
-  subjects: BenchmarkSubject[];
-  integratedName: string;
-} {
-  const subjects: BenchmarkSubject[] = scout.supplied.map((r) => toSubject(r, scout));
-
-  const selected = plan.stack.entries;
-  const unlocked = scout.graph.unlocked(selected.map((e) => e.capabilityId));
-  const degraded = selected
-    .filter((e) => e.capability.securityStatus !== 'PASS' || e.capability.licenseStatus === 'LEGAL_REVIEW')
-    .map((e) => e.capabilityId);
-
-  // Honest install accounting: the generated plugin is one install, plus every
-  // upstream tool it still has to invoke because its code was not vendored.
-  const upstream = new Set(
-    selected.filter((e) => e.origin !== 'original').map((e) => e.capability.sourceRepository),
-  );
-
-  const integratedName = plan.pluginName;
-  subjects.push({
-    name: integratedName,
-    capabilities: [...selected.map((e) => e.capabilityId), ...unlocked],
-    degraded,
-    securityFindings: countFindings([...scout.supplied, ...scout.discovered].filter((r) =>
-      upstream.has(r.profile.id),
-    )),
-    // What a maintainer would still have to reconcile by hand: conflicts the
-    // architect could not resolve, plus any capability that somehow ended up
-    // with more than one implementation (which should always be zero).
-    integrationDebt:
-      plan.conflicts.filter((c) => !c.resolved).length + duplicateImplementations(selected),
-    installSources: 1 + upstream.size,
-  });
-
-  return { subjects, integratedName };
-}
-
-function duplicateImplementations(entries: { capabilityId: string }[]): number {
-  const seen = new Set<string>();
-  let extra = 0;
-  for (const e of entries) {
-    if (seen.has(e.capabilityId)) extra++;
-    else seen.add(e.capabilityId);
-  }
-  return extra;
-}
-
-function toSubject(r: AnalyzedRepo, scout: ScoutResult): BenchmarkSubject {
-  const usable = r.score.blocked ? [] : r.capabilities.filter((c) => c.confidence > 0);
-  const conflicts = scout.stack.conflicts.filter((c) => c.parties.includes(r.profile.id));
-  return {
-    name: r.profile.id,
-    capabilities: usable.map((c) => c.capabilityId),
-    degraded: usable
-      .filter((c) => c.securityStatus !== 'PASS' || c.licenseStatus === 'LEGAL_REVIEW' || c.licenseStatus === 'BLOCK')
-      .map((c) => c.capabilityId),
-    securityFindings: countFindings([r]),
-    integrationDebt: conflicts.length,
-    installSources: 1,
-  };
-}
-
-function countFindings(repos: AnalyzedRepo[]): number {
-  return repos.reduce(
-    (n, r) => n + r.security.findings.filter((f) => f.severity === 'critical' || f.severity === 'high').length,
-    0,
-  );
-}
 
 export function renderIntegrationReport(scout: ScoutResult, plan: ArchitecturePlan): string {
   const s = scout.stack;
