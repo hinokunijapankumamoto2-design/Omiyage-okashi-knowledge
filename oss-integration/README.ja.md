@@ -115,7 +115,7 @@ REJECTされます。BLOCKはScoreより優先されるからです。
 | 指標 | 元Plugin最良 | originals-union | 統合Plugin | 判定 | Material? |
 | --- | --- | --- | --- | --- | --- |
 | Task Completion | 0.25 | 0.5 | **1.0** | IMPROVED | — |
-| Integration Debt | 3 | 6 | **1** | IMPROVED | — |
+| Integration Debt | 3 | 6 | **0** | IMPROVED | — |
 | Quality Criteria Covered | 3 | 4 | **7** | IMPROVED | — |
 | Task Coverage / Install Action | 0.25 | 0.125 | **0.5** | IMPROVED | — |
 | Output Quality（共通基準） | n/a | 1.0 | 1.0 | EQUIVALENT | — |
@@ -124,7 +124,7 @@ REJECTされます。BLOCKはScoreより優先されるからです。
 | Reliability（3回反復） | 1.0 | 1.0 | 1.0 | EQUIVALENT | — |
 | Install Actions | 1 | 4 | 2 | REGRESSION | no |
 | **Distinct Upstream Projects** | 1 | 3 | **5** | REGRESSION | **YES** |
-| **Execution Time** | 459 ms | 454 ms | **869 ms** | REGRESSION | **YES** |
+| **Execution Time** | 440 ms | 462 ms | **844 ms** | REGRESSION | **YES** |
 | UX / Setup Time / Token Usage | — | — | — | NOT_VERIFIED | — |
 
 ### LIVE_REPOSITORY_TEST — 実在する公開Repository 3件
@@ -144,7 +144,7 @@ Material Regressionは1件（Distinct Upstream Projects: 5 vs 3）。
 弱いSourceへCapabilityを移す必要があり、整理整頓のためにGateを弱めることは
 しないためです。
 
-**Execution Time（869 ms vs 454 ms）。** これは実際の作業量です。統合Pluginは
+**Execution Time（844 ms vs 462 ms）。** これは実際の作業量です。統合Pluginは
 元Pluginが実行できないAccessibility・Performance・Screenshot・Pixel Diffを
 実行しています。4倍のTaskを1.9倍の時間で完了しています。事前登録した
 Materiality Ruleは生のコストを現実的な代替手段と比較するため、Task当たりの
@@ -158,7 +158,7 @@ Materiality Ruleは生のコストを現実的な代替手段と比較するた�
 
 ```
 CODEX REVIEW    STATUS: NOT_RUN    REASON: CODEX_UNAVAILABLE
-CLAUDE SELF REVIEW  16件の欠陥を発見・修正 — CHANGELOG.md 参照
+CLAUDE SELF REVIEW  17件の欠陥を発見・修正 — CHANGELOG.md 参照
 ```
 
 このSelf Reviewはコードを書いた本人によるものです。**Independent Reviewでは
@@ -167,7 +167,7 @@ CLAUDE SELF REVIEW  16件の欠陥を発見・修正 — CHANGELOG.md 参照
 
 ## v0.1 完成条件
 
-24項目すべて充足。`npm run verify` でビルドと84件のテストが通り、`build` コマンドは
+24項目すべて充足。`npm run verify` でビルドと85件のテストが通り、`build` コマンドは
 構造検証をPASSするPluginを生成します。総合ステータスは PASS ではなく
 **CONDITIONAL** です（上記のMaterial Regression 2件が残存）。
 

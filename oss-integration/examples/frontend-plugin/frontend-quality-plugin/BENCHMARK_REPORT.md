@@ -32,7 +32,7 @@ A regression is MATERIAL if it degrades the user's ability to achieve the stated
 - `T8` Run the end-to-end test suite — requires: testing
 - `T9` Give an evidence-backed verdict on whether the page is ready to ship — requires: visual-review, accessibility-audit, performance-audit
 
-Executed against a real page in a real browser at http://127.0.0.1:33631/, 3 repeat(s). Each subject gets its own browser pass performing only the collection its capabilities imply, so Execution Time is that subject's own cost rather than a shared figure.
+Executed against a real page in a real browser at http://127.0.0.1:33407/, 3 repeat(s). Each subject gets its own browser pass performing only the collection its capabilities imply, so Execution Time is that subject's own cost rather than a shared figure.
 
 **Excluded from this run (1):** `T7` Review the diff for correctness and convention — no executable implementation exists for them against a rendered page, so scoring any subject on them would deflate every result equally and measure nothing.
 
@@ -43,13 +43,13 @@ Executed against a real page in a real browser at http://127.0.0.1:33631/, 3 rep
 | Task Completion | ↑ better | 0.25 | 0.25 | 0 | 0.5 | 1 | IMPROVED | — |
 | Error Rate | ↓ better | 0 | 0 | n/a | 0 | 0 | EQUIVALENT | — |
 | Security Findings (high/critical) | ↓ better | 0 | 0 | 2 | 2 | 0 | EQUIVALENT | — |
-| Integration Debt | ↓ better | 3 | 6 | 5 | 6 | 1 | IMPROVED | — |
+| Integration Debt | ↓ better | 3 | 6 | 5 | 6 | 0 | IMPROVED | — |
 | Install Actions | ↓ better | 1 | 2 | 1 | 4 | 2 | REGRESSION | no |
 | Distinct Upstream Projects | ↓ better | 1 | 1 | 1 | 3 | 5 | REGRESSION | **YES** |
 | Task Coverage per Install Action | ↑ better | 0.25 | 0.125 | 0 | 0.125 | 0.5 | IMPROVED | — |
 | Output Quality | ↑ better | n/a | n/a | n/a | 1 | 1 | EQUIVALENT | — |
 | Quality Criteria Covered | ↑ better | 1 | 3 | 0 | 4 | 7 | IMPROVED | — |
-| Execution Time | ↓ better | 483 | 469 | n/a | 460 | 831 | REGRESSION | **YES** |
+| Execution Time | ↓ better | 461 | 440 | n/a | 462 | 844 | REGRESSION | **YES** |
 | Reliability | ↑ better | 1 | 1 | n/a | 1 | 1 | EQUIVALENT | — |
 | UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
@@ -59,7 +59,7 @@ Executed against a real page in a real browser at http://127.0.0.1:33631/, 3 rep
 
 > **Distinct Upstream Projects regressed.** MATERIAL: 5 is worse than the realistic alternative (originals-union = 3), so integrating costs more than what it replaces.
 
-> **Execution Time regressed.** MATERIAL: 831 is worse than the realistic alternative (originals-union = 460), so integrating costs more than what it replaces.
+> **Execution Time regressed.** MATERIAL: 844 is worse than the realistic alternative (originals-union = 462), so integrating costs more than what it replaces.
 
 **Overall: REGRESSION**
 
@@ -122,7 +122,7 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects, Execution T
 | **Measurement method** | Counted from the conflict detector and the final stack. |
 | **Counts toward verdict** | yes |
 | **Material?** | yes — It is unfinished work handed to the user. |
-| **Results** | fixture-org/frontend-craft-plugin=3, fixture-org/browser-qa-plugin=6, fixture-org/a11y-guard-plugin=5, originals-union=6, frontend-quality-plugin=1 |
+| **Results** | fixture-org/frontend-craft-plugin=3, fixture-org/browser-qa-plugin=6, fixture-org/a11y-guard-plugin=5, originals-union=6, frontend-quality-plugin=0 |
 | **Verdict** | IMPROVED |
 | **Confidence** | medium |
 | **Changed from v0.1** | **RENAMED ONLY. The formula and the numbers are identical.** Was: Maintainability. Why: "Maintainability" implied a broad quality judgement the number does not support — it counts two specific unreconciled things. The old name invited the reader to conclude more than was measured. Renaming to what is actually counted removes that. No value changed. |
@@ -212,7 +212,7 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects, Execution T
 | **Measurement method** | EXECUTED. Measured on one machine in one session; treat as indicative, not as a portable figure. |
 | **Counts toward verdict** | yes |
 | **Material?** | no — A cost metric under the same threshold rule. |
-| **Results** | fixture-org/frontend-craft-plugin=483, fixture-org/browser-qa-plugin=469, fixture-org/a11y-guard-plugin=n/a, originals-union=460, frontend-quality-plugin=831 |
+| **Results** | fixture-org/frontend-craft-plugin=461, fixture-org/browser-qa-plugin=440, fixture-org/a11y-guard-plugin=n/a, originals-union=462, frontend-quality-plugin=844 |
 | **Verdict** | REGRESSION |
 | **Confidence** | high — produced by executing the task against a real page |
 
@@ -343,7 +343,7 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects, Execution T
 | Accessibility | 0 / 2 | axe-core: 1 violation(s), 1 serious/critical (image-alt). |
 | Functional Correctness | 2 / 2 | cta present: true, cards: 3. |
 | Visual Regression | 2 / 2 | pixel diff ratio 0. |
-| Performance | 2 / 2 | load 20ms, DOMContentLoaded 19ms. |
+| Performance | 2 / 2 | load 18ms, DOMContentLoaded 15ms. |
 | Code Quality | NOT_VERIFIED | NOT_VERIFIED — this suite exercises a rendered page, not a codebase under review. No evidence exists for this criterion. |
 
 ## Per-task outcomes
@@ -408,10 +408,10 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects, Execution T
 | T2 | passed | 0 ms | one h1: true, heading order sound: true | h1Count=1, headingOrderOk=true, title=Kaede Studio — Product Landing Page |
 | T3 | passed | 0 ms | captured 3 screenshots | shot:360x800=55785, shot:768x1024=72411, shot:1440x900=77600 |
 | T4 | passed | 0 ms | axe-core reported 1 violation(s): image-alt | violations=1, serious=1, rules=image-alt |
-| T5 | passed | 0 ms | load 20ms, DOMContentLoaded 19ms | loadMs=20, domContentLoadedMs=19 |
+| T5 | passed | 0 ms | load 18ms, DOMContentLoaded 15ms | loadMs=18, domContentLoadedMs=15 |
 | T6 | passed | 0 ms | pixel diff ratio against baseline: 0 | diffRatio=0 |
 | T8 | passed | 0 ms | DOM assertions: cta present true, cards 3 | ctaPresent=true, cardCount=3 |
-| T9 | passed | 0 ms | verdict assembled from 1 a11y violation(s), load 20ms, 3 screenshots | violations=1, loadMs=20, screenshots=3 |
+| T9 | passed | 0 ms | verdict assembled from 1 a11y violation(s), load 18ms, 3 screenshots | violations=1, loadMs=18, screenshots=3 |
 
 ## Not measured
 

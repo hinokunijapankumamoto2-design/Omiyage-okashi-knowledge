@@ -15,7 +15,7 @@ globally. This plugin exposes each of those once, owned here.
 - `viewports` (configuration-conflict) from fixture-org/frontend-craft-plugin, fixture-org/browser-qa-plugin - Namespaced under the generated plugin: "viewports" is re-exposed once, owned by the orchestration layer, and the source-specific variants are not re-emitted.
 - `baseUrl` (configuration-conflict) from fixture-org/browser-qa-plugin, fixture-org/a11y-guard-plugin - Resolved by selection: only fixture-org/browser-qa-plugin entered the stack, so the collision on "baseUrl" no longer exists.
 - `.qa/` (filesystem-conflict) from fixture-org/browser-qa-plugin, fixture-org/a11y-guard-plugin - Resolved by selection: only fixture-org/browser-qa-plugin entered the stack, so the collision on ".qa/" no longer exists.
-- `node` (incompatible-dependency) from fixture-org/frontend-craft-plugin, fixture-org/browser-qa-plugin, fixture-org/a11y-guard-plugin, pa11y/pa11y, microsoft/playwright-mcp, GoogleChrome/lighthouse - Unresolved automatically: "node" is needed at incompatible majors by fixture-org/frontend-craft-plugin and fixture-org/browser-qa-plugin and GoogleChrome/lighthouse. A human must pin one major or drop a capability.
+- `node` (incompatible-dependency) from fixture-org/frontend-craft-plugin, fixture-org/browser-qa-plugin, fixture-org/a11y-guard-plugin, pa11y/pa11y, microsoft/playwright-mcp, GoogleChrome/lighthouse - Resolved: require node >= 20, which satisfies every declared floor. No capability is dropped.
 
 ## Rules
 

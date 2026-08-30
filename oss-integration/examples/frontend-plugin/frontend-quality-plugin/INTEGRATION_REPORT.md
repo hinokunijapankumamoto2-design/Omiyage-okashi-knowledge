@@ -94,9 +94,9 @@ _(none)_
 - ✅ **filesystem-conflict** on `.qa/` (fixture-org/browser-qa-plugin, fixture-org/a11y-guard-plugin)
   - 2 sources declare the same write path ".qa/".
   - Resolution: Resolved by selection: only fixture-org/browser-qa-plugin entered the stack, so the collision on ".qa/" no longer exists.
-- ⚠️ **incompatible-dependency** on `node` (fixture-org/frontend-craft-plugin, fixture-org/browser-qa-plugin, fixture-org/a11y-guard-plugin, pa11y/pa11y, microsoft/playwright-mcp, GoogleChrome/lighthouse)
+- ✅ **incompatible-dependency** on `node` (fixture-org/frontend-craft-plugin, fixture-org/browser-qa-plugin, fixture-org/a11y-guard-plugin, pa11y/pa11y, microsoft/playwright-mcp, GoogleChrome/lighthouse)
   - "node" is declared at different versions (20, 18), but these are runtime floors rather than pinned majors.
-  - Resolution: Unresolved automatically: "node" is needed at incompatible majors by fixture-org/frontend-craft-plugin and fixture-org/browser-qa-plugin and GoogleChrome/lighthouse. A human must pin one major or drop a capability.
+  - Resolution: Resolved: require node >= 20, which satisfies every declared floor. No capability is dropped.
 
 ## 7. KEEP / REPLACE / ADD / REMOVE
 

@@ -310,3 +310,24 @@ test('conflicts: a runtime floor is resolved, a library major clash is not', asy
   assert.ok(reactConflict, 'a genuine library major clash must still be detected');
   assert.equal(reactConflict.resolved, false, 'react 17 and 18 cannot both be satisfied');
 });
+
+test('conflicts: the architect does not re-open a conflict the detector resolved', async () => {
+  const { resolveConflicts } = await import('../src/integration/architect.js');
+  const stack = {
+    goal: normalizeGoal({ goal: 'test' }),
+    entries: [], decisions: [], duplicates: [], conflicts: [],
+    gaps: { required: [], current: [], missing: [], coveredByUnlock: [], nearMisses: [] },
+    rejected: [],
+  };
+  const already = {
+    kind: 'incompatible-dependency' as const,
+    subject: 'node',
+    parties: ['a/one', 'b/two'],
+    detail: 'runtime floors',
+    resolution: 'Resolved: require node >= 20.',
+    resolved: true,
+  };
+  const [out] = resolveConflicts([already], stack);
+  assert.equal(out?.resolved, true, 'a resolved conflict must not be re-opened');
+  assert.match(out?.resolution ?? '', />= 20/);
+});

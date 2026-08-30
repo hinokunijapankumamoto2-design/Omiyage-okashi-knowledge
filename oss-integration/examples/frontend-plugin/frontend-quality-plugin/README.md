@@ -74,7 +74,7 @@ Capabilities: (orchestration only)
 
 ## Known limitations
 
-- Unresolved incompatible-dependency on `node`: Unresolved automatically: "node" is needed at incompatible majors by fixture-org/frontend-craft-plugin and fixture-org/browser-qa-plugin and GoogleChrome/lighthouse. A human must pin one major or drop a capability.
+- No unresolved conflicts were detected at build time.
 
 - `security-review`: UNKNOWN — Required capability "security-review" has no candidate in the seed registry or the supplied repositories. Recorded as UNKNOWN rather than substituted with something adjacent.
 

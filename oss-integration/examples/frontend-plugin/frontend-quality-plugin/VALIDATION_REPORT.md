@@ -28,13 +28,13 @@ _No structural issue found._
 | Task Completion | ↑ better | 0.25 | 0.25 | 0 | 0.5 | 1 | IMPROVED | — |
 | Error Rate | ↓ better | 0 | 0 | n/a | 0 | 0 | EQUIVALENT | — |
 | Security Findings (high/critical) | ↓ better | 0 | 0 | 2 | 2 | 0 | EQUIVALENT | — |
-| Integration Debt | ↓ better | 3 | 6 | 5 | 6 | 1 | IMPROVED | — |
+| Integration Debt | ↓ better | 3 | 6 | 5 | 6 | 0 | IMPROVED | — |
 | Install Actions | ↓ better | 1 | 2 | 1 | 4 | 2 | REGRESSION | no |
 | Distinct Upstream Projects | ↓ better | 1 | 1 | 1 | 3 | 5 | REGRESSION | **YES** |
 | Task Coverage per Install Action | ↑ better | 0.25 | 0.125 | 0 | 0.125 | 0.5 | IMPROVED | — |
 | Output Quality | ↑ better | n/a | n/a | n/a | 1 | 1 | EQUIVALENT | — |
 | Quality Criteria Covered | ↑ better | 1 | 3 | 0 | 4 | 7 | IMPROVED | — |
-| Execution Time | ↓ better | 483 | 469 | n/a | 460 | 831 | REGRESSION | **YES** |
+| Execution Time | ↓ better | 461 | 440 | n/a | 462 | 844 | REGRESSION | **YES** |
 | Reliability | ↑ better | 1 | 1 | n/a | 1 | 1 | EQUIVALENT | — |
 | UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
@@ -44,7 +44,7 @@ _No structural issue found._
 
 > **Distinct Upstream Projects regressed.** MATERIAL: 5 is worse than the realistic alternative (originals-union = 3), so integrating costs more than what it replaces.
 
-> **Execution Time regressed.** MATERIAL: 831 is worse than the realistic alternative (originals-union = 460), so integrating costs more than what it replaces.
+> **Execution Time regressed.** MATERIAL: 844 is worse than the realistic alternative (originals-union = 462), so integrating costs more than what it replaces.
 
 **Overall: REGRESSION**
 
@@ -65,6 +65,6 @@ Any of the above reported as an improvement would be a guess. They are
 
 - Install Actions: {"fixture-org/frontend-craft-plugin":1,"fixture-org/browser-qa-plugin":2,"fixture-org/a11y-guard-plugin":1,"originals-union":4,"frontend-quality-plugin":2}
 - Distinct Upstream Projects: {"fixture-org/frontend-craft-plugin":1,"fixture-org/browser-qa-plugin":1,"fixture-org/a11y-guard-plugin":1,"originals-union":3,"frontend-quality-plugin":5}
-- Execution Time: {"fixture-org/frontend-craft-plugin":483,"fixture-org/browser-qa-plugin":469,"fixture-org/a11y-guard-plugin":null,"originals-union":460,"frontend-quality-plugin":831}
+- Execution Time: {"fixture-org/frontend-craft-plugin":461,"fixture-org/browser-qa-plugin":440,"fixture-org/a11y-guard-plugin":null,"originals-union":462,"frontend-quality-plugin":844}
 
 The integration architecture must account for this before the plugin is presented as better than its sources.

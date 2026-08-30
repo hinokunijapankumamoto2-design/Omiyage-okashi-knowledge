@@ -116,7 +116,7 @@ src/
 ```bash
 npm install
 npm run build
-npm test                      # 84 offline tests
+npm test                      # 85 offline tests
 
 # opt-in, network:  real public repositories
 OSS_LIVE_TEST=1 node --test "dist/tests/live-repository.test.js"

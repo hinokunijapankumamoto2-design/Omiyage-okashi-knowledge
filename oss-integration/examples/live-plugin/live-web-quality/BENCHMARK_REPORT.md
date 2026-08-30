@@ -32,7 +32,7 @@ A regression is MATERIAL if it degrades the user's ability to achieve the stated
 - `T8` Run the end-to-end test suite — requires: testing
 - `T9` Give an evidence-backed verdict on whether the page is ready to ship — requires: visual-review, accessibility-audit, performance-audit
 
-Executed against a real page in a real browser at http://127.0.0.1:42271/, 3 repeat(s). Each subject gets its own browser pass performing only the collection its capabilities imply, so Execution Time is that subject's own cost rather than a shared figure.
+Executed against a real page in a real browser at http://127.0.0.1:40165/, 3 repeat(s). Each subject gets its own browser pass performing only the collection its capabilities imply, so Execution Time is that subject's own cost rather than a shared figure.
 
 **Excluded from this run (1):** `T7` Review the diff for correctness and convention — no executable implementation exists for them against a rendered page, so scoring any subject on them would deflate every result equally and measure nothing.
 
@@ -49,7 +49,7 @@ Executed against a real page in a real browser at http://127.0.0.1:42271/, 3 rep
 | Task Coverage per Install Action | ↑ better | 0 | 0 | 0 | 0 | 0.375 | IMPROVED | — |
 | Output Quality | ↑ better | n/a | n/a | n/a | n/a | 0.833 | NOT_VERIFIED | — |
 | Quality Criteria Covered | ↑ better | 0 | 0 | 0 | 0 | 6 | IMPROVED | — |
-| Execution Time | ↓ better | n/a | n/a | n/a | n/a | 853 | NOT_VERIFIED | — |
+| Execution Time | ↓ better | n/a | n/a | n/a | n/a | 840 | NOT_VERIFIED | — |
 | Reliability | ↑ better | n/a | n/a | n/a | n/a | 1 | NOT_VERIFIED | — |
 | UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
@@ -210,7 +210,7 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects. Rule 21: th
 | **Measurement method** | EXECUTED. Measured on one machine in one session; treat as indicative, not as a portable figure. |
 | **Counts toward verdict** | yes |
 | **Material?** | no — A cost metric under the same threshold rule. |
-| **Results** | dequelabs/axe-core=n/a, americanexpress/jest-image-snapshot=n/a, GoogleChrome/lighthouse=n/a, originals-union=n/a, live-web-quality=853 |
+| **Results** | dequelabs/axe-core=n/a, americanexpress/jest-image-snapshot=n/a, GoogleChrome/lighthouse=n/a, originals-union=n/a, live-web-quality=840 |
 | **Verdict** | NOT_VERIFIED |
 | **Confidence** | high — produced by executing the task against a real page |
 
@@ -341,7 +341,7 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects. Rule 21: th
 | Accessibility | 0 / 2 | axe-core: 1 violation(s), 1 serious/critical (image-alt). |
 | Functional Correctness | 2 / 2 | cta present: true, cards: 3. |
 | Visual Regression | 2 / 2 | pixel diff ratio 0. |
-| Performance | 2 / 2 | load 15ms, DOMContentLoaded 12ms. |
+| Performance | 2 / 2 | load 16ms, DOMContentLoaded 13ms. |
 | Code Quality | NOT_VERIFIED | NOT_VERIFIED — this suite exercises a rendered page, not a codebase under review. No evidence exists for this criterion. |
 
 ## Per-task outcomes
@@ -406,10 +406,10 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects. Rule 21: th
 | T2 | not-attempted | 0 ms | missing capability: visual-design | — |
 | T3 | passed | 0 ms | captured 3 screenshots | shot:360x800=55785, shot:768x1024=72411, shot:1440x900=77600 |
 | T4 | passed | 0 ms | axe-core reported 1 violation(s): image-alt | violations=1, serious=1, rules=image-alt |
-| T5 | passed | 0 ms | load 15ms, DOMContentLoaded 12ms | loadMs=15, domContentLoadedMs=12 |
+| T5 | passed | 0 ms | load 16ms, DOMContentLoaded 13ms | loadMs=16, domContentLoadedMs=13 |
 | T6 | passed | 0 ms | pixel diff ratio against baseline: 0 | diffRatio=0 |
 | T8 | passed | 0 ms | DOM assertions: cta present true, cards 3 | ctaPresent=true, cardCount=3 |
-| T9 | passed | 0 ms | verdict assembled from 1 a11y violation(s), load 15ms, 3 screenshots | violations=1, loadMs=15, screenshots=3 |
+| T9 | passed | 0 ms | verdict assembled from 1 a11y violation(s), load 16ms, 3 screenshots | violations=1, loadMs=16, screenshots=3 |
 
 ## Not measured
 

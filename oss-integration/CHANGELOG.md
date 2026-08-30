@@ -122,12 +122,16 @@ Defects found by self-review in this verification round and fixed:
 16. **The generated router referenced none of its sibling skills**, and
     `config/default.json` was generated but never referenced. Both fixed, and
     an acceptance test now fails on any unreachable component.
+17. **The architect re-opened a conflict the detector had already resolved**,
+    discarding the detector's reasoning and reporting a runtime version floor as
+    an unresolvable major clash. Both reference builds now have **zero**
+    unresolved conflicts.
 
 ### Known limitations
 
 - **Two material regressions remain and are reported, not tuned away.**
   `Distinct Upstream Projects` (5 vs 3 for installing all the originals) and,
-  in the synthetic run, `Execution Time` (869 ms vs 454 ms). The first is
+  in the synthetic run, `Execution Time` (844 ms vs 462 ms). The first is
   structural: the plugin is itself a project on top of the ones it orchestrates.
   The second is real work: it completes 4× the tasks. Neither is hidden.
 - **UX, Setup Time and Token Usage remain NOT_VERIFIED.** UX needs human

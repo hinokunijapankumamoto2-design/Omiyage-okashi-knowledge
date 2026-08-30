@@ -80,6 +80,11 @@ export function designArchitecture(stack: CapabilityStack, opts: ArchitectOption
 export function resolveConflicts(conflicts: Conflict[], stack: CapabilityStack): Conflict[] {
   const selectedRepos = new Set(stack.entries.map((e) => e.capability.sourceRepository));
   return conflicts.map((c) => {
+    // A conflict the detector already resolved stays resolved. Re-deciding it
+    // here discarded the detector's reasoning — a runtime version floor was
+    // being re-reported as an unresolvable major clash.
+    if (c.resolved) return c;
+
     const survivors = c.parties.filter((p) => selectedRepos.has(p));
     if (survivors.length <= 1) {
       return {

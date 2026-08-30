@@ -133,7 +133,7 @@ this run is a claim about a real project.
 | Metric | best original | originals-union | integrated | Verdict | Material? |
 | --- | --- | --- | --- | --- | --- |
 | Task Completion | 0.25 | 0.5 | **1.0** | IMPROVED | — |
-| Integration Debt | 3 | 6 | **1** | IMPROVED | — |
+| Integration Debt | 3 | 6 | **0** | IMPROVED | — |
 | Quality Criteria Covered | 3 | 4 | **7** | IMPROVED | — |
 | Task Coverage per Install Action | 0.25 | 0.125 | **0.5** | IMPROVED | — |
 | Output Quality (shared criteria) | n/a | 1.0 | 1.0 | EQUIVALENT | — |
@@ -142,7 +142,7 @@ this run is a claim about a real project.
 | Reliability (3 repeats) | 1.0 | 1.0 | 1.0 | EQUIVALENT | — |
 | Install Actions | 1 | 4 | 2 | REGRESSION | no |
 | **Distinct Upstream Projects** | 1 | 3 | **5** | REGRESSION | **YES** |
-| **Execution Time** | 459 ms | 454 ms | **869 ms** | REGRESSION | **YES** |
+| **Execution Time** | 440 ms | 462 ms | **844 ms** | REGRESSION | **YES** |
 | UX / Setup Time / Token Usage | — | — | — | NOT_VERIFIED | — |
 
 ### LIVE_REPOSITORY_TEST — three real public repositories
@@ -163,7 +163,7 @@ project in the live run — but it **refuses to drop one more** because doing so
 would move a capability onto a source with a weaker security gate. Tidiness is
 not worth a gate.
 
-**Execution Time (869 ms vs 454 ms).** Real work, honestly reported: the
+**Execution Time (844 ms vs 462 ms).** Real work, honestly reported: the
 integrated plugin runs accessibility, performance, screenshot and pixel-diff
 passes that the originals cannot run at all. It completes 4× the tasks for
 1.9× the time. The pre-registered materiality rule compares raw cost against
@@ -179,7 +179,7 @@ plugin.
 
 ```
 CODEX REVIEW    STATUS: NOT_RUN    REASON: CODEX_UNAVAILABLE
-CLAUDE SELF REVIEW  16 defects found and fixed — see CHANGELOG.md
+CLAUDE SELF REVIEW  17 defects found and fixed — see CHANGELOG.md
 ```
 
 The self-review was performed by the agent that wrote the code. It is evidence
@@ -209,7 +209,7 @@ oss-integration/
 
 ## Status against the v0.1 definition of done
 
-All 24 conditions met. `npm run verify` builds and runs 84 tests; the `build`
+All 24 conditions met. `npm run verify` builds and runs 85 tests; the `build`
 command produces a plugin that passes structural validation. Overall status is
 **CONDITIONAL**, not PASS: two material regressions remain, named above.
 

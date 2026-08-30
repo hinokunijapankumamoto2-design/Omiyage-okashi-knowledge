@@ -187,9 +187,7 @@
       "rationale": "Some capabilities entered the stack as concept references or with a non-clean gate result. The ledger keeps that distinction visible at runtime instead of letting the plugin present every result as equally verified."
     }
   ],
-  "unresolvedConflicts": [
-    "node"
-  ],
+  "unresolvedConflicts": [],
   "unknown": [
     "security-review"
   ]

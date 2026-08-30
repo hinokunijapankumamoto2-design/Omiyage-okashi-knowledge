@@ -34,7 +34,7 @@ _No structural issue found._
 | Task Coverage per Install Action | ↑ better | 0 | 0 | 0 | 0 | 0.375 | IMPROVED | — |
 | Output Quality | ↑ better | n/a | n/a | n/a | n/a | 0.833 | NOT_VERIFIED | — |
 | Quality Criteria Covered | ↑ better | 0 | 0 | 0 | 0 | 6 | IMPROVED | — |
-| Execution Time | ↓ better | n/a | n/a | n/a | n/a | 853 | NOT_VERIFIED | — |
+| Execution Time | ↓ better | n/a | n/a | n/a | n/a | 840 | NOT_VERIFIED | — |
 | Reliability | ↑ better | n/a | n/a | n/a | n/a | 1 | NOT_VERIFIED | — |
 | UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
