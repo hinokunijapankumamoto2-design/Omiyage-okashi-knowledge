@@ -33,7 +33,7 @@ broken.
 | **CAUSE** | Two independent blockers: (1) network egress to OpenAI is denied by organization policy; (2) no credentials of any kind are present. |
 | **COMMAND** | `codex exec --skip-git-repo-check "Reply OK"` |
 | **ERROR** | `api.openai.com:443 — connect_rejected (the egress proxy denied the CONNECT (organization policy) or could not reach the destination)`, ×20 per attempt; 29 and 23 failed connections across two attempts. The proxy status endpoint reports `gateway answered 403 to CONNECT (policy denial or upstream failure)`. |
-| **AUTH STATUS** | `codex login status` → **`Not logged in`**. No `~/.codex` directory. `OPENAI_API_KEY` unset. |
+| **AUTH STATUS** | `codex login status` → **`Not logged in`**. `~/.codex` is present (created when the Codex CLI was installed) but contains **no credential material**: no `auth.json`, no token cache. `OPENAI_API_KEY`, `CODEX_API_KEY` and `CODEX_ACCESS_TOKEN` are unset. Re-verified 2026-08-30T08:45:35Z. |
 | **PLUGIN STATUS** | Installed and **enabled** — the plugin is not the failure. |
 
 ### Why neither auth route is available
@@ -53,7 +53,7 @@ Free) or OpenAI API key."* Both routes are closed here:
 | # | Attempt | Result |
 | --- | --- | --- |
 | 1 | Check for a pre-existing Codex CLI before installing anything | Not present; installed 0.151.0 rather than assuming |
-| 2 | Check for existing ChatGPT/Codex auth so as not to demand an API key | `~/.codex` absent, `codex login status` → Not logged in |
+| 2 | Check for existing ChatGPT/Codex auth so as not to demand an API key | At that point `~/.codex` was absent and `codex login status` → Not logged in. Re-checked 2026-08-30: `~/.codex` now exists because the CLI was installed, still with no credential material, and `codex login status` still reports Not logged in. |
 | 3 | Probe all three OpenAI hosts (`api.` / `chatgpt.com` / `auth.`) | All three fail to connect |
 | 4 | Read the proxy status endpoint for the precise cause | `403 to CONNECT`, organization policy denial — not a transient error |
 | 5 | Install marketplace + plugin non-interactively via `claude plugin` | Both succeeded |

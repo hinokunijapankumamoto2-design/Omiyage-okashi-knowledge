@@ -10,7 +10,8 @@ INDEPENDENT REVIEW         PENDING
 
 ## CODEX CLI
 
-Installed — `codex-cli 0.151.0`.
+`codex-cli 0.151.0` — installed, advanced runtime available.
+Installed only; **not authenticated**, and no independent review has been run through it.
 
 ## CODEX PLUGIN
 
@@ -21,10 +22,29 @@ Installed and enabled — `codex@openai-codex` v1.0.6, user scope, from the
 
 Organization network policy on the execution environment's egress proxy.
 `api.openai.com`, `auth.openai.com` and `chatgpt.com` all answer **403 to
-CONNECT**; `codex login status` reports **Not logged in**; no `~/.codex`;
-`OPENAI_API_KEY` unset. Both auth routes the plugin documents are therefore
+CONNECT**; `codex login status` reports **Not logged in**. `~/.codex` is present
+because the Codex CLI was installed, but it holds **no credential material** — no
+`auth.json`, no token cache, only local state (sqlite logs, sessions,
+`installation_id`). `OPENAI_API_KEY`, `CODEX_API_KEY` and `CODEX_ACCESS_TOKEN` are
+unset. Both auth routes the plugin documents are therefore
 closed. Classified `ENVIRONMENT_RESTRICTION` — **not a product defect**. No
 further connection attempts are made from here.
+
+## EGRESS EVIDENCE (single re-check, not retried)
+
+```
+TIMESTAMP       2026-08-30T08:45:51Z
+TARGET          https://api.openai.com/v1/models
+RESULT          no connection established (curl exit 56)
+ERROR / STATUS  CONNECT tunnel failed, response 403
+                proxy log: "gateway answered 403 to CONNECT
+                (policy denial or upstream failure)"
+CLASSIFICATION  ENVIRONMENT_RESTRICTION
+```
+
+The cause was already established; this is one confirming observation with a
+current timestamp, not a retry loop. `ENVIRONMENT_RESTRICTION` is the correct
+classification — this is **not** a Codex product failure.
 
 ## REVIEW PACKAGE
 
@@ -183,8 +203,11 @@ REAL SECRETS FOUND  0
 Documentation examples are distinguished from real secrets: every
 `OPENAI_API_KEY` occurrence is either a statement that no key is set, the
 pipe-from-environment guidance (`printenv OPENAI_API_KEY | codex login`), or
-the project's own security-gate detection pattern. No `~/.codex` content, auth
-token, cookie or session material is present or copied.
+the project's own security-gate detection pattern. No `~/.codex` credential
+content, auth token, cookie or session material exists to copy, and none is
+copied: `~/.codex` was searched by filename and contains no `auth.json` and no
+token cache. Secret values are never printed or stored — presence is recorded,
+values are not.
 
 ## PRODUCT CODE CHANGED
 

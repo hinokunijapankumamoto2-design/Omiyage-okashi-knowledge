@@ -188,11 +188,11 @@ CODEX_CONNECTION: FAIL
 
 | | |
 | --- | --- |
-| Codex CLI | ✅ `codex-cli 0.151.0` installed |
+| Codex CLI | ✅ `codex-cli 0.151.0` installed, advanced runtime available (installed only — not authenticated, no review run through it) |
 | Plugin | ✅ `codex@openai-codex` v1.0.6 marketplace-added, installed, **enabled** |
 | Commands available | `/codex:review`, `/codex:adversarial-review`, `/codex:status`, `/codex:setup`, … |
-| Auth | ❌ `codex login status` → **Not logged in**; no `~/.codex`; `OPENAI_API_KEY` unset |
-| Network | ❌ `api.openai.com` / `chatgpt.com` / `auth.openai.com` → `connect_rejected`, **403 to CONNECT (organization policy)** |
+| Auth | ❌ `codex login status` → **Not logged in**. `~/.codex` present (created by the CLI install) but **no credential material**: no `auth.json`, no token cache. `OPENAI_API_KEY` / `CODEX_API_KEY` / `CODEX_ACCESS_TOKEN` unset. Re-verified 2026-08-30T08:45:35Z |
+| Network | ❌ `api.openai.com` / `chatgpt.com` / `auth.openai.com` → `connect_rejected`, **403 to CONNECT (organization policy)**. Single re-check 2026-08-30T08:45:51Z: unchanged. Classified `ENVIRONMENT_RESTRICTION`, not a Codex product failure |
 | Recovery attempts | 7, all recorded in `CODEX_REVIEW_REPORT.md` |
 
 The tooling side is complete; the blocker is egress policy plus absent

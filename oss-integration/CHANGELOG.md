@@ -1,5 +1,55 @@
 # Changelog
 
+## Unreleased — Codex environment evidence refresh — 2026-08-30
+
+**Documentation only. No product code changed. No release verdict changed.**
+
+The Codex CLI was installed into this session, which changed the observable
+environment state. The conclusion is unchanged — **no usable Codex credential is
+present** — but one supporting evidence statement went stale and is corrected.
+
+Evidence timeline:
+
+- At the earlier verification point, `~/.codex` did not exist.
+- After Codex CLI installation, `~/.codex` now exists but contains **no
+  credential material** — no `auth.json`, no token cache, only local state
+  (sqlite logs/goals/memories/queue, `sessions/`, `installation_id`).
+
+Re-verified 2026-08-30T08:45:35Z:
+
+```
+codex --version          codex-cli 0.151.0 (advanced runtime available)
+codex login status       Not logged in (exit 1)
+~/.codex                 PRESENT
+auth.json                NOT PRESENT
+token cache              NOT PRESENT
+OPENAI_API_KEY           NOT SET
+CODEX_API_KEY            NOT SET
+CODEX_ACCESS_TOKEN       NOT SET
+```
+
+Single egress re-check, not retried:
+
+```
+TIMESTAMP       2026-08-30T08:45:51Z
+TARGET          https://api.openai.com/v1/models
+RESULT          no connection established (curl exit 56)
+ERROR / STATUS  CONNECT tunnel failed, response 403
+CLASSIFICATION  ENVIRONMENT_RESTRICTION
+```
+
+The CLI being installed is **not** authentication, readiness, or an independent
+review. `INDEPENDENT CODEX REVIEW` remains `NOT_RUN` and v0.1 product
+development remains frozen.
+
+### Changed
+
+- `CODEX_REVIEW_REPORT.md`, `CODEX_HANDOFF_REPORT.md`, `FINAL_RELEASE_REPORT.md`
+  — replaced the stale `no ~/.codex` evidence with the current measured state
+  and added the timestamped egress record.
+- `CHANGELOG.md` — scoped the earlier `~/.codex absent` observation to its own
+  verification point rather than deleting it.
+
 ## 0.1.0 — Codex independent review round — 2026-08-30
 
 **No product code changed.** The Codex review could not run; this round records
@@ -18,7 +68,8 @@ and **enabled** — the tooling is in place. Both auth routes the plugin documen
 are closed here: `api.openai.com`, `chatgpt.com` and `auth.openai.com` all
 return `connect_rejected` (the egress proxy answers **403 to CONNECT**,
 organization policy), and no credential exists (`codex login status` →
-`Not logged in`, no `~/.codex`, `OPENAI_API_KEY` unset). Seven recovery attempts
+`Not logged in`, `~/.codex` absent at that verification point, `OPENAI_API_KEY`
+unset). Seven recovery attempts
 are recorded in `CODEX_REVIEW_REPORT.md`. Routing "Codex" through some other
 reachable model was considered and **rejected** — it would make the label false.
 
