@@ -82,49 +82,53 @@ to be false — or move the baseline and lose the freeze point. Splitting the tw
 keeps both true at once, and makes any future product change immediately visible
 as a source-hash mismatch rather than being absorbed into a moved baseline.
 
-### Gate logic
+### Gate logic — content-addressed
 
-The baseline gate checks **both**, and a failure is a hard stop (exit 4), never
-a warning:
+Integrity is proved by **content**, not by a commit SHA and not by a tag:
 
-1. `HEAD` equals the commit tagged `codex-review-package/v1.1.0`.
-2. The product source hash equals the hash recorded at `SOURCE_BASELINE_COMMIT`.
-3. The review-package content hash equals the recorded value.
+```
+A. product source working-tree hash == SOURCE_BASELINE_CONTENT_HASH
+B. review package content hash      == REVIEW_PACKAGE_CONTENT_HASH
+```
 
-Neither check alone is sufficient. A matching `HEAD` says nothing about whether
-the source still matches the freeze; a matching source hash says nothing about
-which evidence Codex will be handed. A tag is used for check 1 because a commit
-cannot contain its own SHA — recording the SHA inside the committed file would
-be self-referential and could never match.
+Both must hold, or the gate stops with exit 4. There is no fallback that trusts
+`HEAD`, a branch name, or a "documentation-only" judgement.
 
-The source hash is taken over **working-tree file content**, not `git ls-files -s`.
-The index-based form was tried first and rejected: it reports staged blobs, so an
+Two things forced this design, and both are worth recording because each was a
+dead end first:
+
+**A commit cannot contain its own SHA.** Recording `review_package_commit` inside
+a file that ships in that same commit is self-referential and can never match
+`HEAD`. A git tag solves it — the tag lives outside commit content.
+
+**But the tag cannot be pushed.** A local review-package tag was created as an
+integrity mechanism, and the remote tag push was rejected by repository
+permissions. Requiring it would fail every fresh clone through no fault of its
+own. So the tag is downgraded to `OPTIONAL_PROVENANCE_SIGNAL`: its state is
+recorded (`ABSENT` / `PRESENT_MATCHES_HEAD` / `PRESENT_DIFFERENT_COMMIT`) and its
+absence never fails the gate. The final gate uses deterministic content hashes,
+which work in a fresh clone without any remote tag.
+
+Commit SHA and content hash are now separate kinds of evidence:
+
+| | Role |
+| --- | --- |
+| `SOURCE_BASELINE_COMMIT` `04fab5b` | provenance / history evidence |
+| `SOURCE_BASELINE_CONTENT_HASH` | artifact identity evidence — **the gate** |
+| review-package tag | optional provenance signal |
+
+**Source hashing uses working-tree file content**, not `git ls-files -s`. The
+index-based form was tried first and rejected: it reports staged blobs, so an
 uncommitted edit to `src/` passed the gate. That was caught by a negative test,
 not by reading the code.
 
-**If the clone has no tag.** The tag could not be pushed from the authoring
-environment — the git credential there is scoped to branch refs and answers 403
-on `refs/tags/*`. So the reviewer either creates the tag locally, or asserts the
-commit explicitly:
-
-```
-CODEX_REVIEW_PACKAGE_COMMIT=<commit> ./reports/codex-package/RUN_CODEX_REVIEW.sh
-$env:CODEX_REVIEW_PACKAGE_COMMIT='<commit>'   # PowerShell
-```
-
-With neither, the gate fails `REVIEW_PACKAGE_TAG_MISSING` (exit 4). It never
-falls through to reviewing whatever `HEAD` happens to be. `RUN_METADATA.json`
-records which source was used, in `review_package_identity_source`.
-
-### Gate negative tests
-
-| Test | Expected | Result |
-| --- | --- | --- |
-| HEAD ≠ review-package commit | exit 4 `REVIEW_PACKAGE_MISMATCH` | PASS |
-| Uncommitted edit to `src/types.ts` | exit 4 `SOURCE_TREE_MISMATCH` | PASS (after the index→content fix) |
-| Evidence file tampered | exit 4 `REVIEW_PACKAGE_CONTENT_MISMATCH` | PASS |
-| Package file removed | exit 4 `REVIEW_PACKAGE_CONTENT_MISMATCH` | PASS |
-| Clean state, no Codex auth | GATE 1 PASS, exit 3 `CODEX_NOT_AUTHENTICATED`, no artifacts | PASS |
+**One hasher, two runners.** `hash-manifest.mjs` is called by both
+`RUN_CODEX_REVIEW.sh` and `.ps1`, so cross-platform parity is structural rather
+than asserted — there is no second implementation to drift. Canonicalisation is
+fixed: repo-relative POSIX paths, sorted by UTF-8 bytes, file bytes hashed
+as-is with no line-ending translation, no filesystem metadata, no timestamps.
+`BASELINE.json` and `REVIEW_PACKAGE_MANIFEST.json` are excluded from the package
+hash so the manifest cannot contain its own hash.
 
 ## REVIEW PACKAGE
 

@@ -1,20 +1,18 @@
 {
-  "$comment": "Version lock for the external Codex review. TWO baselines are recorded deliberately. The product baseline was NOT moved after freeze: source_baseline_commit stays at the commit where MVP v0.1 product code was frozen. review_package_commit is the later commit carrying documentation-only evidence corrections that Codex should read. This is a REVIEW_PACKAGE_VERSION_LOCK, not a baseline relock.",
-  "lock_type": "REVIEW_PACKAGE_VERSION_LOCK",
+  "$comment": "Human-readable baseline record. The AUTHORITATIVE integrity values live in REVIEW_PACKAGE_MANIFEST.json, which the gate reads. Commit SHAs here are provenance evidence, not integrity proof.",
+  "lock_type": "CONTENT_ADDRESSED_REVIEW_PACKAGE_LOCK",
   "source_baseline_commit": "04fab5b51b62dbba03d744e50b03ee1ea1c80a33",
   "source_baseline_commit_short": "04fab5b",
   "source_baseline_meaning": "The commit at which MVP v0.1 product code was frozen. Immutable. Never overwritten by a documentation change.",
   "review_package_tag": "codex-review-package/v1.1.0",
-  "review_package_tag_meaning": "Git tag naming the commit that carries the evidence, prompts, runners and handoff documentation Codex reads. A tag is used instead of a literal SHA because a commit cannot contain its own hash — a recorded SHA inside this file could never match HEAD.",
-  "review_package_content_hash": "b3e634e495c656a1e7344b7060b7f24422e8029c51ec89f563d4aa539b64bd85",
-  "review_package_content_hash_method": "sha256 over 'sha256sum' of every file under reports/codex-package/, sorted by path, excluding BASELINE.json itself.",
   "source_tree_identical": true,
   "reason": "Documentation-only handoff and evidence refresh commits after product freeze",
   "source_tree_hashes": {
     "working_tree_content": {
       "method": "sha256 over the per-file sha256sum listing of 'git ls-files' across src, data, schemas, tests, package.json, tsconfig.json, sorted by path (working-tree CONTENT).",
-      "note": "Authoritative gate value. Content-based on purpose: the earlier index-based method read staged blobs, so an uncommitted edit to product source passed the gate unnoticed. Verified: editing src/types.ts changes this hash and did not change the index-based one.",
-      "value": "83e808f48cc747c2e0f09f7f6de413af60354e0b92dd01238c45bb76051ed390"
+      "note": "Retained for history. Narrower scope than the manifest's source hash and no longer the gate value.",
+      "value": "83e808f48cc747c2e0f09f7f6de413af60354e0b92dd01238c45bb76051ed390",
+      "status": "SUPERSEDED_BY REVIEW_PACKAGE_MANIFEST.json source_baseline_content_hash"
     },
     "working_tree_method": {
       "method": "sha256 of 'git ls-files -s' over src, data, schemas, tests, package.json, tsconfig.json (working tree)",
@@ -74,5 +72,6 @@
   "product_code_frozen_until": "external Codex findings are returned, reproduced and classified",
   "independent_review_status": "NOT_RUN",
   "review_package_commit_meaning": "The commit carrying the evidence, prompts, runners and handoff documentation that Codex actually reads. Later than the source baseline, and documentation-only.",
-  "review_package_identity_note": "The tag could not be pushed from the authoring environment (git credential scoped to branch refs, 403 on refs/tags/*). A reviewer without the tag must create it locally or set CODEX_REVIEW_PACKAGE_COMMIT. With neither, the gate fails closed."
+  "integrity_authority": "reports/codex-package/REVIEW_PACKAGE_MANIFEST.json",
+  "review_package_tag_status": "OPTIONAL_PROVENANCE_SIGNAL"
 }

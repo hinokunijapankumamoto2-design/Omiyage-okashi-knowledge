@@ -18,68 +18,57 @@ ROOT="$(cd "$HERE/../.." && pwd)"
 OUT="$ROOT/reports/codex-results"
 cd "$ROOT"
 
-# --- GATE 1: baseline -------------------------------------------------------
-# TWO checks, both required. HEAD must be the review-package commit, AND the
-# product source tree must still hash to what it hashed at the frozen product
-# baseline. Neither alone is sufficient: matching HEAD says nothing about the
-# source, and a matching hash says nothing about which evidence Codex will read.
-# A failure here is a hard stop, never a warning.
-jq_field () { node -e "process.stdout.write(String(require('$HERE/BASELINE.json')$1))" 2>/dev/null || echo unknown; }
-SOURCE_BASELINE_SHA="$(jq_field .source_baseline_commit)"
-REVIEW_PACKAGE_TAG="$(jq_field .review_package_tag)"
-EXPECTED_TREE_HASH="$(jq_field .source_tree_hashes.working_tree_content.value)"
-EXPECTED_PKG_HASH="$(jq_field .review_package_content_hash)"
+# --- GATE 1: baseline (content-addressed) -----------------------------------
+# Integrity is proved by CONTENT, not by a commit SHA and not by a tag.
+#   - A commit cannot contain its own SHA, so a recorded SHA is self-referential.
+#   - Tag pushes are rejected by repository permissions, so a tag cannot be
+#     required: a fresh clone would fail through no fault of its own.
+# Both hashes come from hash-manifest.mjs - ONE implementation shared with the
+# PowerShell runner, so the two cannot drift. A failure here is a hard stop.
+MANIFEST="$HERE/REVIEW_PACKAGE_MANIFEST.json"
+if [ ! -f "$MANIFEST" ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - MANIFEST_MISSING" >&2
+  echo "  expected $MANIFEST" >&2
+  exit 4
+fi
+m_field () { node -e "process.stdout.write(String(require('$MANIFEST')$1))" 2>/dev/null || true; }
+SOURCE_BASELINE_SHA="$(m_field .source_baseline_commit)"
+EXPECTED_SRC_HASH="$(m_field .source_baseline_content_hash)"
+EXPECTED_PKG_HASH="$(m_field .review_package_content_hash)"
+
+SRC_HASH="$(node "$HERE/hash-manifest.mjs" source 2>/dev/null || true)"
+PKG_HASH="$(node "$HERE/hash-manifest.mjs" package 2>/dev/null || true)"
+
 CURRENT_SHA="$(git rev-parse --verify --quiet HEAD 2>/dev/null || true)"
 [ -n "$CURRENT_SHA" ] || CURRENT_SHA=unknown
-# Hash file CONTENT, not the index: 'git ls-files -s' reports staged blobs, so an
-# uncommitted edit to product source would slip past the gate unnoticed.
-TREE_HASH="$(git ls-files -z src data schemas tests package.json tsconfig.json 2>/dev/null | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1 || echo unknown)"
-PKG_HASH="$(cd "$HERE" && find . -type f ! -name BASELINE.json | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d' ' -f1 || echo unknown)"
-# The expected review-package commit comes from the tag when the clone has it,
-# otherwise from an explicit operator assertion. A commit cannot contain its own
-# SHA, so it cannot be recorded in BASELINE.json. If neither source is available
-# the gate FAILS - it never falls through to "whatever HEAD happens to be".
-REVIEW_PACKAGE_SHA="$(git rev-parse --verify --quiet "$REVIEW_PACKAGE_TAG^{commit}" 2>/dev/null || true)"
-[ -n "$REVIEW_PACKAGE_SHA" ] || REVIEW_PACKAGE_SHA=unknown
-REVIEW_PACKAGE_SOURCE=tag
-if [ "$REVIEW_PACKAGE_SHA" = unknown ] && [ -n "${CODEX_REVIEW_PACKAGE_COMMIT:-}" ]; then
-  REVIEW_PACKAGE_SHA="$(git rev-parse --verify --quiet "${CODEX_REVIEW_PACKAGE_COMMIT}^{commit}" 2>/dev/null || true)"
-  [ -n "$REVIEW_PACKAGE_SHA" ] || REVIEW_PACKAGE_SHA=unknown
-  REVIEW_PACKAGE_SOURCE=env
-fi
+
+# Optional provenance signal only. Its absence NEVER fails the gate.
+REVIEW_PACKAGE_TAG="$(m_field .review_package_tag)"
+TAG_SHA=""
+[ -n "$REVIEW_PACKAGE_TAG" ] && TAG_SHA="$(git rev-parse --verify --quiet "$REVIEW_PACKAGE_TAG^{commit}" 2>/dev/null || true)"
+if [ -z "$TAG_SHA" ]; then TAG_STATE=ABSENT
+elif [ "$TAG_SHA" = "$CURRENT_SHA" ]; then TAG_STATE=PRESENT_MATCHES_HEAD
+else TAG_STATE=PRESENT_DIFFERENT_COMMIT; fi
 
 BASELINE_GATE=FAIL
-if [ "$SOURCE_BASELINE_SHA" = unknown ] || [ "$REVIEW_PACKAGE_TAG" = unknown ] || \
-   [ "$EXPECTED_TREE_HASH" = unknown ] || [ "$EXPECTED_PKG_HASH" = unknown ]; then
-  echo "ERROR: BASELINE_GATE_FAILED - INCOMPLETE_LOCK" >&2
-  echo "  BASELINE.json is missing source_baseline_commit / review_package_tag /" >&2
-  echo "  source_tree_hashes.working_tree_content.value / review_package_content_hash." >&2
+if [ -z "$EXPECTED_SRC_HASH" ] || [ -z "$EXPECTED_PKG_HASH" ] || [ -z "$SOURCE_BASELINE_SHA" ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - INCOMPLETE_MANIFEST" >&2
+  echo "  REVIEW_PACKAGE_MANIFEST.json is missing source_baseline_commit /" >&2
+  echo "  source_baseline_content_hash / review_package_content_hash." >&2
   echo "  Refusing to guess." >&2
   exit 4
 fi
-if [ "$REVIEW_PACKAGE_SHA" = unknown ]; then
-  echo "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_TAG_MISSING" >&2
-  echo "  tag not found in this clone: $REVIEW_PACKAGE_TAG" >&2
-  echo "  Either fetch it:      git fetch --tags" >&2
-  echo "  or create it locally: git tag $REVIEW_PACKAGE_TAG <commit>" >&2
-  echo "  or assert it:         CODEX_REVIEW_PACKAGE_COMMIT=<commit> $0" >&2
-  echo "  The commit you name must be the one you intend Codex to review." >&2
+if [ -z "$SRC_HASH" ] || [ -z "$PKG_HASH" ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - HASH_COMPUTATION_FAILED" >&2
+  echo "  hash-manifest.mjs produced no output. Node.js is required." >&2
   exit 4
 fi
-if [ "$CURRENT_SHA" != "$REVIEW_PACKAGE_SHA" ]; then
-  echo "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_MISMATCH" >&2
-  echo "  HEAD                     $CURRENT_SHA" >&2
-  echo "  $REVIEW_PACKAGE_TAG  $REVIEW_PACKAGE_SHA" >&2
-  echo "  Check out the tagged review-package commit, or re-lock BASELINE.json" >&2
-  echo "  deliberately. This script will not review a commit it was not built for." >&2
-  exit 4
-fi
-if [ "$TREE_HASH" != "$EXPECTED_TREE_HASH" ]; then
+if [ "$SRC_HASH" != "$EXPECTED_SRC_HASH" ]; then
   echo "ERROR: BASELINE_GATE_FAILED - SOURCE_TREE_MISMATCH" >&2
-  echo "  product source hash   $TREE_HASH" >&2
-  echo "  frozen at $SOURCE_BASELINE_SHA  $EXPECTED_TREE_HASH" >&2
-  echo "  Product code differs from the frozen v0.1 baseline. Findings would not" >&2
-  echo "  apply to the released product. Not a warning - stopping." >&2
+  echo "  product source hash   $SRC_HASH" >&2
+  echo "  frozen at $SOURCE_BASELINE_SHA  $EXPECTED_SRC_HASH" >&2
+  echo "  Product code differs from the frozen v0.1 baseline - committed or not." >&2
+  echo "  Findings would not apply to the released product. Not a warning." >&2
   exit 4
 fi
 if [ "$PKG_HASH" != "$EXPECTED_PKG_HASH" ]; then
@@ -91,9 +80,11 @@ if [ "$PKG_HASH" != "$EXPECTED_PKG_HASH" ]; then
 fi
 BASELINE_GATE=PASS
 echo "GATE 1 baseline: PASS"
-echo "  source baseline   $SOURCE_BASELINE_SHA (product source hash matches)"
-echo "  review package    $REVIEW_PACKAGE_SHA (= HEAD, via $REVIEW_PACKAGE_SOURCE $REVIEW_PACKAGE_TAG)"
+echo "  source baseline   $SOURCE_BASELINE_SHA"
+echo "  source content    $SRC_HASH"
 echo "  package content   $PKG_HASH"
+echo "  HEAD              $CURRENT_SHA (provenance only)"
+echo "  tag               $TAG_STATE (optional provenance signal)"
 
 # --- GATE 2: Codex host -----------------------------------------------------
 if ! command -v codex >/dev/null 2>&1; then
@@ -175,15 +166,13 @@ cat > "$OUT/RUN_METADATA.json" <<META
   "status": "$OVERALL",
   "git_commit": "$CURRENT_SHA",
   "source_baseline_commit": "$SOURCE_BASELINE_SHA",
-  "review_package_commit": "$REVIEW_PACKAGE_SHA",
-  "review_package_tag": "$REVIEW_PACKAGE_TAG",
-  "review_package_identity_source": "$REVIEW_PACKAGE_SOURCE",
+  "source_content_hash": "$SRC_HASH",
   "review_package_content_hash": "$PKG_HASH",
+  "review_package_tag_state": "$TAG_STATE",
   "baseline_gate": "$BASELINE_GATE",
   "codex_version": "$CODEX_VERSION",
   "review_package_version": "1.1.0",
   "benchmark_policy_version": "v0.1.1",
-  "source_tree_hash": "$TREE_HASH",
   "runner_type": "bash",
   "runner": "RUN_CODEX_REVIEW.sh",
   "platform": "$(uname -s) $(uname -r) $(uname -m)",

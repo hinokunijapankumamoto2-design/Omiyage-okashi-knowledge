@@ -20,102 +20,60 @@ $Root = Resolve-Path (Join-Path (Join-Path $Here '..') '..')
 $Out  = Join-Path $Root 'reports/codex-results'
 Set-Location $Root
 
-# --- GATE 1: baseline -------------------------------------------------------
-# TWO checks, both required. HEAD must be the review-package commit, AND the
-# product source tree must still hash to what it hashed at the frozen product
-# baseline. Neither alone is sufficient: matching HEAD says nothing about the
-# source, and a matching hash says nothing about which evidence Codex will read.
-# A failure here is a hard stop, never a warning.
-function Get-Sha256Hex([string]$Text) {
-    $sha = [System.Security.Cryptography.SHA256]::Create()
-    $bytes = $sha.ComputeHash([System.Text.Encoding]::UTF8.GetBytes($Text))
-    return (-join ($bytes | ForEach-Object { $_.ToString('x2') }))
+# --- GATE 1: baseline (content-addressed) -----------------------------------
+# Integrity is proved by CONTENT, not by a commit SHA and not by a tag.
+#   - A commit cannot contain its own SHA, so a recorded SHA is self-referential.
+#   - Tag pushes are rejected by repository permissions, so a tag cannot be
+#     required: a fresh clone would fail through no fault of its own.
+# Both hashes come from hash-manifest.mjs - ONE implementation shared with the
+# bash runner, so the two cannot drift. A failure here is a hard stop.
+$ManifestPath = Join-Path $Here 'REVIEW_PACKAGE_MANIFEST.json'
+if (-not (Test-Path $ManifestPath)) {
+    Write-Host "ERROR: BASELINE_GATE_FAILED - MANIFEST_MISSING" -ForegroundColor Red
+    Write-Host "  expected $ManifestPath"
+    exit 4
 }
+$Manifest = (Get-Content -Raw $ManifestPath | ConvertFrom-Json)
+$SourceBaselineSha = $Manifest.source_baseline_commit
+$ExpectedSrcHash   = $Manifest.source_baseline_content_hash
+$ExpectedPkgHash   = $Manifest.review_package_content_hash
+$ReviewPackageTag  = $Manifest.review_package_tag
 
-$Baseline = (Get-Content -Raw (Join-Path $Here 'BASELINE.json') | ConvertFrom-Json)
-$SourceBaselineSha = $Baseline.source_baseline_commit
-$ReviewPackageTag  = $Baseline.review_package_tag
-$ExpectedTreeHash  = $Baseline.source_tree_hashes.working_tree_content.value
-$ExpectedPkgHash   = $Baseline.review_package_content_hash
+$Hasher = Join-Path $Here 'hash-manifest.mjs'
+$SrcHash = (node $Hasher source 2>$null | Out-String).Trim()
+$PkgHash = (node $Hasher package 2>$null | Out-String).Trim()
+
 $CurrentSha = (git rev-parse --verify --quiet HEAD 2>$null | Out-String).Trim()
 if (-not $CurrentSha) { $CurrentSha = 'unknown' }
 
-# Hash file CONTENT, not the index: 'git ls-files -s' reports staged blobs, so an
-# uncommitted edit to product source would slip past the gate unnoticed.
-# Same construction as the bash runner.
-$TreeHash = 'unknown'
-try {
-    $files = (git ls-files src data schemas tests package.json tsconfig.json | Out-String) -split "`r?`n" |
-        Where-Object { $_ } |
-        Sort-Object -Culture ([System.Globalization.CultureInfo]::InvariantCulture)
-    $lines = $files | ForEach-Object {
-        "$((Get-FileHash (Join-Path $Root $_) -Algorithm SHA256).Hash.ToLower())  $_"
-    }
-    $TreeHash = Get-Sha256Hex (($lines -join "`n") + "`n")
-} catch { }
-
-# Same construction as the bash runner: sha256 over the per-file sha256sum
-# listing of reports/codex-package/, sorted by path, excluding BASELINE.json.
-$PkgHash = 'unknown'
-try {
-    $lines = Get-ChildItem -Path $Here -Recurse -File |
-        Where-Object { $_.Name -ne 'BASELINE.json' } |
-        ForEach-Object {
-            $rel = './' + ($_.FullName.Substring($Here.Length + 1) -replace '\\', '/')
-            [PSCustomObject]@{ Path = $rel; Hash = (Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLower() }
-        } |
-        Sort-Object -Property Path -Culture ([System.Globalization.CultureInfo]::InvariantCulture) |
-        ForEach-Object { "$($_.Hash)  $($_.Path)" }
-    $PkgHash = Get-Sha256Hex (($lines -join "`n") + "`n")
-} catch { }
-
-# The expected review-package commit comes from the tag when the clone has it,
-# otherwise from an explicit operator assertion. A commit cannot contain its own
-# SHA, so it cannot be recorded in BASELINE.json. If neither source is available
-# the gate FAILS - it never falls through to "whatever HEAD happens to be".
-$ReviewPackageSha = 'unknown'
-$ReviewPackageSource = 'tag'
+# Optional provenance signal only. Its absence NEVER fails the gate.
+$TagSha = ''
 if ($ReviewPackageTag) {
-    $resolved = (git rev-parse --verify --quiet "$ReviewPackageTag^{commit}" 2>$null | Out-String).Trim()
-    if ($resolved) { $ReviewPackageSha = $resolved }
+    $TagSha = (git rev-parse --verify --quiet "$ReviewPackageTag^{commit}" 2>$null | Out-String).Trim()
 }
-if (($ReviewPackageSha -eq 'unknown') -and $env:CODEX_REVIEW_PACKAGE_COMMIT) {
-    $resolved = (git rev-parse --verify --quiet "$($env:CODEX_REVIEW_PACKAGE_COMMIT)^{commit}" 2>$null | Out-String).Trim()
-    if ($resolved) { $ReviewPackageSha = $resolved; $ReviewPackageSource = 'env' }
-}
+if (-not $TagSha) { $TagState = 'ABSENT' }
+elseif ($TagSha -eq $CurrentSha) { $TagState = 'PRESENT_MATCHES_HEAD' }
+else { $TagState = 'PRESENT_DIFFERENT_COMMIT' }
 
 $BaselineGate = 'FAIL'
-if ((-not $SourceBaselineSha) -or (-not $ReviewPackageTag) -or
-    (-not $ExpectedTreeHash) -or (-not $ExpectedPkgHash)) {
-    Write-Host "ERROR: BASELINE_GATE_FAILED - INCOMPLETE_LOCK" -ForegroundColor Red
-    Write-Host "  BASELINE.json is missing source_baseline_commit / review_package_tag /"
-    Write-Host "  source_tree_hashes.working_tree_content.value / review_package_content_hash."
+if ((-not $ExpectedSrcHash) -or (-not $ExpectedPkgHash) -or (-not $SourceBaselineSha)) {
+    Write-Host "ERROR: BASELINE_GATE_FAILED - INCOMPLETE_MANIFEST" -ForegroundColor Red
+    Write-Host "  REVIEW_PACKAGE_MANIFEST.json is missing source_baseline_commit /"
+    Write-Host "  source_baseline_content_hash / review_package_content_hash."
     Write-Host "  Refusing to guess."
     exit 4
 }
-if ($ReviewPackageSha -eq 'unknown') {
-    Write-Host "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_TAG_MISSING" -ForegroundColor Red
-    Write-Host "  tag not found in this clone: $ReviewPackageTag"
-    Write-Host "  Either fetch it:      git fetch --tags"
-    Write-Host "  or create it locally: git tag $ReviewPackageTag <commit>"
-    Write-Host "  or assert it:         `$env:CODEX_REVIEW_PACKAGE_COMMIT='<commit>'"
-    Write-Host "  The commit you name must be the one you intend Codex to review."
+if ((-not $SrcHash) -or (-not $PkgHash)) {
+    Write-Host "ERROR: BASELINE_GATE_FAILED - HASH_COMPUTATION_FAILED" -ForegroundColor Red
+    Write-Host "  hash-manifest.mjs produced no output. Node.js is required."
     exit 4
 }
-if ($CurrentSha -ne $ReviewPackageSha) {
-    Write-Host "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_MISMATCH" -ForegroundColor Red
-    Write-Host "  HEAD                     $CurrentSha"
-    Write-Host "  $ReviewPackageTag  $ReviewPackageSha"
-    Write-Host "  Check out the tagged review-package commit, or re-lock BASELINE.json"
-    Write-Host "  deliberately. This script will not review a commit it was not built for."
-    exit 4
-}
-if ($TreeHash -ne $ExpectedTreeHash) {
+if ($SrcHash -ne $ExpectedSrcHash) {
     Write-Host "ERROR: BASELINE_GATE_FAILED - SOURCE_TREE_MISMATCH" -ForegroundColor Red
-    Write-Host "  product source hash   $TreeHash"
-    Write-Host "  frozen at $SourceBaselineSha  $ExpectedTreeHash"
-    Write-Host "  Product code differs from the frozen v0.1 baseline. Findings would not"
-    Write-Host "  apply to the released product. Not a warning - stopping."
+    Write-Host "  product source hash   $SrcHash"
+    Write-Host "  frozen at $SourceBaselineSha  $ExpectedSrcHash"
+    Write-Host "  Product code differs from the frozen v0.1 baseline - committed or not."
+    Write-Host "  Findings would not apply to the released product. Not a warning."
     exit 4
 }
 if ($PkgHash -ne $ExpectedPkgHash) {
@@ -127,9 +85,11 @@ if ($PkgHash -ne $ExpectedPkgHash) {
 }
 $BaselineGate = 'PASS'
 Write-Host "GATE 1 baseline: PASS"
-Write-Host "  source baseline   $SourceBaselineSha (product source hash matches)"
-Write-Host "  review package    $ReviewPackageSha (= HEAD, via $ReviewPackageSource $ReviewPackageTag)"
+Write-Host "  source baseline   $SourceBaselineSha"
+Write-Host "  source content    $SrcHash"
 Write-Host "  package content   $PkgHash"
+Write-Host "  HEAD              $CurrentSha (provenance only)"
+Write-Host "  tag               $TagState (optional provenance signal)"
 
 # --- GATE 2: Codex host -----------------------------------------------------
 if (-not (Get-Command codex -ErrorAction SilentlyContinue)) {
@@ -215,15 +175,13 @@ $Arch = if ([System.Environment]::Is64BitOperatingSystem) { 'x64' } else { 'x86'
     status                   = $Overall
     git_commit               = $CurrentSha
     source_baseline_commit   = $SourceBaselineSha
-    review_package_commit    = $ReviewPackageSha
-    review_package_tag       = $ReviewPackageTag
-    review_package_identity_source = $ReviewPackageSource
+    source_content_hash      = $SrcHash
     review_package_content_hash = $PkgHash
+    review_package_tag_state = $TagState
     baseline_gate            = $BaselineGate
     codex_version            = $CodexVersion
     review_package_version   = '1.1.0'
     benchmark_policy_version = 'v0.1.1'
-    source_tree_hash         = $TreeHash
     runner_type              = 'powershell'
     runner                   = 'RUN_CODEX_REVIEW.ps1'
     platform                 = "$([System.Environment]::OSVersion.VersionString) $Arch"
