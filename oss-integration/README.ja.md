@@ -101,75 +101,84 @@ REJECTされます。BLOCKはScoreより優先されるからです。
 代替指標で埋めずに `NOT_VERIFIED` のまま残し、測定された悪化はMaterialityとともに
 すべて報告します。
 
-## 検証ステータス
+## リリースステータス
 
-**STATUS: CONDITIONAL。** End-to-Endフローは動作し、生成Pluginは検証をPASSし、
-実在Repositoryをliveで解析し、Task Suiteを実ブラウザで実行しました。ただし
-**Material Regressionが2件残っており、隠さずそのまま報告します。**
+```
+BUILD STATUS          CONDITIONAL
+RELEASE READINESS     READY_WITH_KNOWN_TRADEOFFS
+IMPROVEMENT VERDICT   REGRESSION（FULL-CAPABILITY）
+BENCHMARK POLICY      v0.1.1（v0.1は benchmark/baseline-v0.1.json に凍結）
+FINAL RECOMMENDATION  SHIP_WITH_LIMITATIONS
+```
 
-### SYNTHETIC_TEST — 実行による直接比較
+詳細は **[FINAL_RELEASE_REPORT.md](./FINAL_RELEASE_REPORT.md)**、
+判断根拠は **[DECISIONS.md](./DECISIONS.md)** を参照してください。
 
-入力はFixture 3件。`fixture-org` は**実在しない**組織であり、この実行結果は
-実在プロジェクトに関する主張ではありません。
+### 実行済みBenchmark — Fixture入力・実ブラウザ
 
-| 指標 | 元Plugin最良 | originals-union | 統合Plugin | 判定 | Material? |
+`fixture-org` は**実在しない**組織です。この実行結果は実在プロジェクトに関する
+主張ではありません。Capability Setは合成、実行は本物です。
+
+| 指標 | 元Plugin最良 | originals-union | 統合Plugin | 判定 | Material |
 | --- | --- | --- | --- | --- | --- |
 | Task Completion | 0.25 | 0.5 | **1.0** | IMPROVED | — |
 | Integration Debt | 3 | 6 | **0** | IMPROVED | — |
 | Quality Criteria Covered | 3 | 4 | **7** | IMPROVED | — |
 | Task Coverage / Install Action | 0.25 | 0.125 | **0.5** | IMPROVED | — |
-| Output Quality（共通基準） | n/a | 1.0 | 1.0 | EQUIVALENT | — |
-| Error Rate | 0 | 0 | 0 | EQUIVALENT | — |
-| Security Findings (high/critical) | 0 | 2 | 0 | EQUIVALENT | — |
-| Reliability（3回反復） | 1.0 | 1.0 | 1.0 | EQUIVALENT | — |
+| Output Quality / Error Rate / Security / Reliability | — | — | — | EQUIVALENT | — |
 | Install Actions | 1 | 4 | 2 | REGRESSION | no |
 | **Distinct Upstream Projects** | 1 | 3 | **5** | REGRESSION | **YES** |
-| **Execution Time** | 440 ms | 462 ms | **844 ms** | REGRESSION | **YES** |
+| **Unscanned Dependencies** | 0 | 0 | **2**（`--live` で 0） | REGRESSION | **YES** |
+| **Execution Time** | 243 ms | 244 ms | **549 ms** | REGRESSION | **YES** |
+| **Time / Completed Task・Criterion** | 121.5 / 81.7 | 61 / 61 | **68.6 / 78.4** | REGRESSION | **YES** |
 | UX / Setup Time / Token Usage | — | — | — | NOT_VERIFIED | — |
 
-### LIVE_REPOSITORY_TEST — 実在する公開Repository 3件
+**Live実行**（実在Repository 3件）：Task Completion 0.75 IMPROVED、
+Unscanned Dependencies **0**、Material Regressionは
+Distinct Upstream Projects の**1件のみ**。
 
-`dequelabs/axe-core`（MPL-2.0）、`americanexpress/jest-image-snapshot`
-（Apache-2.0）、`GoogleChrome/lighthouse`（Apache-2.0）。Licenseは各プロジェクトに
-同梱されるLicense本文から判定し、公開Sourceを取得してScanしています。
-Material Regressionは1件（Distinct Upstream Projects: 5 vs 3）。
+### 重要な2つの発見
 
-### 残存するMaterial Regression（隠していません）
+**Execution Timeの差はOverheadではなく実作業である（証明済み）。** 同一4Task・
+Capability Setを交差させ、どのSubjectも余分な作業をしない条件で比較：
 
-**Distinct Upstream Projects（5 vs 3）。** 構造的な事実であり、チューニングで
-消せるものではありません。生成Pluginは、オーケストレーション対象のProjectの
-「上に」載るProject自身であるため、Supply Chainの面積は元Pluginを全部入れるより
-大きくなります。Stack Optimizerは削減可能な範囲で削減し（live実行ではProjectを
-1件まるごと除去）、**それ以上は拒否します** — さらに減らすにはSecurity Gateが
-弱いSourceへCapabilityを移す必要があり、整理整頓のためにGateを弱めることは
-しないためです。
+| | originals-union | 統合Plugin |
+| --- | --- | --- |
+| Execution Time（SAME-TASK） | 252 ms | **249 ms** |
 
-**Execution Time（844 ms vs 462 ms）。** これは実際の作業量です。統合Pluginは
-元Pluginが実行できないAccessibility・Performance・Screenshot・Pixel Diffを
-実行しています。4倍のTaskを1.9倍の時間で完了しています。事前登録した
-Materiality Ruleは生のコストを現実的な代替手段と比較するため、Task当たりの
-レートがほぼ同等であっても Material として記録します。
+同一作業では統合Pluginは遅くありません。FULL-CAPABILITYでの差は、元Pluginが
+一切実行できないAccessibility監査とVisual Regressionで完全に説明できます
+（追加作業実測 ~315 ms に対し、実測差 ~316 ms）。ただしRaw Execution Timeの
+REGRESSIONはそのまま残し、Verdictにも算入しています。SAME-TASKは診断用であり、
+Headlineではありません。
 
-数値は一切調整しておらず、Verdictから除外したMetricもありません。定義は
-再計測前に `data/benchmark-metrics.json` へ事前登録済みで、統合Pluginに不利に
-働くMateriality Ruleも含みます。
+最適化により **844 ms → 549 ms（−35%）**。Browser共有、axe-core Source Cache、
+重複Screenshotの再利用、Cold StartをWarm-up Passへ退避。**Checkは一切
+Skipしていません。**
+
+**Project数はルールを破らずにこれ以上減らせません。** Upstream 4件すべてが
+`ESSENTIAL` です。4件にする経路はいずれも、accessibility-auditをSecurity Gateの
+弱いSource（axe-core・lighthouse）へ移すか、LGPL-3.0-onlyの `pa11y`（License Gate
+の後退）へ移すか、Capabilityを落とすかを要求します。Optimizerは1つ目を試み、
+**拒否しました。** Vendoringも検討し却下：Project数は減らず、Security責任だけが
+本プロジェクトへ移るためです。
 
 ### レビュー状況
 
 ```
-CODEX REVIEW    STATUS: NOT_RUN    REASON: CODEX_UNAVAILABLE
-CLAUDE SELF REVIEW  17件の欠陥を発見・修正 — CHANGELOG.md 参照
+CODEX REVIEW        STATUS: NOT_RUN   REASON: CODEX_UNAVAILABLE
+CLAUDE SELF REVIEW  19件の欠陥を発見・修正 — CHANGELOG.md 参照
 ```
 
 このSelf Reviewはコードを書いた本人によるものです。**Independent Reviewでは
-ありません。** 特定の欠陥を発見した証拠ではありますが、コードが正しいことの
-証拠ではありません。
+ありません。**
 
 ## v0.1 完成条件
 
-24項目すべて充足。`npm run verify` でビルドと85件のテストが通り、`build` コマンドは
-構造検証をPASSするPluginを生成します。総合ステータスは PASS ではなく
-**CONDITIONAL** です（上記のMaterial Regression 2件が残存）。
+24項目すべて充足。`npm run verify` でビルドと91件のテスト、加えてLive Repository
+テスト4件・実ブラウザテスト9件が通ります。総合ステータスは PASS ではなく
+**CONDITIONAL** です（Material Regressionが残存。詳細は
+`FINAL_RELEASE_REPORT.md`）。
 
 ## ライセンス
 

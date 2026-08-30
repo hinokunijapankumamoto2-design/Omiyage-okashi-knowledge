@@ -27,6 +27,12 @@ export interface BuildResult {
 export interface BuildOptions {
   outputRoot?: string;
   researchDate?: string;
+  /**
+   * Component ids to leave out. Used by the ablation harness to measure what a
+   * component is actually worth: build without it, and see what degrades. A
+   * component whose absence changes nothing is not an original contribution.
+   */
+  suppressComponents?: string[];
 }
 
 export function buildPlugin(plan: ArchitecturePlan, opts: BuildOptions = {}): BuildResult {
@@ -40,10 +46,12 @@ export function buildPlugin(plan: ArchitecturePlan, opts: BuildOptions = {}): Bu
     files.push(relative);
   };
 
-  const wantedSkills = componentNames(plan, 'skill');
-  const wantedAgents = componentNames(plan, 'agent');
+  const suppressed = new Set(opts.suppressComponents ?? []);
+  suppressedComponents = suppressed;
+  const wantedSkills = componentNames(plan, 'skill').filter((n) => !suppressed.has(n));
+  const wantedAgents = componentNames(plan, 'agent').filter((n) => !suppressed.has(n));
 
-  write('.claude-plugin/plugin.json', renderManifest(plan));
+  write('.claude-plugin/plugin.json', renderManifest(plan, suppressed));
   write('capability-manifest.json', renderCapabilityManifest(plan, researchDate));
   write('config/default.json', renderDefaultConfig(plan));
   write('README.md', renderPluginReadme(plan));
@@ -66,13 +74,19 @@ export function buildPlugin(plan: ArchitecturePlan, opts: BuildOptions = {}): Bu
   return { outputDir, files, provenance, advisoryOnly };
 }
 
+/** Set during a build so generated bodies honour --suppress. Module-scoped
+ *  because the skill body renderers are pure template functions. */
+let suppressedComponents: Set<string> = new Set();
+
 /** The plugin's own component index, so the router can hand off by name. */
 function componentIndex(plan: ArchitecturePlan): string {
   const lines: string[] = [];
   for (const name of componentNames(plan, 'skill')) {
+    if (suppressedComponents.has(name)) continue;
     lines.push(`- \`skills/${name}/SKILL.md\` — ${skillDescription(name, plan)}`);
   }
   for (const name of componentNames(plan, 'agent')) {
+    if (suppressedComponents.has(name)) continue;
     lines.push(`- \`agents/${name}.md\` — subagent for ${name.replace(/-agent$/, '')} work.`);
   }
   lines.push('- `config/default.json` — the single configuration surface every capability reads.');
@@ -94,7 +108,7 @@ function componentNames(plan: ArchitecturePlan, kind: string): string[] {
   return [...names].filter((n) => /^[a-z0-9-]+$/.test(n));
 }
 
-function renderManifest(plan: ArchitecturePlan): string {
+function renderManifest(plan: ArchitecturePlan, suppressed: Set<string> = new Set()): string {
   const manifest: Record<string, unknown> = {
     name: plan.pluginName,
     displayName: plan.displayName,
@@ -102,7 +116,7 @@ function renderManifest(plan: ArchitecturePlan): string {
     description: plan.description,
     keywords: [...new Set(plan.stack.entries.map((e) => e.capabilityId))],
   };
-  if (componentNames(plan, 'agent').length > 0) manifest.agents = ['./agents/'];
+  if (componentNames(plan, 'agent').filter((n) => !suppressed.has(n)).length > 0) manifest.agents = ['./agents/'];
   if (componentNames(plan, 'hook').length > 0) manifest.hooks = './hooks/hooks.json';
   manifest.userConfig = Object.fromEntries(
     Object.entries(plan.unifiedConfig).map(([key, v]) => [

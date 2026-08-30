@@ -57,6 +57,18 @@ Each one is a decision, not a fact. Overturn any of them by saying so.
 | A24 | The **materiality rule was pre-registered before re-measurement** and is applied as written, including where it works against the integrated plugin. | Rule 22. | It is data, in `data/benchmark-metrics.json`. |
 | A25 | Three metric definitions were corrected this round (`install-actions`, `upstream-projects`, `output-quality`). Each correction fixes an **asymmetry or ambiguity** that measured different subjects by different rules, and each is recorded in `changedFromV01` with its justification. The `upstream-projects` correction makes the integrated plugin's number **larger**. | A definition that measures subject A by one rule and subject B by another is defective regardless of which way the defect points. | Read `changedFromV01` in `data/benchmark-metrics.json` and disagree in writing. |
 
+## Release gate round (benchmark policy v0.1.1)
+
+| # | Assumption | Why | How to overturn |
+| --- | --- | --- | --- |
+| A26 | **`benchmark/baseline-v0.1.json` is immutable.** v0.1's REGRESSION/CONDITIONAL verdict stands as recorded and is never recomputed. | A verdict that can be edited after the fact is not a verdict. | It cannot be. New policy versions produce new results in new files. |
+| A27 | Benchmark changes go into **`BENCHMARK_POLICY_v0.1.1.md`** as additions, never edits: nothing removed, no threshold relaxed, no regression moved out of the verdict. The policy states in writing both how it could favour and how it could hurt the integrated plugin. | Rule 22. | Read the policy and disagree in writing. |
+| A28 | **FULL-CAPABILITY is the headline comparison; SAME-TASK is diagnostic.** They are reported separately and never blended. | SAME-TASK removes work the baselines cannot do, so it favours the integrated plugin by construction. Presenting it as the headline would be exactly that manipulation. | — |
+| A29 | Normalized time metrics are **added beside** raw Execution Time, which keeps its own verdict and materiality. | Rule 8: a normalized metric may not replace a raw one. | — |
+| A30 | One browser is shared across subjects (one context each), and a **discarded warm-up pass** absorbs cold start. | Launching per subject charged 100–670 ms of process start-up to whichever subject ran first, so ordering rather than capability was moving the numbers. This fix works *against* the integrated plugin, since baselines ran first. | Set repeats to 1 and compare orderings. |
+| A31 | **Vendoring is rejected** even where Apache-2.0 permits it. | It would not reduce the project count, and it would move security responsibility and licence-notice duty onto this project. `DECISIONS.md` D2. | An offline-operation requirement would change this. |
+| A32 | `REMOTE_REAL_SITE: NOT_VERIFIED — ENVIRONMENT_RESTRICTION`. The real-task page is served from localhost. | Remote sites are unreachable from this sandbox, and a page that changes under the benchmark would make it unreproducible. | Run the suite where outbound HTTP to a public page is permitted. |
+
 ## Not built (deferred per rule 43)
 
 SaaS, authentication, billing, enterprise governance, web UI, microservices,

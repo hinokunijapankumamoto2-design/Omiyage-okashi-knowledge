@@ -1,5 +1,5 @@
 {
-  "$comment": "PRE-REGISTERED metric definitions. Written in PHASE 1 before any implementation change or re-measurement, so that no definition can be tuned after seeing a result. Rule 22: definitions must not be changed to make a benchmark pass. Where a definition IS changed from v0.1, the change and its justification are recorded in `changedFromV01` and must describe a measurement DEFECT, never a preference.",
+  "$comment": "PRE-REGISTERED metric definitions. Written in PHASE 1 before any implementation change or re-measurement, so that no definition can be tuned after seeing a result. Rule 22: definitions must not be changed to make a benchmark pass. Where a definition IS changed from v0.1, the change and its justification are recorded in `changedFromV01` and must describe a measurement DEFECT, never a preference. POLICY v0.1.1: comparison mode is now explicit (FULL-CAPABILITY headline, SAME-TASK diagnostic), normalized time metrics are ADDED beside the raw one, and a SUPPLY_CHAIN_COST composite is reported beside Distinct Upstream Projects. Nothing was removed, relaxed, or recomputed. See BENCHMARK_POLICY_v0.1.1.md.",
   "version": "0.2.0",
   "registeredOn": "2026-08-30",
   "materialityRule": {
@@ -149,6 +149,30 @@
       "countsTowardVerdict": true
     },
     {
+      "id": "time-per-completed-task",
+      "name": "Execution Time per Completed Task",
+      "definition": "Wall-clock milliseconds divided by the number of tasks the subject actually completed.",
+      "formula": "execution-time / (task-completion x task count)",
+      "direction": "lower-is-better",
+      "measurementMethod": "EXECUTED. Derived from two measured metrics. Undefined when a subject completes nothing, and reported n/a rather than 0 in that case.",
+      "material": false,
+      "materialWhy": "A cost-efficiency ratio under the same threshold rule. ADDED beside raw Execution Time, which keeps its own verdict and its own materiality.",
+      "countsTowardVerdict": true,
+      "notes": "Added in policy v0.1.1. It does not replace raw Execution Time."
+    },
+    {
+      "id": "time-per-quality-criterion",
+      "name": "Execution Time per Quality Criterion",
+      "definition": "Wall-clock milliseconds divided by the number of Output Quality criteria the subject could actually evaluate.",
+      "formula": "execution-time / quality-criteria-covered",
+      "direction": "lower-is-better",
+      "measurementMethod": "EXECUTED. Derived from two measured metrics. Undefined when a subject evaluates no criterion.",
+      "material": false,
+      "materialWhy": "A cost-efficiency ratio. Criteria are not equal in cost or value, so this is indicative rather than precise.",
+      "countsTowardVerdict": true,
+      "notes": "Added in policy v0.1.1."
+    },
+    {
       "id": "reliability",
       "name": "Reliability",
       "definition": "Variance in task outcome across repeated identical runs.",
@@ -194,6 +218,18 @@
       "materialWhy": "Not measured.",
       "countsTowardVerdict": false,
       "excludedBecause": "Never measured for any subject."
+    },
+    {
+      "id": "unscanned-dependencies",
+      "name": "Unscanned Dependencies",
+      "definition": "Number of sources the subject depends on for which no artifact was available to scan, so their security gate is UNKNOWN.",
+      "formula": "count(required sources with 0 scanned artifacts)",
+      "direction": "lower-is-better",
+      "measurementMethod": "Counted from the security gate results. This is the component of supply-chain risk that actually carries risk: an unscanned dependency is not a safe one, it is an unknown one.",
+      "material": true,
+      "materialWhy": "An unknown dependency is a security exposure, and the project's own rule is that UNKNOWN is never PASS.",
+      "countsTowardVerdict": true,
+      "notes": "Added in policy v0.1.1 alongside Distinct Upstream Projects, which is unchanged and keeps its own verdict."
     }
   ],
   "outputQualityRubric": {
@@ -258,5 +294,6 @@
       ],
       "why": "These need a browser binary that npm does not install: the user runs a separate download step (for example `npx playwright install`) or supplies a system Chrome. Counted once no matter how many of them a subject uses, because one browser install serves them all."
     }
-  ]
+  ],
+  "benchmarkPolicyVersion": "v0.1.1"
 }

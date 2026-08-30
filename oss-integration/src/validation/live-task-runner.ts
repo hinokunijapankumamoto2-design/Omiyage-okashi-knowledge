@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import type { AddressInfo } from 'node:net';
 import type { ExecutedResult } from './benchmark.js';
 import { projectRoot } from '../util/io.js';
+import { Profiler } from '../util/profiler.js';
 
 /**
  * Real task runner.
@@ -25,6 +26,35 @@ import { projectRoot } from '../util/io.js';
  */
 
 const require_ = createRequire(import.meta.url);
+
+/**
+ * axe-core's bundle is ~600 KB and identical on every read. Reading it once per
+ * subject per repeat was pure repeated filesystem work. Cached, never skipped.
+ */
+let axeSourceCache: string | null = null;
+function axeSource(prof: Profiler): string {
+  if (axeSourceCache === null) {
+    axeSourceCache = prof.timeSync('read:axe-core source', () =>
+      readFileSync(require_.resolve('axe-core/axe.min.js'), 'utf8'),
+    );
+  }
+  return axeSourceCache;
+}
+
+/** Launches a browser. Exposed so a suite can launch once and share it. */
+export async function launchBrowser(prof: Profiler = new Profiler()): Promise<import('playwright').Browser> {
+  const { chromium } = prof.timeSync('require:playwright', () => require_('playwright') as typeof import('playwright'));
+  // Playwright's bundled-browser version may not match what the host has
+  // installed. OSS_CHROMIUM_PATH lets the caller point at an existing binary.
+  const explicitPath = process.env.OSS_CHROMIUM_PATH;
+  return prof.time('browser:launch', () =>
+    chromium.launch({
+      headless: true,
+      args: ['--no-sandbox'],
+      ...(explicitPath ? { executablePath: explicitPath } : {}),
+    }),
+  );
+}
 
 export interface LiveTask {
   id: string;
@@ -109,28 +139,28 @@ export async function startSite(): Promise<{ server: Server; url: string }> {
  * measurement of that subject's work. Collecting everything once and sharing it
  * would make every subject's time identical and meaningless.
  */
-export async function collectPageFacts(url: string, held: Set<string> = ALL_CAPABILITIES): Promise<PageFacts> {
-  const { chromium } = require_('playwright') as typeof import('playwright');
-  const axePath = require_.resolve('axe-core/axe.min.js');
-  const axeSource = readFileSync(axePath, 'utf8');
-  const pixelmatch = (require_('pixelmatch') as { default?: unknown }).default ?? require_('pixelmatch');
-  const { PNG } = require_('pngjs') as typeof import('pngjs');
+export async function collectPageFacts(
+  url: string,
+  held: Set<string> = ALL_CAPABILITIES,
+  prof: Profiler = new Profiler(),
+  sharedBrowser?: import('playwright').Browser,
+): Promise<PageFacts> {
+  const pixelmatch = prof.timeSync(
+    'require:pixelmatch',
+    () => (require_('pixelmatch') as { default?: unknown }).default ?? require_('pixelmatch'),
+  );
+  const { PNG } = prof.timeSync('require:pngjs', () => require_('pngjs') as typeof import('pngjs'));
 
-  // Playwright's bundled-browser version may not match what the host has
-  // installed. OSS_CHROMIUM_PATH lets the caller point at an existing binary
-  // rather than downloading a second copy.
-  const explicitPath = process.env.OSS_CHROMIUM_PATH;
-  const browser = await chromium.launch({
-    headless: true,
-    args: ['--no-sandbox'],
-    ...(explicitPath ? { executablePath: explicitPath } : {}),
-  });
+  // One browser can serve every subject: each still gets its own context, so
+  // isolation is unchanged, but the launch cost is paid once instead of once
+  // per subject per repeat.
+  const browser = sharedBrowser ?? (await launchBrowser(prof));
   try {
-    const context = await browser.newContext();
-    const page = await context.newPage();
-    await page.goto(url, { waitUntil: 'load' });
+    const context = await prof.time('browser:newContext', () => browser.newContext());
+    const page = await prof.time('browser:newPage', () => context.newPage());
+    await prof.time('page:goto', () => page.goto(url, { waitUntil: 'load' }));
 
-    const structure = await page.evaluate(() => {
+    const structure = await prof.time('eval:structure', () => page.evaluate(() => {
       const headings = Array.from(document.querySelectorAll('h1,h2,h3')).map((h) => Number(h.tagName[1]));
       let ordered = true;
       for (let i = 1; i < headings.length; i++) {
@@ -143,23 +173,23 @@ export async function collectPageFacts(url: string, held: Set<string> = ALL_CAPA
         ctaPresent: Boolean(document.querySelector('#cta')),
         cardCount: document.querySelectorAll('.card').length,
       };
-    });
+    }));
 
-    const timing = await page.evaluate(() => {
+    const timing = await prof.time('eval:navigation-timing', () => page.evaluate(() => {
       const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
       return {
         domContentLoadedMs: nav ? Math.round(nav.domContentLoadedEventEnd - nav.startTime) : -1,
         loadMs: nav ? Math.round(nav.loadEventEnd - nav.startTime) : -1,
       };
-    });
+    }));
 
     // Accessibility: the real axe-core engine against the real DOM. Skipped
     // entirely when the subject has no accessibility capability, so its cost is
     // not charged to a subject that cannot do it.
     let axe = { violations: -1, serious: -1, ruleIds: [] as string[] };
     if (held.has('accessibility-audit')) {
-    await page.addScriptTag({ content: axeSource });
-    axe = (await page.evaluate(async () => {
+    await prof.time('axe:inject', () => page.addScriptTag({ content: axeSource(prof) }));
+    axe = (await prof.time('axe:run', () => page.evaluate(async () => {
       // @ts-expect-error injected at runtime
       const results = await window.axe.run(document, { resultTypes: ['violations'] });
       return {
@@ -167,20 +197,26 @@ export async function collectPageFacts(url: string, held: Set<string> = ALL_CAPA
         serious: results.violations.filter((v: { impact?: string }) => v.impact === 'serious' || v.impact === 'critical').length,
         ruleIds: results.violations.map((v: { id: string }) => v.id),
       };
-    })) as { violations: number; serious: number; ruleIds: string[] };
+    }))) as { violations: number; serious: number; ruleIds: string[] };
     }
 
     const perViewport: PageFacts['perViewport'] = [];
     const shots: Buffer[] = [];
+    // Keyed so the visual-regression step can reuse a capture already taken
+    // rather than photographing the same viewport a second time.
+    const shotsByViewport = new Map<string, Buffer>();
     const needsViewports = held.has('screenshot-capture') || held.has('responsive-design');
     for (const vp of needsViewports ? VIEWPORTS : []) {
-      await page.setViewportSize({ width: vp.width, height: vp.height });
-      const layout = await page.evaluate(() => ({
-        scrollWidth: document.documentElement.scrollWidth,
-        clientWidth: document.documentElement.clientWidth,
-      }));
-      const shot = await page.screenshot({ fullPage: false });
+      await prof.time('viewport:resize', () => page.setViewportSize({ width: vp.width, height: vp.height }));
+      const layout = await prof.time('eval:layout', () =>
+        page.evaluate(() => ({
+          scrollWidth: document.documentElement.scrollWidth,
+          clientWidth: document.documentElement.clientWidth,
+        })),
+      );
+      const shot = await prof.time('screenshot:capture', () => page.screenshot({ fullPage: false }));
       shots.push(shot);
+      shotsByViewport.set(vp.name, shot);
       perViewport.push({
         name: vp.name,
         // A one-pixel rounding difference is not a broken layout.
@@ -195,19 +231,26 @@ export async function collectPageFacts(url: string, held: Set<string> = ALL_CAPA
     // capture pipeline itself is not deterministic.
     let diffRatio = -1;
     if (held.has('image-comparison')) {
-      await page.setViewportSize({ width: 1440, height: 900 });
-      const baseline = await page.screenshot({ fullPage: false });
-      const current = await page.screenshot({ fullPage: false });
-      const a = PNG.sync.read(baseline);
-      const b = PNG.sync.read(current);
-      const diff = new PNG({ width: a.width, height: a.height });
-      const changed = (pixelmatch as (
-        a: Buffer, b: Buffer, out: Buffer | null, w: number, h: number, o?: { threshold: number },
-      ) => number)(a.data, b.data, diff.data, a.width, a.height, { threshold: 0.1 });
-      diffRatio = changed / (a.width * a.height);
+      // The viewport loop already captured 1440x900 when the subject holds a
+      // viewport capability. Reuse it as the baseline instead of re-capturing.
+      const reused = shotsByViewport.get('1440x900');
+      if (!reused) {
+        await prof.time('viewport:resize', () => page.setViewportSize({ width: 1440, height: 900 }));
+      }
+      const baseline = reused ?? (await prof.time('screenshot:capture', () => page.screenshot({ fullPage: false })));
+      const current = await prof.time('screenshot:capture', () => page.screenshot({ fullPage: false }));
+      diffRatio = prof.timeSync('pixel:diff', () => {
+        const a = PNG.sync.read(baseline);
+        const b = PNG.sync.read(current);
+        const diff = new PNG({ width: a.width, height: a.height });
+        const changed = (pixelmatch as (
+          a: Buffer, b: Buffer, out: Buffer | null, w: number, h: number, o?: { threshold: number },
+        ) => number)(a.data, b.data, diff.data, a.width, a.height, { threshold: 0.1 });
+        return changed / (a.width * a.height);
+      });
     }
 
-    await context.close();
+    await prof.time('browser:closeContext', () => context.close());
     return {
       ...structure,
       axeViolations: axe.violations,
@@ -220,7 +263,7 @@ export async function collectPageFacts(url: string, held: Set<string> = ALL_CAPA
       screenshotCount: shots.length,
     };
   } finally {
-    await browser.close();
+    if (!sharedBrowser) await prof.time('browser:close', () => browser.close());
   }
 }
 
@@ -410,6 +453,8 @@ export interface SuiteResult {
   repeats: number;
   pageUrl: string;
   facts: unknown;
+  /** Phase breakdown across every measured pass, for the execution profile. */
+  profile: Profiler;
 }
 
 export async function runRealTaskSuite(
@@ -418,18 +463,32 @@ export async function runRealTaskSuite(
   repeats = 1,
 ): Promise<SuiteResult> {
   const { server, url } = await startSite();
+  const profile = new Profiler();
+  let browser: import('playwright').Browser | null = null;
   try {
+    // One browser for the whole suite, launched OUTSIDE any subject's timing.
+    //
+    // Two reasons, and only one of them is speed. Launching per subject charged
+    // roughly 100-670 ms of process and browser start-up to whichever subject
+    // happened to run first, which was an original — so the ordering, not the
+    // capability set, was moving the numbers. Every subject still gets its own
+    // browser context, so isolation is unchanged.
+    browser = await launchBrowser();
+
+    // Discarded warm-up pass: pays the module-load, first-context and
+    // axe-source-read costs so they land on nobody's measurement.
+    await collectPageFacts(url, ALL_CAPABILITIES, new Profiler(), browser);
+
     const perRepeat: Map<string, SubjectRun>[] = [];
     let lastFacts: PageFacts | null = null;
 
     for (let i = 0; i < repeats; i++) {
       const round = new Map<string, SubjectRun>();
-      // Each subject gets its own browser pass, doing only the collection its
-      // capabilities imply, so its execution time is its own rather than a
-      // shared figure that would be identical for everyone.
+      // Each subject gets its own context, doing only the collection its
+      // capabilities imply, so its execution time is its own.
       for (const s of subjects) {
         const started = performance.now();
-        const facts = await collectPageFacts(url, new Set(s.capabilities));
+        const facts = await collectPageFacts(url, new Set(s.capabilities), profile, browser);
         const collectionMs = Math.round(performance.now() - started);
         lastFacts = facts;
         round.set(s.name, runSubject(s.name, s.capabilities, tasks, facts, collectionMs));
@@ -448,8 +507,8 @@ export async function runRealTaskSuite(
         );
         reliability = attempted.length === 0 ? null : stable.length / attempted.length;
       }
-      // Report the median total time rather than the first run's, so a cold
-      // start does not become the headline number.
+      // Median rather than first run, so a warm-up artefact cannot become the
+      // headline number.
       const times = perRepeat.map((r) => r.get(name)?.totalMs ?? 0).sort((a, b) => a - b);
       const medianMs = times[Math.floor(times.length / 2)] ?? run.totalMs;
       runs.set(name, {
@@ -459,8 +518,9 @@ export async function runRealTaskSuite(
       });
     }
 
-    return { runs, repeats, pageUrl: url, facts: lastFacts };
+    return { runs, repeats, pageUrl: url, facts: lastFacts, profile };
   } finally {
+    if (browser) await browser.close();
     server.close();
   }
 }

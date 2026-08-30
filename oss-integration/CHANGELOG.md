@@ -1,5 +1,50 @@
 # Changelog
 
+## 0.1.0 — release gate — 2026-08-30
+
+Benchmark policy **v0.1.1**. No new capability; optimization, measurement
+correction and release judgement only. v0.1 results are frozen in
+`benchmark/baseline-v0.1.json` and were not recomputed.
+
+### Added
+
+- `benchmark/baseline-v0.1.json` — the frozen v0.1 evidence, captured at commit
+  `a5507ae` before this round began.
+- `BENCHMARK_POLICY_v0.1.1.md` — versioned policy stating what changed, why, the
+  effect on old results, and both how it could favour and how it could hurt the
+  integrated plugin.
+- **SAME-TASK comparison** (diagnostic) beside FULL-CAPABILITY (headline).
+- **Normalized time metrics** added beside raw Execution Time, which is unchanged.
+- **`Unscanned Dependencies`** — the component of supply-chain risk that actually
+  carries risk. 2 offline, **0** under `--live`.
+- **Phase profiler**; the execution profile is now printed in every benchmark report.
+- **Ablation harness** (`tests/ablation.test.ts`) proving each original component
+  changes something measurable, with a control that would catch a no-op component.
+- `DECISIONS.md`, `FINAL_RELEASE_REPORT.md`, `ORIGINAL_CONTRIBUTIONS.md`.
+
+### Changed — performance, with no check skipped
+
+One browser shared across subjects (a context each), axe-core source cached, the
+duplicate 1440×900 screenshot reused, and cold start moved into a discarded
+warm-up pass. **844 ms → 549 ms (−35%).** The warm-up change is a fairness fix
+that works *against* the integrated plugin.
+
+### Findings this round
+
+18. **Cold start was charged to whichever subject ran first**, so ordering rather
+    than capability moved Execution Time. Fixed with the warm-up pass.
+19. **The ablation harness counted a file's own frontmatter as a reference to
+    itself**, which would have let a genuinely dead component pass. Fixed.
+
+### Not fixed, and why
+
+- **Distinct Upstream Projects (5 vs 3)** — every route to 4 requires weakening
+  the security gate, weakening the licence gate, or dropping a capability. The
+  optimizer refuses all three. `DECISIONS.md` D1.
+- **Execution Time (549 ms vs 244 ms)** — the entire delta is accessibility and
+  visual-regression work no baseline can perform. SAME-TASK shows 249 ms vs
+  252 ms: at identical work it is not slower. `DECISIONS.md` D3.
+
 ## 0.1.0 — verification round — 2026-08-30
 
 Second pass over the same MVP: no new product surface, only verification of

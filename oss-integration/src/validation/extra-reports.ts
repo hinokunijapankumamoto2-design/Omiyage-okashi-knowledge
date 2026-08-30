@@ -11,6 +11,7 @@ export function renderBenchmarkReport(
   subjects: BenchmarkSubject[],
   suite: SuiteResult | null,
   excludedTasks: BenchmarkTask[] = [],
+  sameTask: { tasks: BenchmarkTask[]; report: BenchmarkReport } | null = null,
 ): string {
   const defs = loadMetricDefinitions();
   const executed = subjects.some((s) => s.executed);
@@ -103,6 +104,31 @@ ${renderBenchmark(report)}
 
 ${report.overallNote}
 
+## SAME-TASK comparison (diagnostic)
+
+${
+  sameTask
+    ? `Policy v0.1.1. The results above are **FULL-CAPABILITY**: every subject did
+everything its capabilities allowed, so the integrated plugin's time includes
+accessibility auditing and visual regression that no baseline can perform at all.
+
+This section asks the separate question: **is the integrated plugin slower at
+identical work?** The task set is restricted to the ${sameTask.tasks.length} task(s) the realistic
+alternative (\`originals-union\`) can attempt, and every subject's capabilities
+are intersected with what those tasks require, so no subject is doing extra work.
+
+Tasks: ${sameTask.tasks.map((t) => `\`${t.id}\``).join(', ')}
+
+${renderBenchmark(sameTask.report)}
+
+**SAME-TASK overall: ${sameTask.report.overall}**
+
+This is diagnostic, not the headline. It cannot cancel a FULL-CAPABILITY
+regression, and it is expected to favour the integrated plugin precisely because
+it removes work the baselines cannot do.`
+    : '_Not computed: the suite was not executed, or the realistic alternative could attempt no task._'
+}
+
 ## Metric definitions and results
 
 ${definitionRows}
@@ -116,6 +142,14 @@ ${rubricSection}
 ## Per-task outcomes
 
 ${outcomes}
+
+## Execution profile
+
+${
+  suite
+    ? `Phase breakdown across every measured pass (all subjects, all repeats). Browser launch, module loading and the axe-core source read happen once in a discarded warm-up pass and are **not** in this table or in any subject's Execution Time — charging process start-up to whichever subject ran first was measuring the ordering, not the capability set.\n\n${suite.profile.render()}`
+    : '_The suite was not executed, so there is no profile._'
+}
 
 ## Not measured
 

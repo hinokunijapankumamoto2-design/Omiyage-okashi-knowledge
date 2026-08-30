@@ -32,7 +32,7 @@ A regression is MATERIAL if it degrades the user's ability to achieve the stated
 - `T8` Run the end-to-end test suite — requires: testing
 - `T9` Give an evidence-backed verdict on whether the page is ready to ship — requires: visual-review, accessibility-audit, performance-audit
 
-Executed against a real page in a real browser at http://127.0.0.1:40165/, 3 repeat(s). Each subject gets its own browser pass performing only the collection its capabilities imply, so Execution Time is that subject's own cost rather than a shared figure.
+Executed against a real page in a real browser at http://127.0.0.1:33359/, 3 repeat(s). Each subject gets its own browser pass performing only the collection its capabilities imply, so Execution Time is that subject's own cost rather than a shared figure.
 
 **Excluded from this run (1):** `T7` Review the diff for correctness and convention — no executable implementation exists for them against a rendered page, so scoring any subject on them would deflate every result equally and measure nothing.
 
@@ -47,10 +47,13 @@ Executed against a real page in a real browser at http://127.0.0.1:40165/, 3 rep
 | Install Actions | ↓ better | 1 | 1 | 2 | 4 | 2 | REGRESSION | no |
 | Distinct Upstream Projects | ↓ better | 1 | 1 | 1 | 3 | 5 | REGRESSION | **YES** |
 | Task Coverage per Install Action | ↑ better | 0 | 0 | 0 | 0 | 0.375 | IMPROVED | — |
+| Unscanned Dependencies | ↓ better | 0 | 0 | 0 | 0 | 0 | EQUIVALENT | — |
 | Output Quality | ↑ better | n/a | n/a | n/a | n/a | 0.833 | NOT_VERIFIED | — |
 | Quality Criteria Covered | ↑ better | 0 | 0 | 0 | 0 | 6 | IMPROVED | — |
-| Execution Time | ↓ better | n/a | n/a | n/a | n/a | 840 | NOT_VERIFIED | — |
+| Execution Time | ↓ better | n/a | n/a | n/a | n/a | 578 | NOT_VERIFIED | — |
 | Reliability | ↑ better | n/a | n/a | n/a | n/a | 1 | NOT_VERIFIED | — |
+| Execution Time per Completed Task | ↓ better | n/a | n/a | n/a | n/a | 96.333 | NOT_VERIFIED | — |
+| Execution Time per Quality Criterion | ↓ better | n/a | n/a | n/a | n/a | 96.333 | NOT_VERIFIED | — |
 | UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Token Usage | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
@@ -62,6 +65,10 @@ Executed against a real page in a real browser at http://127.0.0.1:40165/, 3 rep
 **Overall: REGRESSION**
 
 REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects. Rule 21: the overall verdict is REGRESSION whenever any measured metric regresses, whether or not that regression is material.
+
+## SAME-TASK comparison (diagnostic)
+
+_Not computed: the suite was not executed, or the realistic alternative could attempt no task._
 
 ## Metric definitions and results
 
@@ -210,7 +217,37 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects. Rule 21: th
 | **Measurement method** | EXECUTED. Measured on one machine in one session; treat as indicative, not as a portable figure. |
 | **Counts toward verdict** | yes |
 | **Material?** | no — A cost metric under the same threshold rule. |
-| **Results** | dequelabs/axe-core=n/a, americanexpress/jest-image-snapshot=n/a, GoogleChrome/lighthouse=n/a, originals-union=n/a, live-web-quality=840 |
+| **Results** | dequelabs/axe-core=n/a, americanexpress/jest-image-snapshot=n/a, GoogleChrome/lighthouse=n/a, originals-union=n/a, live-web-quality=578 |
+| **Verdict** | NOT_VERIFIED |
+| **Confidence** | high — produced by executing the task against a real page |
+
+
+### Execution Time per Completed Task
+
+| Field | Value |
+| --- | --- |
+| **Definition** | Wall-clock milliseconds divided by the number of tasks the subject actually completed. |
+| **Formula** | `execution-time / (task-completion x task count)` |
+| **Direction** | lower-is-better |
+| **Measurement method** | EXECUTED. Derived from two measured metrics. Undefined when a subject completes nothing, and reported n/a rather than 0 in that case. |
+| **Counts toward verdict** | yes |
+| **Material?** | no — A cost-efficiency ratio under the same threshold rule. ADDED beside raw Execution Time, which keeps its own verdict and its own materiality. |
+| **Results** | dequelabs/axe-core=n/a, americanexpress/jest-image-snapshot=n/a, GoogleChrome/lighthouse=n/a, originals-union=n/a, live-web-quality=96.333 |
+| **Verdict** | NOT_VERIFIED |
+| **Confidence** | high — produced by executing the task against a real page |
+
+
+### Execution Time per Quality Criterion
+
+| Field | Value |
+| --- | --- |
+| **Definition** | Wall-clock milliseconds divided by the number of Output Quality criteria the subject could actually evaluate. |
+| **Formula** | `execution-time / quality-criteria-covered` |
+| **Direction** | lower-is-better |
+| **Measurement method** | EXECUTED. Derived from two measured metrics. Undefined when a subject evaluates no criterion. |
+| **Counts toward verdict** | yes |
+| **Material?** | no — A cost-efficiency ratio. Criteria are not equal in cost or value, so this is indicative rather than precise. |
+| **Results** | dequelabs/axe-core=n/a, americanexpress/jest-image-snapshot=n/a, GoogleChrome/lighthouse=n/a, originals-union=n/a, live-web-quality=96.333 |
 | **Verdict** | NOT_VERIFIED |
 | **Confidence** | high — produced by executing the task against a real page |
 
@@ -273,6 +310,21 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects. Rule 21: th
 | **Results** | dequelabs/axe-core=n/a, americanexpress/jest-image-snapshot=n/a, GoogleChrome/lighthouse=n/a, originals-union=n/a, live-web-quality=n/a |
 | **Verdict** | NOT_VERIFIED |
 | **Confidence** | none — not measured |
+
+
+### Unscanned Dependencies
+
+| Field | Value |
+| --- | --- |
+| **Definition** | Number of sources the subject depends on for which no artifact was available to scan, so their security gate is UNKNOWN. |
+| **Formula** | `count(required sources with 0 scanned artifacts)` |
+| **Direction** | lower-is-better |
+| **Measurement method** | Counted from the security gate results. This is the component of supply-chain risk that actually carries risk: an unscanned dependency is not a safe one, it is an unknown one. |
+| **Counts toward verdict** | yes |
+| **Material?** | yes — An unknown dependency is a security exposure, and the project's own rule is that UNKNOWN is never PASS. |
+| **Results** | dequelabs/axe-core=0, americanexpress/jest-image-snapshot=0, GoogleChrome/lighthouse=0, originals-union=0, live-web-quality=0 |
+| **Verdict** | EQUIVALENT |
+| **Confidence** | medium |
 
 
 ## Output Quality rubric
@@ -341,7 +393,7 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects. Rule 21: th
 | Accessibility | 0 / 2 | axe-core: 1 violation(s), 1 serious/critical (image-alt). |
 | Functional Correctness | 2 / 2 | cta present: true, cards: 3. |
 | Visual Regression | 2 / 2 | pixel diff ratio 0. |
-| Performance | 2 / 2 | load 16ms, DOMContentLoaded 13ms. |
+| Performance | 2 / 2 | load 19ms, DOMContentLoaded 17ms. |
 | Code Quality | NOT_VERIFIED | NOT_VERIFIED — this suite exercises a rendered page, not a codebase under review. No evidence exists for this criterion. |
 
 ## Per-task outcomes
@@ -406,10 +458,31 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects. Rule 21: th
 | T2 | not-attempted | 0 ms | missing capability: visual-design | — |
 | T3 | passed | 0 ms | captured 3 screenshots | shot:360x800=55785, shot:768x1024=72411, shot:1440x900=77600 |
 | T4 | passed | 0 ms | axe-core reported 1 violation(s): image-alt | violations=1, serious=1, rules=image-alt |
-| T5 | passed | 0 ms | load 16ms, DOMContentLoaded 13ms | loadMs=16, domContentLoadedMs=13 |
+| T5 | passed | 0 ms | load 19ms, DOMContentLoaded 17ms | loadMs=19, domContentLoadedMs=17 |
 | T6 | passed | 0 ms | pixel diff ratio against baseline: 0 | diffRatio=0 |
 | T8 | passed | 0 ms | DOM assertions: cta present true, cards 3 | ctaPresent=true, cardCount=3 |
-| T9 | passed | 0 ms | verdict assembled from 1 a11y violation(s), load 16ms, 3 screenshots | violations=1, loadMs=16, screenshots=3 |
+| T9 | passed | 0 ms | verdict assembled from 1 a11y violation(s), load 19ms, 3 screenshots | violations=1, loadMs=19, screenshots=3 |
+
+## Execution profile
+
+Phase breakdown across every measured pass (all subjects, all repeats). Browser launch, module loading and the axe-core source read happen once in a discarded warm-up pass and are **not** in this table or in any subject's Execution Time — charging process start-up to whichever subject ran first was measuring the ordering, not the capability set.
+
+| Phase | ms | % | calls |
+| --- | --- | --- | --- |
+| screenshot:capture | 1369.9 | 23.1% | 24 |
+| axe:inject | 1298.9 | 21.9% | 12 |
+| axe:run | 1034 | 17.4% | 12 |
+| pixel:diff | 816.7 | 13.8% | 9 |
+| browser:newPage | 623.3 | 10.5% | 15 |
+| page:goto | 249.3 | 4.2% | 15 |
+| browser:closeContext | 217.9 | 3.7% | 15 |
+| eval:structure | 116.1 | 2% | 15 |
+| browser:newContext | 99.8 | 1.7% | 15 |
+| eval:navigation-timing | 45.6 | 0.8% | 15 |
+| viewport:resize | 44.3 | 0.7% | 15 |
+| eval:layout | 9.8 | 0.2% | 9 |
+| require:pixelmatch | 0.3 | 0% | 15 |
+| require:pngjs | 0 | 0% | 15 |
 
 ## Not measured
 

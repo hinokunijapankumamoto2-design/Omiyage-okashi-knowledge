@@ -65,6 +65,23 @@ function isDegraded(securityStatus: string, licenseStatus: string): boolean {
   return securityStatus !== 'PASS' || licenseStatus === 'LEGAL_REVIEW' || licenseStatus === 'BLOCK';
 }
 
+/** Supply-chain inputs, reported beside the project count rather than folded into it. */
+function chainStats(repos: AnalyzedRepo[]): {
+  unscanned: number;
+  direct: number;
+  nonPassSecurity: number;
+  nonPermissiveLicense: number;
+} {
+  return {
+    unscanned: repos.filter((r) => r.security.scanned.length === 0).length,
+    direct: new Set(repos.flatMap((r) => r.profile.dependencies)).size,
+    nonPassSecurity: repos.filter((r) => r.security.status !== 'PASS').length,
+    nonPermissiveLicense: repos.filter(
+      (r) => r.license.policy !== 'REUSE_OK' && r.license.policy !== 'REUSE_WITH_CONDITIONS',
+    ).length,
+  };
+}
+
 function countFindings(repos: AnalyzedRepo[]): number {
   return repos.reduce(
     (n, r) => n + r.security.findings.filter((f) => f.severity === 'critical' || f.severity === 'high').length,
@@ -80,6 +97,15 @@ function duplicateImplementations(entries: { capabilityId: string }[]): number {
     else seen.add(e.capabilityId);
   }
   return extra;
+}
+
+function spread(c: ReturnType<typeof chainStats>) {
+  return {
+    unscannedDependencies: c.unscanned,
+    directDependencies: c.direct,
+    nonPassSecurity: c.nonPassSecurity,
+    nonPermissiveLicense: c.nonPermissiveLicense,
+  };
 }
 
 export interface SubjectSet {
@@ -105,6 +131,7 @@ export function buildSubjects(scout: ScoutResult, plan: ArchitecturePlan): Subje
       installRuntimes: install.runtimes,
       // Its own package is the one project involved.
       upstreamProjects: 1,
+      ...spread(chainStats([r])),
     });
   }
 
@@ -128,8 +155,9 @@ export function buildSubjects(scout: ScoutResult, plan: ArchitecturePlan): Subje
       integrationDebt: scout.stack.conflicts.length + duplicateOverlap(scout),
       installActions: unionInstall.actions,
       installRuntimes: unionInstall.runtimes,
-      upstreamProjects: scout.supplied.length,
       // Each original is one project; the union involves all of them.
+      upstreamProjects: scout.supplied.length,
+      ...spread(chainStats(scout.supplied)),
     });
   }
 
@@ -158,6 +186,7 @@ export function buildSubjects(scout: ScoutResult, plan: ArchitecturePlan): Subje
     installRuntimes: install.runtimes,
     // The generated plugin itself, plus every upstream project it orchestrates.
     upstreamProjects: 1 + upstreamIds.size,
+    ...spread(chainStats([...scout.supplied, ...scout.discovered].filter((r) => upstreamIds.has(r.profile.id)))),
   });
 
   return { subjects, integratedName: plan.pluginName, unionName };

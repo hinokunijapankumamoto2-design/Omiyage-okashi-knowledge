@@ -32,10 +32,13 @@ _No structural issue found._
 | Install Actions | ↓ better | 1 | 1 | 2 | 4 | 2 | REGRESSION | no |
 | Distinct Upstream Projects | ↓ better | 1 | 1 | 1 | 3 | 5 | REGRESSION | **YES** |
 | Task Coverage per Install Action | ↑ better | 0 | 0 | 0 | 0 | 0.375 | IMPROVED | — |
+| Unscanned Dependencies | ↓ better | 0 | 0 | 0 | 0 | 0 | EQUIVALENT | — |
 | Output Quality | ↑ better | n/a | n/a | n/a | n/a | 0.833 | NOT_VERIFIED | — |
 | Quality Criteria Covered | ↑ better | 0 | 0 | 0 | 0 | 6 | IMPROVED | — |
-| Execution Time | ↓ better | n/a | n/a | n/a | n/a | 840 | NOT_VERIFIED | — |
+| Execution Time | ↓ better | n/a | n/a | n/a | n/a | 578 | NOT_VERIFIED | — |
 | Reliability | ↑ better | n/a | n/a | n/a | n/a | 1 | NOT_VERIFIED | — |
+| Execution Time per Completed Task | ↓ better | n/a | n/a | n/a | n/a | 96.333 | NOT_VERIFIED | — |
+| Execution Time per Quality Criterion | ↓ better | n/a | n/a | n/a | n/a | 96.333 | NOT_VERIFIED | — |
 | UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Token Usage | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |

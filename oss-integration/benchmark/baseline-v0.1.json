@@ -1,0 +1,381 @@
+{
+  "$comment": "FROZEN v0.1 BASELINE. Captured from the committed reports at the commit named below, before the final-convergence round began. This file is IMMUTABLE: later rounds compare against it and must not rewrite it. If a benchmark policy change makes a number incomparable, the new result goes in a NEW file under a new policy version - this one still stands.",
+  "benchmarkPolicyVersion": "v0.1",
+  "frozenAt": "2026-08-30",
+  "frozenAtCommit": "a5507ae18c3ed171dba7365ac4ad108aaebfbb83",
+  "metricDefinitionsVersion": "0.2.0 (data/benchmark-metrics.json as of this commit)",
+  "overallVerdict": "REGRESSION",
+  "buildStatus": "CONDITIONAL",
+  "materialRegressions": {
+    "synthetic": [
+      "Distinct Upstream Projects",
+      "Execution Time"
+    ],
+    "live": [
+      "Distinct Upstream Projects"
+    ]
+  },
+  "unresolvedConflicts": 0,
+  "runs": {
+    "SYNTHETIC_TEST": {
+      "note": "Three synthetic fixtures under fixture-org, which is NOT a real organisation. Capability sets are synthetic; the browser execution measuring them is real.",
+      "subjects": [
+        "fixture-org/frontend-craft-plugin",
+        "fixture-org/browser-qa-plugin",
+        "fixture-org/a11y-guard-plugin",
+        "originals-union",
+        "frontend-quality-plugin"
+      ],
+      "metrics": {
+        "Task Completion": {
+          "direction": "↑ better",
+          "values": {
+            "fixture-org/frontend-craft-plugin": 0.25,
+            "fixture-org/browser-qa-plugin": 0.25,
+            "fixture-org/a11y-guard-plugin": 0.0,
+            "originals-union": 0.5,
+            "frontend-quality-plugin": 1.0
+          },
+          "verdict": "IMPROVED",
+          "material": "—"
+        },
+        "Error Rate": {
+          "direction": "↓ better",
+          "values": {
+            "fixture-org/frontend-craft-plugin": 0.0,
+            "fixture-org/browser-qa-plugin": 0.0,
+            "fixture-org/a11y-guard-plugin": null,
+            "originals-union": 0.0,
+            "frontend-quality-plugin": 0.0
+          },
+          "verdict": "EQUIVALENT",
+          "material": "—"
+        },
+        "Security Findings (high/critical)": {
+          "direction": "↓ better",
+          "values": {
+            "fixture-org/frontend-craft-plugin": 0.0,
+            "fixture-org/browser-qa-plugin": 0.0,
+            "fixture-org/a11y-guard-plugin": 2.0,
+            "originals-union": 2.0,
+            "frontend-quality-plugin": 0.0
+          },
+          "verdict": "EQUIVALENT",
+          "material": "—"
+        },
+        "Integration Debt": {
+          "direction": "↓ better",
+          "values": {
+            "fixture-org/frontend-craft-plugin": 3.0,
+            "fixture-org/browser-qa-plugin": 6.0,
+            "fixture-org/a11y-guard-plugin": 5.0,
+            "originals-union": 6.0,
+            "frontend-quality-plugin": 0.0
+          },
+          "verdict": "IMPROVED",
+          "material": "—"
+        },
+        "Install Actions": {
+          "direction": "↓ better",
+          "values": {
+            "fixture-org/frontend-craft-plugin": 1.0,
+            "fixture-org/browser-qa-plugin": 2.0,
+            "fixture-org/a11y-guard-plugin": 1.0,
+            "originals-union": 4.0,
+            "frontend-quality-plugin": 2.0
+          },
+          "verdict": "REGRESSION",
+          "material": "no"
+        },
+        "Distinct Upstream Projects": {
+          "direction": "↓ better",
+          "values": {
+            "fixture-org/frontend-craft-plugin": 1.0,
+            "fixture-org/browser-qa-plugin": 1.0,
+            "fixture-org/a11y-guard-plugin": 1.0,
+            "originals-union": 3.0,
+            "frontend-quality-plugin": 5.0
+          },
+          "verdict": "REGRESSION",
+          "material": "YES"
+        },
+        "Task Coverage per Install Action": {
+          "direction": "↑ better",
+          "values": {
+            "fixture-org/frontend-craft-plugin": 0.25,
+            "fixture-org/browser-qa-plugin": 0.125,
+            "fixture-org/a11y-guard-plugin": 0.0,
+            "originals-union": 0.125,
+            "frontend-quality-plugin": 0.5
+          },
+          "verdict": "IMPROVED",
+          "material": "—"
+        },
+        "Output Quality": {
+          "direction": "↑ better",
+          "values": {
+            "fixture-org/frontend-craft-plugin": null,
+            "fixture-org/browser-qa-plugin": null,
+            "fixture-org/a11y-guard-plugin": null,
+            "originals-union": 1.0,
+            "frontend-quality-plugin": 1.0
+          },
+          "verdict": "EQUIVALENT",
+          "material": "—"
+        },
+        "Quality Criteria Covered": {
+          "direction": "↑ better",
+          "values": {
+            "fixture-org/frontend-craft-plugin": 1.0,
+            "fixture-org/browser-qa-plugin": 3.0,
+            "fixture-org/a11y-guard-plugin": 0.0,
+            "originals-union": 4.0,
+            "frontend-quality-plugin": 7.0
+          },
+          "verdict": "IMPROVED",
+          "material": "—"
+        },
+        "Execution Time": {
+          "direction": "↓ better",
+          "values": {
+            "fixture-org/frontend-craft-plugin": 461.0,
+            "fixture-org/browser-qa-plugin": 440.0,
+            "fixture-org/a11y-guard-plugin": null,
+            "originals-union": 462.0,
+            "frontend-quality-plugin": 844.0
+          },
+          "verdict": "REGRESSION",
+          "material": "YES"
+        },
+        "Reliability": {
+          "direction": "↑ better",
+          "values": {
+            "fixture-org/frontend-craft-plugin": 1.0,
+            "fixture-org/browser-qa-plugin": 1.0,
+            "fixture-org/a11y-guard-plugin": null,
+            "originals-union": 1.0,
+            "frontend-quality-plugin": 1.0
+          },
+          "verdict": "EQUIVALENT",
+          "material": "—"
+        },
+        "UX": {
+          "direction": "not measured",
+          "values": {
+            "fixture-org/frontend-craft-plugin": null,
+            "fixture-org/browser-qa-plugin": null,
+            "fixture-org/a11y-guard-plugin": null,
+            "originals-union": null,
+            "frontend-quality-plugin": null
+          },
+          "verdict": "NOT_VERIFIED (no verdict)",
+          "material": "—"
+        },
+        "Setup Time": {
+          "direction": "not measured",
+          "values": {
+            "fixture-org/frontend-craft-plugin": null,
+            "fixture-org/browser-qa-plugin": null,
+            "fixture-org/a11y-guard-plugin": null,
+            "originals-union": null,
+            "frontend-quality-plugin": null
+          },
+          "verdict": "NOT_VERIFIED (no verdict)",
+          "material": "—"
+        },
+        "Token Usage": {
+          "direction": "not measured",
+          "values": {
+            "fixture-org/frontend-craft-plugin": null,
+            "fixture-org/browser-qa-plugin": null,
+            "fixture-org/a11y-guard-plugin": null,
+            "originals-union": null,
+            "frontend-quality-plugin": null
+          },
+          "verdict": "NOT_VERIFIED (no verdict)",
+          "material": "—"
+        }
+      }
+    },
+    "LIVE_REPOSITORY_TEST": {
+      "note": "Three real public repositories analysed over the network: dequelabs/axe-core (MPL-2.0), americanexpress/jest-image-snapshot (Apache-2.0), GoogleChrome/lighthouse (Apache-2.0).",
+      "subjects": [
+        "dequelabs/axe-core",
+        "americanexpress/jest-image-snapshot",
+        "GoogleChrome/lighthouse",
+        "originals-union",
+        "live-web-quality"
+      ],
+      "metrics": {
+        "Task Completion": {
+          "direction": "↑ better",
+          "values": {
+            "dequelabs/axe-core": 0.0,
+            "americanexpress/jest-image-snapshot": 0.0,
+            "GoogleChrome/lighthouse": 0.0,
+            "originals-union": 0.0,
+            "live-web-quality": 0.75
+          },
+          "verdict": "IMPROVED",
+          "material": "—"
+        },
+        "Error Rate": {
+          "direction": "↓ better",
+          "values": {
+            "dequelabs/axe-core": null,
+            "americanexpress/jest-image-snapshot": null,
+            "GoogleChrome/lighthouse": null,
+            "originals-union": null,
+            "live-web-quality": 0.0
+          },
+          "verdict": "NOT_VERIFIED",
+          "material": "—"
+        },
+        "Security Findings (high/critical)": {
+          "direction": "↓ better",
+          "values": {
+            "dequelabs/axe-core": 1.0,
+            "americanexpress/jest-image-snapshot": 0.0,
+            "GoogleChrome/lighthouse": 0.0,
+            "originals-union": 1.0,
+            "live-web-quality": 0.0
+          },
+          "verdict": "EQUIVALENT",
+          "material": "—"
+        },
+        "Integration Debt": {
+          "direction": "↓ better",
+          "values": {
+            "dequelabs/axe-core": 0.0,
+            "americanexpress/jest-image-snapshot": 0.0,
+            "GoogleChrome/lighthouse": 0.0,
+            "originals-union": 1.0,
+            "live-web-quality": 0.0
+          },
+          "verdict": "EQUIVALENT",
+          "material": "—"
+        },
+        "Install Actions": {
+          "direction": "↓ better",
+          "values": {
+            "dequelabs/axe-core": 1.0,
+            "americanexpress/jest-image-snapshot": 1.0,
+            "GoogleChrome/lighthouse": 2.0,
+            "originals-union": 4.0,
+            "live-web-quality": 2.0
+          },
+          "verdict": "REGRESSION",
+          "material": "no"
+        },
+        "Distinct Upstream Projects": {
+          "direction": "↓ better",
+          "values": {
+            "dequelabs/axe-core": 1.0,
+            "americanexpress/jest-image-snapshot": 1.0,
+            "GoogleChrome/lighthouse": 1.0,
+            "originals-union": 3.0,
+            "live-web-quality": 5.0
+          },
+          "verdict": "REGRESSION",
+          "material": "YES"
+        },
+        "Task Coverage per Install Action": {
+          "direction": "↑ better",
+          "values": {
+            "dequelabs/axe-core": 0.0,
+            "americanexpress/jest-image-snapshot": 0.0,
+            "GoogleChrome/lighthouse": 0.0,
+            "originals-union": 0.0,
+            "live-web-quality": 0.375
+          },
+          "verdict": "IMPROVED",
+          "material": "—"
+        },
+        "Output Quality": {
+          "direction": "↑ better",
+          "values": {
+            "dequelabs/axe-core": null,
+            "americanexpress/jest-image-snapshot": null,
+            "GoogleChrome/lighthouse": null,
+            "originals-union": null,
+            "live-web-quality": 0.833
+          },
+          "verdict": "NOT_VERIFIED",
+          "material": "—"
+        },
+        "Quality Criteria Covered": {
+          "direction": "↑ better",
+          "values": {
+            "dequelabs/axe-core": 0.0,
+            "americanexpress/jest-image-snapshot": 0.0,
+            "GoogleChrome/lighthouse": 0.0,
+            "originals-union": 0.0,
+            "live-web-quality": 6.0
+          },
+          "verdict": "IMPROVED",
+          "material": "—"
+        },
+        "Execution Time": {
+          "direction": "↓ better",
+          "values": {
+            "dequelabs/axe-core": null,
+            "americanexpress/jest-image-snapshot": null,
+            "GoogleChrome/lighthouse": null,
+            "originals-union": null,
+            "live-web-quality": 840.0
+          },
+          "verdict": "NOT_VERIFIED",
+          "material": "—"
+        },
+        "Reliability": {
+          "direction": "↑ better",
+          "values": {
+            "dequelabs/axe-core": null,
+            "americanexpress/jest-image-snapshot": null,
+            "GoogleChrome/lighthouse": null,
+            "originals-union": null,
+            "live-web-quality": 1.0
+          },
+          "verdict": "NOT_VERIFIED",
+          "material": "—"
+        },
+        "UX": {
+          "direction": "not measured",
+          "values": {
+            "dequelabs/axe-core": null,
+            "americanexpress/jest-image-snapshot": null,
+            "GoogleChrome/lighthouse": null,
+            "originals-union": null,
+            "live-web-quality": null
+          },
+          "verdict": "NOT_VERIFIED (no verdict)",
+          "material": "—"
+        },
+        "Setup Time": {
+          "direction": "not measured",
+          "values": {
+            "dequelabs/axe-core": null,
+            "americanexpress/jest-image-snapshot": null,
+            "GoogleChrome/lighthouse": null,
+            "originals-union": null,
+            "live-web-quality": null
+          },
+          "verdict": "NOT_VERIFIED (no verdict)",
+          "material": "—"
+        },
+        "Token Usage": {
+          "direction": "not measured",
+          "values": {
+            "dequelabs/axe-core": null,
+            "americanexpress/jest-image-snapshot": null,
+            "GoogleChrome/lighthouse": null,
+            "originals-union": null,
+            "live-web-quality": null
+          },
+          "verdict": "NOT_VERIFIED (no verdict)",
+          "material": "—"
+        }
+      }
+    }
+  }
+}

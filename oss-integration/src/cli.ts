@@ -287,6 +287,36 @@ export async function runBuild(args: {
 
   const bench = runBenchmark(benchTasks, subjects, { integratedName, unionName });
 
+  // SAME-TASK diagnostic (policy v0.1.1). FULL-CAPABILITY above is the
+  // headline; this answers the separate question of whether the integrated
+  // plugin is slower at IDENTICAL work. The task set is what the realistic
+  // alternative can attempt, and every subject's capabilities are intersected
+  // with what that task set requires — so nobody is doing extra work.
+  let sameTask: { tasks: BenchmarkTask[]; report: ReturnType<typeof runBenchmark> } | null = null;
+  if (args.realTasks && suite) {
+    const union = subjects.find((s) => s.name === unionName);
+    if (union) {
+      const shared = benchTasks.filter((t) => t.requires.every((r) => union.capabilities.includes(r)));
+      const sharedCaps = new Set(shared.flatMap((t) => t.requires));
+      if (shared.length > 0) {
+        const restricted = subjects.map((s) => ({
+          name: s.name,
+          capabilities: s.capabilities.filter((c) => sharedCaps.has(c)),
+        }));
+        const sameSuite = await runRealTaskSuite(restricted, shared, args.repeats ?? 1);
+        const sameSubjects = subjects.map((s) => ({
+          ...s,
+          capabilities: s.capabilities.filter((c) => sharedCaps.has(c)),
+          executed: sameSuite.runs.get(s.name)?.executed,
+        }));
+        sameTask = {
+          tasks: shared,
+          report: runBenchmark(shared, sameSubjects, { integratedName, unionName }),
+        };
+      }
+    }
+  }
+
   const integrationPath = resolve(built.outputDir, 'INTEGRATION_REPORT.md');
   const validationPath = resolve(built.outputDir, 'VALIDATION_REPORT.md');
   const benchmarkPath = resolve(built.outputDir, 'BENCHMARK_REPORT.md');
@@ -295,7 +325,7 @@ export async function runBuild(args: {
   writeFileEnsured(validationPath, renderValidationReport(plan, pkg, bench, benchTasks));
   writeFileEnsured(
     benchmarkPath,
-    renderBenchmarkReport(bench, benchTasks, subjects, suite, tasks.filter((t) => !benchTasks.includes(t))),
+    renderBenchmarkReport(bench, benchTasks, subjects, suite, tasks.filter((t) => !benchTasks.includes(t)), sameTask),
   );
   writeFileEnsured(securityPath, renderSecurityReport(scout, plan));
 

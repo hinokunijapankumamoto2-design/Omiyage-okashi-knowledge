@@ -28,6 +28,11 @@ export interface BenchmarkSubject {
   installActions: number;
   installRuntimes: string[];
   upstreamProjects: number;
+  /** Required sources with nothing scanned, so their security gate is UNKNOWN. */
+  unscannedDependencies: number;
+  directDependencies: number;
+  nonPassSecurity: number;
+  nonPermissiveLicense: number;
   /** Present only when the subject was actually executed against a real target. */
   executed?: ExecutedResult;
 }
@@ -125,6 +130,7 @@ export function runBenchmark(
   add('install-actions', (s) => s.installActions);
   add('upstream-projects', (s) => s.upstreamProjects);
   add('coverage-per-install', (s) => (s.installActions === 0 ? 0 : completion(s) / s.installActions));
+  add('unscanned-dependencies', (s) => s.unscannedDependencies);
   // Composite quality is computed over the criteria EVERY executed subject
   // could evaluate. Scoring each subject over its own subset would reward a
   // subject for being unable to look.
@@ -167,6 +173,18 @@ export function runBenchmark(
   // Likewise, 0 ms to do nothing is not a fast subject.
   add('execution-time', (s) => (s.executed && s.executed.tasksAttempted > 0 ? s.executed.totalMs : null));
   add('reliability', (s) => s.executed?.reliability ?? null);
+  // Policy v0.1.1: normalized time metrics ADDED beside raw Execution Time,
+  // which keeps its own verdict above. Undefined denominators report null.
+  add('time-per-completed-task', (s) => {
+    if (!s.executed || s.executed.tasksAttempted === 0) return null;
+    const completed = completion(s) * tasks.length;
+    return completed === 0 ? null : s.executed.totalMs / completed;
+  });
+  add('time-per-quality-criterion', (s) => {
+    if (!s.executed || s.executed.tasksAttempted === 0) return null;
+    const criteria = s.executed.rubric.filter((r) => r.score !== null).length;
+    return criteria === 0 ? null : s.executed.totalMs / criteria;
+  });
   add('ux', () => null);
   add('setup-time', () => null);
   add('token-usage', () => null);

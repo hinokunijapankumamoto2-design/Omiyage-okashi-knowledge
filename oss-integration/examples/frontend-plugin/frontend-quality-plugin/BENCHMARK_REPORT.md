@@ -32,7 +32,7 @@ A regression is MATERIAL if it degrades the user's ability to achieve the stated
 - `T8` Run the end-to-end test suite — requires: testing
 - `T9` Give an evidence-backed verdict on whether the page is ready to ship — requires: visual-review, accessibility-audit, performance-audit
 
-Executed against a real page in a real browser at http://127.0.0.1:33407/, 3 repeat(s). Each subject gets its own browser pass performing only the collection its capabilities imply, so Execution Time is that subject's own cost rather than a shared figure.
+Executed against a real page in a real browser at http://127.0.0.1:38047/, 3 repeat(s). Each subject gets its own browser pass performing only the collection its capabilities imply, so Execution Time is that subject's own cost rather than a shared figure.
 
 **Excluded from this run (1):** `T7` Review the diff for correctness and convention — no executable implementation exists for them against a rendered page, so scoring any subject on them would deflate every result equally and measure nothing.
 
@@ -47,10 +47,13 @@ Executed against a real page in a real browser at http://127.0.0.1:33407/, 3 rep
 | Install Actions | ↓ better | 1 | 2 | 1 | 4 | 2 | REGRESSION | no |
 | Distinct Upstream Projects | ↓ better | 1 | 1 | 1 | 3 | 5 | REGRESSION | **YES** |
 | Task Coverage per Install Action | ↑ better | 0.25 | 0.125 | 0 | 0.125 | 0.5 | IMPROVED | — |
+| Unscanned Dependencies | ↓ better | 0 | 0 | 0 | 0 | 2 | REGRESSION | **YES** |
 | Output Quality | ↑ better | n/a | n/a | n/a | 1 | 1 | EQUIVALENT | — |
 | Quality Criteria Covered | ↑ better | 1 | 3 | 0 | 4 | 7 | IMPROVED | — |
-| Execution Time | ↓ better | 461 | 440 | n/a | 462 | 844 | REGRESSION | **YES** |
+| Execution Time | ↓ better | 243 | 245 | n/a | 244 | 549 | REGRESSION | **YES** |
 | Reliability | ↑ better | 1 | 1 | n/a | 1 | 1 | EQUIVALENT | — |
+| Execution Time per Completed Task | ↓ better | 121.5 | 122.5 | n/a | 61 | 68.625 | REGRESSION | **YES** |
+| Execution Time per Quality Criterion | ↓ better | 243 | 81.667 | n/a | 61 | 78.429 | REGRESSION | **YES** |
 | UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Token Usage | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
@@ -59,11 +62,64 @@ Executed against a real page in a real browser at http://127.0.0.1:33407/, 3 rep
 
 > **Distinct Upstream Projects regressed.** MATERIAL: 5 is worse than the realistic alternative (originals-union = 3), so integrating costs more than what it replaces.
 
-> **Execution Time regressed.** MATERIAL: 844 is worse than the realistic alternative (originals-union = 462), so integrating costs more than what it replaces.
+> **Unscanned Dependencies regressed.** An unknown dependency is a security exposure, and the project's own rule is that UNKNOWN is never PASS.
+
+> **Execution Time regressed.** MATERIAL: 549 is worse than the realistic alternative (originals-union = 244), so integrating costs more than what it replaces.
+
+> **Execution Time per Completed Task regressed.** MATERIAL: 68.625 is worse than the realistic alternative (originals-union = 61), so integrating costs more than what it replaces.
+
+> **Execution Time per Quality Criterion regressed.** MATERIAL: 78.429 is worse than the realistic alternative (originals-union = 61), so integrating costs more than what it replaces.
 
 **Overall: REGRESSION**
 
-REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects, Execution Time. Rule 21: the overall verdict is REGRESSION whenever any measured metric regresses, whether or not that regression is material.
+REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects, Unscanned Dependencies, Execution Time, Execution Time per Completed Task, Execution Time per Quality Criterion. Rule 21: the overall verdict is REGRESSION whenever any measured metric regresses, whether or not that regression is material.
+
+## SAME-TASK comparison (diagnostic)
+
+Policy v0.1.1. The results above are **FULL-CAPABILITY**: every subject did
+everything its capabilities allowed, so the integrated plugin's time includes
+accessibility auditing and visual regression that no baseline can perform at all.
+
+This section asks the separate question: **is the integrated plugin slower at
+identical work?** The task set is restricted to the 4 task(s) the realistic
+alternative (`originals-union`) can attempt, and every subject's capabilities
+are intersected with what those tasks require, so no subject is doing extra work.
+
+Tasks: `T1`, `T2`, `T3`, `T8`
+
+| Metric | Direction | fixture-org/frontend-craft-plugin | fixture-org/browser-qa-plugin | fixture-org/a11y-guard-plugin | originals-union | frontend-quality-plugin | Verdict | Material? |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Task Completion | ↑ better | 0.5 | 0.5 | 0 | 1 | 1 | EQUIVALENT | — |
+| Error Rate | ↓ better | 0 | 0 | n/a | 0 | 0 | EQUIVALENT | — |
+| Security Findings (high/critical) | ↓ better | 0 | 0 | 2 | 2 | 0 | EQUIVALENT | — |
+| Integration Debt | ↓ better | 3 | 6 | 5 | 6 | 0 | IMPROVED | — |
+| Install Actions | ↓ better | 1 | 2 | 1 | 4 | 2 | REGRESSION | no |
+| Distinct Upstream Projects | ↓ better | 1 | 1 | 1 | 3 | 5 | REGRESSION | **YES** |
+| Task Coverage per Install Action | ↑ better | 0.5 | 0.25 | 0 | 0.25 | 0.5 | EQUIVALENT | — |
+| Unscanned Dependencies | ↓ better | 0 | 0 | 0 | 0 | 2 | REGRESSION | **YES** |
+| Output Quality | ↑ better | n/a | n/a | n/a | 1 | 1 | EQUIVALENT | — |
+| Quality Criteria Covered | ↑ better | 1 | 3 | 0 | 4 | 4 | EQUIVALENT | — |
+| Execution Time | ↓ better | 234 | 259 | n/a | 252 | 249 | REGRESSION | no |
+| Reliability | ↑ better | 1 | 1 | n/a | 1 | 1 | EQUIVALENT | — |
+| Execution Time per Completed Task | ↓ better | 117 | 129.5 | n/a | 63 | 62.25 | IMPROVED | — |
+| Execution Time per Quality Criterion | ↓ better | 234 | 86.333 | n/a | 63 | 62.25 | IMPROVED | — |
+| UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
+| Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
+| Token Usage | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
+
+> **Install Actions regressed.** Not material: 2 is better than the realistic alternative (originals-union = 4). It regresses only against the single cheapest original, which cannot do the same work.
+
+> **Distinct Upstream Projects regressed.** MATERIAL: 5 is worse than the realistic alternative (originals-union = 3), so integrating costs more than what it replaces.
+
+> **Unscanned Dependencies regressed.** An unknown dependency is a security exposure, and the project's own rule is that UNKNOWN is never PASS.
+
+> **Execution Time regressed.** Not material: 249 is better than the realistic alternative (originals-union = 252). It regresses only against the single cheapest original, which cannot do the same work.
+
+**SAME-TASK overall: REGRESSION**
+
+This is diagnostic, not the headline. It cannot cancel a FULL-CAPABILITY
+regression, and it is expected to favour the integrated plugin precisely because
+it removes work the baselines cannot do.
 
 ## Metric definitions and results
 
@@ -212,7 +268,37 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects, Execution T
 | **Measurement method** | EXECUTED. Measured on one machine in one session; treat as indicative, not as a portable figure. |
 | **Counts toward verdict** | yes |
 | **Material?** | no — A cost metric under the same threshold rule. |
-| **Results** | fixture-org/frontend-craft-plugin=461, fixture-org/browser-qa-plugin=440, fixture-org/a11y-guard-plugin=n/a, originals-union=462, frontend-quality-plugin=844 |
+| **Results** | fixture-org/frontend-craft-plugin=243, fixture-org/browser-qa-plugin=245, fixture-org/a11y-guard-plugin=n/a, originals-union=244, frontend-quality-plugin=549 |
+| **Verdict** | REGRESSION |
+| **Confidence** | high — produced by executing the task against a real page |
+
+
+### Execution Time per Completed Task
+
+| Field | Value |
+| --- | --- |
+| **Definition** | Wall-clock milliseconds divided by the number of tasks the subject actually completed. |
+| **Formula** | `execution-time / (task-completion x task count)` |
+| **Direction** | lower-is-better |
+| **Measurement method** | EXECUTED. Derived from two measured metrics. Undefined when a subject completes nothing, and reported n/a rather than 0 in that case. |
+| **Counts toward verdict** | yes |
+| **Material?** | no — A cost-efficiency ratio under the same threshold rule. ADDED beside raw Execution Time, which keeps its own verdict and its own materiality. |
+| **Results** | fixture-org/frontend-craft-plugin=121.5, fixture-org/browser-qa-plugin=122.5, fixture-org/a11y-guard-plugin=n/a, originals-union=61, frontend-quality-plugin=68.625 |
+| **Verdict** | REGRESSION |
+| **Confidence** | high — produced by executing the task against a real page |
+
+
+### Execution Time per Quality Criterion
+
+| Field | Value |
+| --- | --- |
+| **Definition** | Wall-clock milliseconds divided by the number of Output Quality criteria the subject could actually evaluate. |
+| **Formula** | `execution-time / quality-criteria-covered` |
+| **Direction** | lower-is-better |
+| **Measurement method** | EXECUTED. Derived from two measured metrics. Undefined when a subject evaluates no criterion. |
+| **Counts toward verdict** | yes |
+| **Material?** | no — A cost-efficiency ratio. Criteria are not equal in cost or value, so this is indicative rather than precise. |
+| **Results** | fixture-org/frontend-craft-plugin=243, fixture-org/browser-qa-plugin=81.667, fixture-org/a11y-guard-plugin=n/a, originals-union=61, frontend-quality-plugin=78.429 |
 | **Verdict** | REGRESSION |
 | **Confidence** | high — produced by executing the task against a real page |
 
@@ -275,6 +361,21 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects, Execution T
 | **Results** | fixture-org/frontend-craft-plugin=n/a, fixture-org/browser-qa-plugin=n/a, fixture-org/a11y-guard-plugin=n/a, originals-union=n/a, frontend-quality-plugin=n/a |
 | **Verdict** | NOT_VERIFIED |
 | **Confidence** | none — not measured |
+
+
+### Unscanned Dependencies
+
+| Field | Value |
+| --- | --- |
+| **Definition** | Number of sources the subject depends on for which no artifact was available to scan, so their security gate is UNKNOWN. |
+| **Formula** | `count(required sources with 0 scanned artifacts)` |
+| **Direction** | lower-is-better |
+| **Measurement method** | Counted from the security gate results. This is the component of supply-chain risk that actually carries risk: an unscanned dependency is not a safe one, it is an unknown one. |
+| **Counts toward verdict** | yes |
+| **Material?** | yes — An unknown dependency is a security exposure, and the project's own rule is that UNKNOWN is never PASS. |
+| **Results** | fixture-org/frontend-craft-plugin=0, fixture-org/browser-qa-plugin=0, fixture-org/a11y-guard-plugin=0, originals-union=0, frontend-quality-plugin=2 |
+| **Verdict** | REGRESSION |
+| **Confidence** | medium |
 
 
 ## Output Quality rubric
@@ -343,7 +444,7 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects, Execution T
 | Accessibility | 0 / 2 | axe-core: 1 violation(s), 1 serious/critical (image-alt). |
 | Functional Correctness | 2 / 2 | cta present: true, cards: 3. |
 | Visual Regression | 2 / 2 | pixel diff ratio 0. |
-| Performance | 2 / 2 | load 18ms, DOMContentLoaded 15ms. |
+| Performance | 2 / 2 | load 14ms, DOMContentLoaded 13ms. |
 | Code Quality | NOT_VERIFIED | NOT_VERIFIED — this suite exercises a rendered page, not a codebase under review. No evidence exists for this criterion. |
 
 ## Per-task outcomes
@@ -408,10 +509,31 @@ REGRESSION DETECTED on: Install Actions, Distinct Upstream Projects, Execution T
 | T2 | passed | 0 ms | one h1: true, heading order sound: true | h1Count=1, headingOrderOk=true, title=Kaede Studio — Product Landing Page |
 | T3 | passed | 0 ms | captured 3 screenshots | shot:360x800=55785, shot:768x1024=72411, shot:1440x900=77600 |
 | T4 | passed | 0 ms | axe-core reported 1 violation(s): image-alt | violations=1, serious=1, rules=image-alt |
-| T5 | passed | 0 ms | load 18ms, DOMContentLoaded 15ms | loadMs=18, domContentLoadedMs=15 |
+| T5 | passed | 0 ms | load 14ms, DOMContentLoaded 13ms | loadMs=14, domContentLoadedMs=13 |
 | T6 | passed | 0 ms | pixel diff ratio against baseline: 0 | diffRatio=0 |
 | T8 | passed | 0 ms | DOM assertions: cta present true, cards 3 | ctaPresent=true, cardCount=3 |
-| T9 | passed | 0 ms | verdict assembled from 1 a11y violation(s), load 18ms, 3 screenshots | violations=1, loadMs=18, screenshots=3 |
+| T9 | passed | 0 ms | verdict assembled from 1 a11y violation(s), load 14ms, 3 screenshots | violations=1, loadMs=14, screenshots=3 |
+
+## Execution profile
+
+Phase breakdown across every measured pass (all subjects, all repeats). Browser launch, module loading and the axe-core source read happen once in a discarded warm-up pass and are **not** in this table or in any subject's Execution Time — charging process start-up to whichever subject ran first was measuring the ordering, not the capability set.
+
+| Phase | ms | % | calls |
+| --- | --- | --- | --- |
+| screenshot:capture | 1946.2 | 48% | 39 |
+| browser:newPage | 571.1 | 14.1% | 15 |
+| axe:inject | 288.2 | 7.1% | 3 |
+| axe:run | 247.3 | 6.1% | 3 |
+| page:goto | 237.2 | 5.8% | 15 |
+| pixel:diff | 224.7 | 5.5% | 3 |
+| browser:closeContext | 170.9 | 4.2% | 15 |
+| eval:structure | 107.2 | 2.6% | 15 |
+| viewport:resize | 104.3 | 2.6% | 36 |
+| browser:newContext | 88.4 | 2.2% | 15 |
+| eval:layout | 43.7 | 1.1% | 36 |
+| eval:navigation-timing | 28.2 | 0.7% | 15 |
+| require:pixelmatch | 0.3 | 0% | 15 |
+| require:pngjs | 0.1 | 0% | 15 |
 
 ## Not measured
 
