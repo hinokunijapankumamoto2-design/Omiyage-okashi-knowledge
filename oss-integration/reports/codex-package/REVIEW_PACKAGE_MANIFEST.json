@@ -34,7 +34,7 @@
     "tsconfig.json"
   ],
   "source_paths_note": "Review documentation is excluded from the product-source hash by construction.",
-  "review_package_content_hash": "137ccdd154993073c4368b6f9f79909ad7fe6f7baeb7b50697c611f99049f69c",
+  "review_package_content_hash": "52b9a8111d151b8eb2e4b7c3e561cacc08ad0027a5616fa89528445347e0dfd4",
   "review_package_file_count": 23,
   "review_package_paths": [
     ".gitattributes",
@@ -129,5 +129,11 @@
     "reports/codex-package/hash-manifest.mjs",
     "reports/codex-package/import-codex-results.mjs",
     "reports/codex-results/README.md"
-  ]
+  ],
+  "gate_order": [
+    "file-set integrity (missing tracked / untracked in scope)",
+    "product source content hash",
+    "review package content hash"
+  ],
+  "gate_order_note": "File-set runs first so a deleted or smuggled file reports FILE_SET_MISMATCH by name, rather than surfacing only as an opaque hash difference. All three are hard stops with exit 4."
 }

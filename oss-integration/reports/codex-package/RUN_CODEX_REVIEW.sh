@@ -63,21 +63,6 @@ if [ -z "$SRC_HASH" ] || [ -z "$PKG_HASH" ]; then
   echo "  hash-manifest.mjs produced no output. Node.js is required." >&2
   exit 4
 fi
-if [ "$SRC_HASH" != "$EXPECTED_SRC_HASH" ]; then
-  echo "ERROR: BASELINE_GATE_FAILED - SOURCE_TREE_MISMATCH" >&2
-  echo "  product source hash   $SRC_HASH" >&2
-  echo "  frozen at $SOURCE_BASELINE_SHA  $EXPECTED_SRC_HASH" >&2
-  echo "  Product code differs from the frozen v0.1 baseline - committed or not." >&2
-  echo "  Findings would not apply to the released product. Not a warning." >&2
-  exit 4
-fi
-if [ "$PKG_HASH" != "$EXPECTED_PKG_HASH" ]; then
-  echo "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_CONTENT_MISMATCH" >&2
-  echo "  review package hash   $PKG_HASH" >&2
-  echo "  recorded              $EXPECTED_PKG_HASH" >&2
-  echo "  The evidence Codex would read is not the evidence that was locked." >&2
-  exit 4
-fi
 # File-set integrity. Hashes cover TRACKED files only, so an untracked file
 # dropped into a scoped directory would otherwise be read by Codex without ever
 # entering the hash. That is exactly the silent gap this check closes.
@@ -96,6 +81,21 @@ if [ -n "$FS_BAD" ]; then
   exit 4
 fi
 
+if [ "$SRC_HASH" != "$EXPECTED_SRC_HASH" ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - SOURCE_TREE_MISMATCH" >&2
+  echo "  product source hash   $SRC_HASH" >&2
+  echo "  frozen at $SOURCE_BASELINE_SHA  $EXPECTED_SRC_HASH" >&2
+  echo "  Product code differs from the frozen v0.1 baseline - committed or not." >&2
+  echo "  Findings would not apply to the released product. Not a warning." >&2
+  exit 4
+fi
+if [ "$PKG_HASH" != "$EXPECTED_PKG_HASH" ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_CONTENT_MISMATCH" >&2
+  echo "  review package hash   $PKG_HASH" >&2
+  echo "  recorded              $EXPECTED_PKG_HASH" >&2
+  echo "  The evidence Codex would read is not the evidence that was locked." >&2
+  exit 4
+fi
 BASELINE_GATE=PASS
 echo "GATE 1 baseline: PASS"
 echo "  source baseline   $SOURCE_BASELINE_SHA"

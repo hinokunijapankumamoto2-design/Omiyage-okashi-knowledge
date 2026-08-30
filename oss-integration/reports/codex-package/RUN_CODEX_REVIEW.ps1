@@ -68,21 +68,6 @@ if ((-not $SrcHash) -or (-not $PkgHash)) {
     Write-Host "  hash-manifest.mjs produced no output. Node.js is required."
     exit 4
 }
-if ($SrcHash -ne $ExpectedSrcHash) {
-    Write-Host "ERROR: BASELINE_GATE_FAILED - SOURCE_TREE_MISMATCH" -ForegroundColor Red
-    Write-Host "  product source hash   $SrcHash"
-    Write-Host "  frozen at $SourceBaselineSha  $ExpectedSrcHash"
-    Write-Host "  Product code differs from the frozen v0.1 baseline - committed or not."
-    Write-Host "  Findings would not apply to the released product. Not a warning."
-    exit 4
-}
-if ($PkgHash -ne $ExpectedPkgHash) {
-    Write-Host "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_CONTENT_MISMATCH" -ForegroundColor Red
-    Write-Host "  review package hash   $PkgHash"
-    Write-Host "  recorded              $ExpectedPkgHash"
-    Write-Host "  The evidence Codex would read is not the evidence that was locked."
-    exit 4
-}
 # File-set integrity. Hashes cover TRACKED files only, so an untracked file
 # dropped into a scoped directory would otherwise be read by Codex without ever
 # entering the hash. That is exactly the silent gap this check closes.
@@ -101,6 +86,21 @@ if ($FsBad) {
     exit 4
 }
 
+if ($SrcHash -ne $ExpectedSrcHash) {
+    Write-Host "ERROR: BASELINE_GATE_FAILED - SOURCE_TREE_MISMATCH" -ForegroundColor Red
+    Write-Host "  product source hash   $SrcHash"
+    Write-Host "  frozen at $SourceBaselineSha  $ExpectedSrcHash"
+    Write-Host "  Product code differs from the frozen v0.1 baseline - committed or not."
+    Write-Host "  Findings would not apply to the released product. Not a warning."
+    exit 4
+}
+if ($PkgHash -ne $ExpectedPkgHash) {
+    Write-Host "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_CONTENT_MISMATCH" -ForegroundColor Red
+    Write-Host "  review package hash   $PkgHash"
+    Write-Host "  recorded              $ExpectedPkgHash"
+    Write-Host "  The evidence Codex would read is not the evidence that was locked."
+    exit 4
+}
 $BaselineGate = 'PASS'
 Write-Host "GATE 1 baseline: PASS"
 Write-Host "  source baseline   $SourceBaselineSha"
