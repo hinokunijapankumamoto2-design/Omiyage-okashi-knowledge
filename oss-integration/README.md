@@ -186,12 +186,13 @@ would move security responsibility onto this project.
 ### Review status
 
 ```
-Independent Codex Review: Not Run
-  Reason: this execution environment blocks OpenAI network/authentication access.
-  Classification: ENVIRONMENT_RESTRICTION — not a product defect.
-
-CLAUDE SELF REVIEW: 19 defects found and fixed — see CHANGELOG.md
+Independent Codex Review: Pending
+CLAUDE SELF REVIEW:      19 defects found and fixed — see CHANGELOG.md
 ```
+
+How to run the independent review:
+**[reports/codex-package/README.md](./reports/codex-package/README.md)** ·
+status: [CODEX_HANDOFF_REPORT.md](./CODEX_HANDOFF_REPORT.md)
 
 **This code has never been reviewed by anyone but its author.** The self-review
 is evidence that specific defects were found — not evidence the code is

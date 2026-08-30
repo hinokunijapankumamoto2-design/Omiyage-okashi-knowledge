@@ -10,7 +10,7 @@ SEVERITY           CRITICAL | HIGH | MEDIUM | LOW | INFO
 CATEGORY           architecture | correctness | type-safety | error-handling |
                    tests | security | licence | provenance | benchmark |
                    reproducibility | claims | supply-chain
-CLAIM_ATTACKED     which of CLAIMS_TO_AUDIT.md, or "none"
+CLAIM_ATTACKED     which of evidence/claims-to-audit.md, or "none"
 FINDING            one sentence: what is wrong
 EVIDENCE           what you observed that shows it
 FILE               repo-relative path
@@ -41,6 +41,6 @@ or withheld.
 
 - **Reporting no finding in an area is a valid, useful result.** Say so
   explicitly rather than padding with `INFO` items.
-- If a claim in `CLAIMS_TO_AUDIT.md` survives your attack, record that too — an
+- If a claim in `evidence/claims-to-audit.md` survives your attack, record that too — an
   attack that fails is evidence.
 - Do not modify any source file. See the read-only rule in `REVIEW_BRIEF.md`.

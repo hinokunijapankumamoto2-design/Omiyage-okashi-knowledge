@@ -22,7 +22,7 @@ current tree.
 `security-license-provenance-audit.md`. Read the transcripts, not just the
 aggregate — the importer is forgiving and may have merged or missed a block.
 
-Also read the verdicts on `CLAIMS_TO_AUDIT.md`: a claim marked `REFUTE` or
+Also read the verdicts on `evidence/claims-to-audit.md`: a claim marked `REFUTE` or
 `PARTIALLY_SUPPORT` is a finding even if it was not filed as one.
 
 ### 3. Aggregate

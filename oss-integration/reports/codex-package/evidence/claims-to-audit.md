@@ -83,3 +83,27 @@ Where to look: `data/benchmark-metrics.json`, `BENCHMARK_POLICY_v0.1.1.md`,
 `benchmark/baseline-v0.1.json`, `src/validation/benchmark.ts`,
 `src/validation/subjects.ts`. Three definitions were changed mid-project, each
 recorded as a defect fix rather than a preference — verify or refute each.
+
+### CLAIM 11 — The available benchmark evidence is sufficient to support the current performance interpretation
+
+This claim is about the **evidence base itself**, not about performance.
+
+`evidence/benchmark-evidence.md` records that per-repeat timings were
+**discarded** — only a single median was retained per subject. It therefore
+states `MEAN`, `MEDIAN`, `VARIANCE`, `STDDEV`, `P50/P95` and
+`CONFIDENCE_INTERVAL` as `NOT_COMPUTABLE_FROM_AVAILABLE_DATA`, and n = 3 on one
+machine with no platform metadata.
+
+Judge whether what was retained is sufficient to support the performance
+conclusions drawn from it. Consider separately:
+
+- large differences (e.g. 235 ms vs 556 ms), and
+- small differences (e.g. 252 ms vs 256 ms).
+
+They may deserve different verdicts. If the evidence is insufficient for either,
+say so — and say what would have to be retained to settle it.
+
+Where to look: `evidence/benchmark-evidence.md`,
+`src/validation/live-task-runner.ts` (`runRealTaskSuite`, where repeats are
+reduced to a median), each build's `BENCHMARK_REPORT.md`.
+

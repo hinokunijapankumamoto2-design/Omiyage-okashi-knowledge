@@ -168,12 +168,13 @@ Skipしていません。**
 ### レビュー状況
 
 ```
-Independent Codex Review: Not Run
-  理由: 本実行環境が OpenAI のネットワーク/認証アクセスを遮断しているため。
-  分類: ENVIRONMENT_RESTRICTION — Product の欠陥ではありません。
-
-CLAUDE SELF REVIEW: 19件の欠陥を発見・修正 — CHANGELOG.md 参照
+Independent Codex Review: Pending
+CLAUDE SELF REVIEW:      19件の欠陥を発見・修正 — CHANGELOG.md 参照
 ```
+
+Independent Review の実行方法:
+**[reports/codex-package/README.md](./reports/codex-package/README.md)** ·
+状況: [CODEX_HANDOFF_REPORT.md](./CODEX_HANDOFF_REPORT.md)
 
 **本コードは作者以外の誰からもレビューを受けていません。** Self Reviewは
 特定の欠陥を発見した証拠ではありますが、コードが正しいことの証拠ではなく、

@@ -41,43 +41,72 @@ mkdir -p "$OUT"
 
 BASELINE_SHA="$(node -e "process.stdout.write(require('$HERE/BASELINE.json').BASELINE_GIT_COMMIT)" 2>/dev/null || echo unknown)"
 CURRENT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
+BASELINE_MISMATCH=false
 if [ "$BASELINE_SHA" != "unknown" ] && [ "$CURRENT_SHA" != "$BASELINE_SHA" ]; then
-  echo "WARNING: working tree is at $CURRENT_SHA but the review package was built for $BASELINE_SHA." >&2
-  echo "         Findings will be recorded against the CURRENT commit." >&2
+  BASELINE_MISMATCH=true
+  echo "WARNING: BASELINE_MISMATCH" >&2
+  echo "         working tree is at $CURRENT_SHA; package was built for $BASELINE_SHA." >&2
+  echo "         Findings are recorded against the CURRENT commit and must be" >&2
+  echo "         diffed against the baseline before being acted on." >&2
 fi
 
 # --- reviews ---------------------------------------------------------------
+# Every review starts NOT_RUN and only becomes PASS on a clean exit, so an
+# interrupted run can never be mistaken for a complete one.
+STATUS_standard=NOT_RUN
+STATUS_adversarial=NOT_RUN
+STATUS_benchmark=NOT_RUN
+STATUS_seclicprov=NOT_RUN
 FAILED=0
+
 run_review () {
-  local name="$1" prompt_file="$2"
+  local key="$1" name="$2" prompt_file="$3"
   echo
   echo "=== $name ==="
   # --skip-git-repo-check so the review also works from an exported copy.
   if codex exec --skip-git-repo-check "$(cat "$HERE/$prompt_file")" > "$OUT/$name.md" 2>&1; then
+    printf -v "STATUS_$key" PASS
     echo "  wrote $OUT/$name.md"
   else
-    echo "  FAILED - transcript (including the error) kept at $OUT/$name.md" >&2
+    printf -v "STATUS_$key" FAILED
     FAILED=$((FAILED + 1))
+    # Mark the transcript itself, so a partial result is never read as a
+    # finished review by someone opening the file directly.
+    { echo "<!-- STATUS: INCOMPLETE - this review did not finish. Do not read it as a completed review. -->";
+      echo; cat "$OUT/$name.md"; } > "$OUT/$name.md.tmp" && mv "$OUT/$name.md.tmp" "$OUT/$name.md"
+    echo "  FAILED - transcript marked INCOMPLETE at $OUT/$name.md" >&2
   fi
 }
 
-run_review standard-review                     REVIEW_BRIEF.md
-run_review adversarial-review                  PROMPT_ADVERSARIAL.md
-run_review benchmark-audit                     PROMPT_BENCHMARK_AUDIT.md
-run_review security-license-provenance-audit   PROMPT_SEC_LIC_PROV.md
+run_review standard    standard-review                     REVIEW_BRIEF.md
+run_review adversarial adversarial-review                  PROMPT_ADVERSARIAL.md
+run_review benchmark   benchmark-audit                     PROMPT_BENCHMARK_AUDIT.md
+run_review seclicprov  security-license-provenance-audit   PROMPT_SEC_LIC_PROV.md
 
 # --- run metadata (never contains a credential) ----------------------------
 TREE_HASH="$(git ls-files -s src data schemas tests package.json tsconfig.json 2>/dev/null | sha256sum | cut -d' ' -f1 || echo unknown)"
+OVERALL=COMPLETE
+[ "$FAILED" -eq 0 ] || OVERALL=INCOMPLETE
 cat > "$OUT/RUN_METADATA.json" <<META
 {
   "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+  "status": "$OVERALL",
   "git_commit": "$CURRENT_SHA",
   "baseline_git_commit": "$BASELINE_SHA",
+  "baseline_mismatch": $BASELINE_MISMATCH,
   "codex_version": "$CODEX_VERSION",
   "review_package_version": "1.0.0",
   "benchmark_policy_version": "v0.1.1",
   "source_tree_hash": "$TREE_HASH",
+  "runner_type": "bash",
   "runner": "RUN_CODEX_REVIEW.sh",
+  "platform": "$(uname -s) $(uname -r) $(uname -m)",
+  "reviews": {
+    "standard": "$STATUS_standard",
+    "adversarial": "$STATUS_adversarial",
+    "benchmark": "$STATUS_benchmark",
+    "security_license_provenance": "$STATUS_seclicprov"
+  },
   "reviews_failed": $FAILED
 }
 META

@@ -1,8 +1,8 @@
-# CODEX HANDOFF REPORT
+# EXTERNAL CODEX REVIEW HANDOFF
 
 ```
 STATUS                     READY
-BASELINE COMMIT            04fab5b51b62dbba03d744e50b03ee1ea1c80a33
+BASELINE COMMIT            8dc0d5cb23f83914b4151f121cf2e546086191f2
 PRODUCT CODE               FROZEN
 CURRENT ENVIRONMENT        BLOCKED
 INDEPENDENT REVIEW         PENDING
@@ -17,123 +17,182 @@ Installed — `codex-cli 0.151.0`.
 Installed and enabled — `codex@openai-codex` v1.0.6, user scope, from the
 `openai/codex-plugin-cc` marketplace.
 
-## CURRENT ENVIRONMENT
-
-**BLOCKED.**
-
 ## BLOCK REASON
 
 Organization network policy on the execution environment's egress proxy.
 `api.openai.com`, `auth.openai.com` and `chatgpt.com` all answer **403 to
 CONNECT**; `codex login status` reports **Not logged in**; no `~/.codex`;
-`OPENAI_API_KEY` unset. Classified `ENVIRONMENT_RESTRICTION` — **not a product
-defect**. No further connection attempts are made from here.
+`OPENAI_API_KEY` unset. Both auth routes the plugin documents are therefore
+closed. Classified `ENVIRONMENT_RESTRICTION` — **not a product defect**. No
+further connection attempts are made from here.
+
+## REVIEW PACKAGE
+
+**READY** — `reports/codex-package/`, 15 files.
 
 ## REVIEW PROMPTS
 
-**4 / 4 READY** — standard, adversarial, benchmark audit, security/licence/provenance.
-
-Each carries the read-only rule, the baseline SHA, the finding schema, and an
+**4 / 4** — standard, adversarial, benchmark audit, security/licence/provenance.
+Each carries the read-only rule, the baseline SHA, the finding schema and an
 index of the evidence files.
 
 ## ANCHORING AUDIT
 
-**PASS.** No confirm-seeking phrasing, no statement of the author's ship
-decision or improvement verdict, no stale benchmark numbers, in any of the four
-prompts. Three leaks were found and removed in an earlier pass: two stated
-conclusions and one stale timing pair. The same-task figures are now handed over
-as raw numbers with **no interpretation attached**, and the reviewer is asked to
-decide independently what they support — including whether the sample supports
-any directional conclusion at all.
+**PASS.** No confirm-seeking phrasing, no ship decision, no improvement verdict,
+no stale benchmark numbers in any prompt. Three leaks were found and removed
+earlier: two stated conclusions and one stale timing pair. Same-task figures are
+handed over as raw numbers with **no interpretation**.
 
-Re-runnable:
+Adversarial framing is deliberate but **not rejection-forcing**: its verdict
+scale includes *attack failed* and *inconclusive*, and a failed attack is
+recorded as evidence.
+
+Re-runnable check (prompt files only — the package README describes the check
+and would match itself):
 
 ```bash
 grep -rniE "confirm that|verify .* conclusion|approve|is correct" \\
   reports/codex-package/REVIEW_BRIEF.md reports/codex-package/PROMPT_*.md
 ```
 
-Returns nothing.
+## FACT / CLAIM CLASSIFICATION
 
-**Adversarial framing is deliberate but not rejection-forcing:** the adversarial
-prompt asks the reviewer to try to prove the MVP should not ship, and its verdict
-scale explicitly includes *attack failed* and *inconclusive*. An attack that
-fails is recorded as evidence.
-
-## FACT / CLAIM SEPARATION
-
-`EVIDENCE_CLASSIFICATION.md` splits everything handed over into `FACT`,
+**READY** — `evidence/evidence-classification.md` separates `FACT`,
 `MEASURED_RESULT`, `CLAIM_TO_AUDIT`, `ASSUMPTION` and `UNKNOWN`. The author's
-interpretations are filed as claims — **inputs to the review, not premises of it**
-— and `CLAIMS_TO_AUDIT.md` lists ten of them for a
-`SUPPORT` / `PARTIALLY_SUPPORT` / `REFUTE` / `NOT_VERIFIED` verdict.
+interpretations are filed as claims — **inputs to the review, never premises**.
 
-## WINDOWS RUNNER
+## CLAIMS TO AUDIT
 
-`reports/codex-package/RUN_CODEX_REVIEW.ps1` — uses existing Codex
-authentication, embeds no key, exports no credential, runs no destructive
-command, modifies no tracked file, writes only to `reports/codex-results/`.
-Stops with `CODEX_NOT_AUTHENTICATED` (exit 3) or `CODEX_CONNECTION_UNAVAILABLE`
-(exit 2). `Join-Path` nested so Windows PowerShell 5.1 works.
+**11** — ten about the product, plus **CLAIM 11**, which asks whether the
+available benchmark evidence is even sufficient to support the performance
+interpretation drawn from it. Verdict scale: `SUPPORT` / `PARTIALLY_SUPPORT` /
+`REFUTE` / `NOT_VERIFIED`, with `NOT_VERIFIED` stated as legitimate.
 
-**Limitation, stated rather than glossed:** `pwsh` is not installed in this
-environment, so the PowerShell syntax could **not** be machine-verified. Written
-and reviewed by hand, with prompt/output/order and metadata-key parity against
-the Bash runner verified automatically. Run it once on Windows before relying on it.
+## BENCHMARK RAW DATA
+
+**PARTIAL**, and the gap is disclosed rather than papered over.
+
+| | |
+| --- | --- |
+| Per-task evidence | AVAILABLE |
+| Per-subject aggregates | AVAILABLE |
+| Phase profile | AVAILABLE |
+| Rubric per criterion | AVAILABLE |
+| **PER_REPEAT_TIMINGS** | **NOT_AVAILABLE** |
+| MEAN / MEDIAN / VARIANCE / STDDEV / P50 / P95 / CI | **NOT_COMPUTABLE_FROM_AVAILABLE_DATA** |
+
+Runs used `--repeats 3`, but the harness reduced them to a single median and
+discarded the three underlying values. The reported figure *is* a median, yet it
+**cannot be recomputed or checked** from the artifacts, and no dispersion
+statistic can be derived from it. **Nothing is estimated or back-filled from the
+aggregate.** n = 3, one machine, no platform metadata recorded for the timing runs.
+
+## SECURITY EVIDENCE
+
+**READY** — per finding: repository, file, path, matched rule, matched source,
+context, classification, rationale, confidence. Includes the two rules
+deliberately **narrowed** (`destructive-rm` split; regex dependency rule
+replaced by a structured `package.json` check) so the narrowing itself can be
+attacked for false negatives, and the scanner's stated blind spots.
+
+## LICENCE EVIDENCE
+
+**READY** — per repository: release, licence **file path**, detected licence,
+licence source, reuse classification, conditions. The licence **file** is the
+primary evidence, not GitHub metadata; where file and metadata disagree the file
+wins. Commit SHAs are recorded as `UNKNOWN` — the API that serves them is
+unreachable.
+
+## PROVENANCE EVIDENCE
+
+**READY** — claim, method (artifact-level audit), method detail (8-word shingle
+comparison), parameters, result (zero overlap), and explicit limitations:
+
+- Zero shingle overlap **does not prove legal non-copying**.
+- It does not detect conceptual or structural reuse.
+- It does not prove independent invention.
+- It is **one technical signal only**.
+
+## POWERSHELL RUNNER
+
+**READY** — `RUN_CODEX_REVIEW.ps1`. Uses existing Codex authentication, embeds
+no key, exports no credential, runs no destructive command, modifies no tracked
+file, writes only to `reports/codex-results/`. Stops with
+`CODEX_NOT_AUTHENTICATED` (exit 3) or `CODEX_CONNECTION_UNAVAILABLE` (exit 2).
+Nested `Join-Path` and no ternary operator, so it runs on Windows PowerShell 5.1
+as well as pwsh 7+.
+
+**Limitation, stated not glossed:** `pwsh` is absent from this environment, so
+the PowerShell syntax could **not** be machine-verified. Written and reviewed by
+hand; prompt/output/order, all 14 metadata keys, per-review status keys and exit
+codes verified identical to the Bash runner automatically. Run it once on
+Windows before relying on it.
 
 ## BASH RUNNER
 
-`reports/codex-package/RUN_CODEX_REVIEW.sh` — same four prompts, same four
-output names, same order, same metadata keys, same exit codes. Syntax verified
-with `bash -n`. Failure behaviour tested live:
+**READY** — `RUN_CODEX_REVIEW.sh`, `bash -n` verified. Failure behaviour tested
+live in this blocked environment:
 
 | Condition | Result |
 | --- | --- |
 | Codex present, not logged in | `ERROR: CODEX_NOT_AUTHENTICATED`, exit **3** |
 | Codex absent from PATH | `ERROR: CODEX_CONNECTION_UNAVAILABLE`, exit **2** |
-| Either failure | **No files written**, no fallback to an API key |
-| Importer with no transcripts | Exit **1**, `CODEX_REVIEW_REPORT.md` left unchanged |
+| Either failure | **No transcript, no metadata written**; no API-key fallback |
+| Importer with no transcripts | exit **1**, `CODEX_REVIEW_REPORT.md` unchanged |
 
-## OUTPUT STRUCTURE
+## RESULT SCHEMA
 
-```
-reports/codex-results/
-├── standard-review.md
-├── adversarial-review.md
-├── benchmark-audit.md
-├── security-license-provenance-audit.md
-└── RUN_METADATA.json
-```
+**READY** — `FINDING_SCHEMA.md`: ID, REVIEW_TYPE, SEVERITY, CATEGORY,
+CLAIM_ATTACKED, FINDING, EVIDENCE, FILE, LINE, REPRODUCTION, EXPECTED, ACTUAL,
+IMPACT, CONFIDENCE, RECOMMENDATION. Severity `CRITICAL` / `HIGH` / `MEDIUM` /
+`LOW` / `INFO`.
 
-`RUN_METADATA.json` records timestamp, git commit, baseline commit, codex
-version, review package version, benchmark policy version, source tree hash,
-runner and failure count. **No credential is ever written.**
+## RUN METADATA
+
+**READY** — `reports/codex-results/RUN_METADATA.json`, 14 keys: timestamp,
+status (`COMPLETE`/`INCOMPLETE`), git_commit, baseline_git_commit,
+baseline_mismatch, codex_version, review_package_version,
+benchmark_policy_version, source_tree_hash, runner_type, runner, platform,
+per-review results, reviews_failed.
+
+Review completeness is tracked individually: each review starts `NOT_RUN` and
+only becomes `PASS` on a clean exit, so an interrupted run cannot be mistaken
+for a complete one. A failed review also gets an `INCOMPLETE` marker written
+into its own transcript. **No credential is ever written.**
 
 ## BASELINE LOCK
 
 `reports/codex-package/BASELINE.json` pins `BASELINE_GIT_COMMIT` and a source
-tree hash. Both runners compare the working tree against it and warn on drift,
-so source that was reviewed is never confused with source that was later fixed.
+tree hash. Both runners compare the working tree against it and record
+`baseline_mismatch` plus a `BASELINE_MISMATCH` warning on drift, so reviewed
+source is never confused with later-fixed source.
 
-## READ-ONLY REVIEW
+## READ-ONLY GUARANTEE
 
-Codex is instructed to `ANALYZE` · `CHALLENGE` · `FIND` · `REPORT` only.
-Automatic fixes are out of scope; every change is made afterwards, by the
-author, only after independently reproducing the finding.
+Codex is instructed to `READ` · `ANALYZE` · `CHALLENGE` · `REPORT` only. No
+`EDIT`, `WRITE`, `COMMIT`, `PUSH` or auto-fix. Every change is made afterwards,
+by the author, only after independently reproducing the finding.
 
 ## SECRET SCAN
 
-**PASS** — 131 tracked and new files. No credential-shaped content, no hardcoded
-key assignment, no `~/.codex` copying, no suspicious filenames. Every
-`OPENAI_API_KEY` mention is documentation of its absence, pipe-from-environment
-guidance, or the project's own security-gate detection pattern.
+```
+STATUS              PASS
+REAL SECRETS FOUND  0
+```
+
+Documentation examples are distinguished from real secrets: every
+`OPENAI_API_KEY` occurrence is either a statement that no key is set, the
+pipe-from-environment guidance (`printenv OPENAI_API_KEY | codex login`), or
+the project's own security-gate detection pattern. No `~/.codex` content, auth
+token, cookie or session material is present or copied.
 
 ## PRODUCT CODE CHANGED
 
-**NO.** `src/`, `data/`, `schemas/`, `tests/`, `skills/`, `benchmark/`,
-`package.json`, `tsconfig.json` and both generated example plugins are unchanged
-since the freeze. Only review prompts, runners, review documentation, result
-structure and this report were touched.
+**NO.** `src/`, `generated plugin implementation`, `core capability logic`,
+`security engine`, `licence engine`, `benchmark implementation`, `schemas/`,
+`tests/`, `skills/` and both generated example plugins are unchanged since the
+freeze. Only review prompts, the evidence package, runners, result schema,
+handoff documentation and the README link were touched.
 
 ## INDEPENDENT REVIEW
 
@@ -157,13 +216,14 @@ SHIP_WITH_LIMITATIONS
 ```
 
 Unchanged, and it stays unchanged until the external review returns. Neither
-zero findings nor a single HIGH finding decides it on its own: zero findings
-requires checking review completeness first, and a HIGH is reproduced, fixed and
-re-verified before any verdict moves.
+zero findings nor a single HIGH decides it alone: zero findings requires
+checking review completeness first (`RUN_METADATA.json` → `status` and the
+per-review results), and a HIGH is reproduced, fixed and re-verified before any
+verdict moves.
 
 ## NEXT ACTION
 
-Run the Codex package in a Codex-connected environment:
+Run the review package in a Codex-connected environment:
 
 ```bash
 codex login && codex login status

@@ -58,12 +58,12 @@ concluded:
 
 | File | What it is |
 | --- | --- |
-| `EVIDENCE_CLASSIFICATION.md` | Facts, measured results, claims, assumptions and unknowns, kept apart |
-| `CLAIMS_TO_AUDIT.md` | 10 claims to judge `SUPPORT` / `PARTIALLY_SUPPORT` / `REFUTE` / `NOT_VERIFIED` |
-| `RAW_BENCHMARK_DATA.md` | Where every raw measurement is — **and what was not retained** |
-| `SECURITY_EVIDENCE.md` | Matched rules, files, excerpts, and the two rules deliberately narrowed |
-| `LICENSE_EVIDENCE.md` | Per-repository licence file, detection, classification, conditions |
-| `PROVENANCE_EVIDENCE.md` | The `Reused Code: None` method, its parameters and its stated limits |
+| `evidence/evidence-classification.md` | Facts, measured results, claims, assumptions and unknowns, kept apart |
+| `evidence/claims-to-audit.md` | 11 claims to judge `SUPPORT` / `PARTIALLY_SUPPORT` / `REFUTE` / `NOT_VERIFIED` |
+| `evidence/benchmark-evidence.md` | Where every raw measurement is — **and what was not retained** |
+| `evidence/security-evidence.md` | Matched rules, files, excerpts, and the two rules deliberately narrowed |
+| `evidence/license-evidence.md` | Per-repository licence file, detection, classification, conditions |
+| `evidence/provenance-evidence.md` | The `Reused Code: None` method, its parameters and its stated limits |
 | `EVIDENCE_MANIFEST.md` | Everything else, mapped to its real path |
 | `FINDING_SCHEMA.md` | The output shape |
 
