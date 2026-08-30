@@ -107,16 +107,22 @@ src/
     record.
 11. **The optimizer may never weaken a gate or an evidence class** to reduce
     the project count. Tidiness is not worth a security gate.
-12. **Self-review is not independent review.** If Codex is unavailable, record
-    `CODEX REVIEW: NOT_RUN / CODEX_UNAVAILABLE` and log the pass separately as
-    `CLAUDE SELF REVIEW`.
+12. **Self-review is not independent review.** If Codex cannot be reached,
+    record `CODEX REVIEW: NOT_RUN` with the real reason and log the pass
+    separately as `CLAUDE SELF REVIEW`. Never promote the self-review to fill
+    the gap, and never route "Codex" through a different model — that would
+    make the label false. `reports/codex-package/` is kept ready so the review
+    is one command away wherever access exists.
+13. **A shared browser or cached artifact must never leak a measurement.** A
+    subject without a capability reports "not measured", never the previous
+    subject's result. Asserted by the cache-safety test.
 
 ## Reproducing a run
 
 ```bash
 npm install
 npm run build
-npm test                      # 85 offline tests
+npm test                      # 92 offline tests
 
 # opt-in, network:  real public repositories
 OSS_LIVE_TEST=1 node --test "dist/tests/live-repository.test.js"

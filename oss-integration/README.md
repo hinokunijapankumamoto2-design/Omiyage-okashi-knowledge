@@ -146,8 +146,8 @@ about a real project. The capability sets are synthetic, the execution is real.
 | Install Actions | 1 | 4 | 2 | REGRESSION | no |
 | **Distinct Upstream Projects** | 1 | 3 | **5** | REGRESSION | **YES** |
 | **Unscanned Dependencies** | 0 | 0 | **2** *(0 with `--live`)* | REGRESSION | **YES** |
-| **Execution Time** | 243 ms | 244 ms | **549 ms** | REGRESSION | **YES** |
-| **Time per Completed Task / per Criterion** | 121.5 / 81.7 | 61 / 61 | **68.6 / 78.4** | REGRESSION | **YES** |
+| **Execution Time** | 246 ms | 235 ms | **556 ms** | REGRESSION | **YES** |
+| **Time per Completed Task / per Criterion** | 123 / 83.7 | 58.8 / 58.8 | **69.5 / 79.4** | REGRESSION | **YES** |
 | UX / Setup Time / Token Usage | — | — | — | NOT_VERIFIED | — |
 
 **Live run** (three real repositories): Task Completion 0.75 IMPROVED,
@@ -156,14 +156,16 @@ Upstream Projects.
 
 ### The two findings that matter
 
-**Execution time is extra work, not overhead — and it is proven.** Restricted to
-the same four tasks with capability sets intersected so nobody does extra work:
+**Execution time is extra work, not overhead.** Restricted to the same four
+tasks with capability sets intersected so nobody does extra work:
 
-| | originals-union | integrated |
-| --- | --- | --- |
-| Execution Time (SAME-TASK) | 252 ms | **249 ms** |
+| | originals-union | integrated | verdict |
+| --- | --- | --- | --- |
+| Execution Time (SAME-TASK) | 256 ms | 252 ms | **EQUIVALENT** |
 
-At identical work the integrated plugin is not slower. The full-capability
+No material orchestration overhead detected. The difference is inside
+run-to-run noise, so this is read as *equivalent* — **not** as the integrated
+plugin being faster. The full-capability
 delta is fully accounted for by accessibility auditing and visual regression
 that no baseline can do at all (~315 ms of extra work against a ~316 ms
 measured difference). Raw time still regressed, still counts, and is still
@@ -184,12 +186,23 @@ would move security responsibility onto this project.
 ### Review status
 
 ```
-CODEX REVIEW        STATUS: NOT_RUN   REASON: CODEX_UNAVAILABLE
-CLAUDE SELF REVIEW  19 defects found and fixed — see CHANGELOG.md
+Independent Codex Review: Not Run
+  CODEX_CONNECTION: FAIL   REASON: CONNECTION_FAILED
+
+CLAUDE SELF REVIEW: 19 defects found and fixed — see CHANGELOG.md
 ```
 
-The self-review was performed by the agent that wrote the code. It is evidence
-that specific defects were found, **not** evidence that the code is correct.
+The Codex CLI (0.151.0) and the `codex@openai-codex` plugin (v1.0.6) are both
+installed and enabled — the tooling is in place. Both auth routes the plugin
+documents are closed in this environment: OpenAI endpoints answer **403 to
+CONNECT** under organization policy, and no credential exists. Seven recovery
+attempts are recorded in [CODEX_REVIEW_REPORT.md](./CODEX_REVIEW_REPORT.md).
+Substituting another model and calling it Codex was rejected.
+
+**This code has never been reviewed by anyone but its author.** The self-review
+is evidence that specific defects were found — not evidence the code is
+correct, and not a substitute. The full review package is committed at
+`reports/codex-package/` and runs in one command wherever Codex has access.
 
 ### What may and may not be claimed
 
@@ -200,9 +213,10 @@ Allowed, because each clause is backed by a committed measurement:
 > and zero integration debt — at the cost of more upstream projects and higher
 > raw execution time. At identical work it was not slower.
 
-Prohibited: "always faster" (raw time regressed), "better in every metric" (five
-regressed), "production proven" (never run outside this sandbox),
-"independently reviewed" (Codex NOT_RUN).
+Prohibited: "always faster" (raw time regressed), "faster at the same work"
+(same-task is EQUIVALENT), "better in every metric" (five regressed),
+"production proven" (never run outside this sandbox), and **"independently
+reviewed" / "Codex-verified" / "externally audited"** — the review did not run.
 
 ## Layout
 
@@ -223,7 +237,9 @@ oss-integration/
 ├── FINAL_RELEASE_REPORT.md    Build status, readiness, verdict, claim gate
 ├── DECISIONS.md              Why each remaining regression was accepted
 ├── BENCHMARK_POLICY_v0.1.1.md Versioned policy change, additive only
+├── CODEX_REVIEW_REPORT.md     Connection failure, causes, recovery attempts
 ├── benchmark/baseline-v0.1.json  Frozen v0.1 evidence, never recomputed
+├── reports/                   Pre/post-Codex baselines + the review package
 ├── ORIGINAL_CONTRIBUTIONS.md  Audit of the four original components — and the
 │                          three that were examined and rejected
 ├── examples/              Two committed reference runs, synthetic and live
@@ -232,8 +248,9 @@ oss-integration/
 
 ## Status against the v0.1 definition of done
 
-All 24 conditions met. `npm run verify` builds and runs 91 tests, plus 4 live
-repository tests and 9 real-browser tests. Overall status is **CONDITIONAL**,
+All 24 conditions met. `npm run verify` builds and runs 92 tests, plus 4 live
+repository tests and 10 real-browser tests (including a cache-safety test
+proving the shared browser leaks no state between subjects). Overall status is **CONDITIONAL**,
 not PASS: material regressions remain, each quantified above and in
 `FINAL_RELEASE_REPORT.md`.
 

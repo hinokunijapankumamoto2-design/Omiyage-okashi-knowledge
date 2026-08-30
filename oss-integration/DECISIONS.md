@@ -170,3 +170,35 @@ v0.1's `REGRESSION` / `CONDITIONAL` stands.
 Policy changes went into `BENCHMARK_POLICY_v0.1.1.md` as additions. Old results
 are not recomputed. The policy document states, in writing, both how v0.1.1
 could favour the integrated plugin and how it could hurt it.
+
+
+---
+
+## D7. Ship without an independent review — with that stated as the headline limitation
+
+**Decision:** `SHIP_WITH_LIMITATIONS`, with "never independently reviewed" named
+first among the limitations rather than buried.
+
+**Why not `DO_NOT_SHIP`:** the release-blocker list is: critical security defect;
+blocking licence issue; provenance integrity failure; core flow failure; invalid
+generated plugin; material benchmark invalidity; unresolved high-severity
+correctness defect. **None is present**, and each was re-verified this round.
+"No independent review" is not on that list — and it should not be silently
+promoted to one, any more than it should be silently dismissed.
+
+**Why not `SHIP`:** five metrics carry material regressions, and the absence of
+external review is a real limitation on confidence, not a formality.
+
+**The honest weight of the gap.** Three of the most consequential defects in this
+project's history were found by a *later* self-review pass, not the first: a
+live-fetch TDZ error that made every live fetch silently fall back to seed data;
+a security rule that BLOCKed a clean dependency because it never checked the
+path breadth its own description claimed; and a benchmark that scored a subject
+*worse* for being able to see a real page defect. Each was invisible to the pass
+that wrote it. That is precisely the failure mode an independent reviewer
+exists to catch, and it is the strongest available evidence that this project
+still needs the review it could not run.
+
+**Overturned by:** running `reports/codex-package/RUN_CODEX_REVIEW.sh` in an
+environment with egress to OpenAI. Any CRITICAL or HIGH finding confirmed there
+moves this to `DO_NOT_SHIP` until fixed.

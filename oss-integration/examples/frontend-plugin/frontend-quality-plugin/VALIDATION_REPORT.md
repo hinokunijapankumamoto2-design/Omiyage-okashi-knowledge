@@ -35,10 +35,10 @@ _No structural issue found._
 | Unscanned Dependencies | ↓ better | 0 | 0 | 0 | 0 | 2 | REGRESSION | **YES** |
 | Output Quality | ↑ better | n/a | n/a | n/a | 1 | 1 | EQUIVALENT | — |
 | Quality Criteria Covered | ↑ better | 1 | 3 | 0 | 4 | 7 | IMPROVED | — |
-| Execution Time | ↓ better | 243 | 245 | n/a | 244 | 549 | REGRESSION | **YES** |
+| Execution Time | ↓ better | 246 | 251 | n/a | 235 | 556 | REGRESSION | **YES** |
 | Reliability | ↑ better | 1 | 1 | n/a | 1 | 1 | EQUIVALENT | — |
-| Execution Time per Completed Task | ↓ better | 121.5 | 122.5 | n/a | 61 | 68.625 | REGRESSION | **YES** |
-| Execution Time per Quality Criterion | ↓ better | 243 | 81.667 | n/a | 61 | 78.429 | REGRESSION | **YES** |
+| Execution Time per Completed Task | ↓ better | 123 | 125.5 | n/a | 58.75 | 69.5 | REGRESSION | **YES** |
+| Execution Time per Quality Criterion | ↓ better | 246 | 83.667 | n/a | 58.75 | 79.429 | REGRESSION | **YES** |
 | UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Token Usage | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
@@ -49,11 +49,11 @@ _No structural issue found._
 
 > **Unscanned Dependencies regressed.** An unknown dependency is a security exposure, and the project's own rule is that UNKNOWN is never PASS.
 
-> **Execution Time regressed.** MATERIAL: 549 is worse than the realistic alternative (originals-union = 244), so integrating costs more than what it replaces.
+> **Execution Time regressed.** MATERIAL: 556 is worse than the realistic alternative (originals-union = 235), so integrating costs more than what it replaces.
 
-> **Execution Time per Completed Task regressed.** MATERIAL: 68.625 is worse than the realistic alternative (originals-union = 61), so integrating costs more than what it replaces.
+> **Execution Time per Completed Task regressed.** MATERIAL: 69.5 is worse than the realistic alternative (originals-union = 58.75), so integrating costs more than what it replaces.
 
-> **Execution Time per Quality Criterion regressed.** MATERIAL: 78.429 is worse than the realistic alternative (originals-union = 61), so integrating costs more than what it replaces.
+> **Execution Time per Quality Criterion regressed.** MATERIAL: 79.429 is worse than the realistic alternative (originals-union = 58.75), so integrating costs more than what it replaces.
 
 **Overall: REGRESSION**
 
@@ -75,8 +75,8 @@ Any of the above reported as an improvement would be a guess. They are
 - Install Actions: {"fixture-org/frontend-craft-plugin":1,"fixture-org/browser-qa-plugin":2,"fixture-org/a11y-guard-plugin":1,"originals-union":4,"frontend-quality-plugin":2}
 - Distinct Upstream Projects: {"fixture-org/frontend-craft-plugin":1,"fixture-org/browser-qa-plugin":1,"fixture-org/a11y-guard-plugin":1,"originals-union":3,"frontend-quality-plugin":5}
 - Unscanned Dependencies: {"fixture-org/frontend-craft-plugin":0,"fixture-org/browser-qa-plugin":0,"fixture-org/a11y-guard-plugin":0,"originals-union":0,"frontend-quality-plugin":2}
-- Execution Time: {"fixture-org/frontend-craft-plugin":243,"fixture-org/browser-qa-plugin":245,"fixture-org/a11y-guard-plugin":null,"originals-union":244,"frontend-quality-plugin":549}
-- Execution Time per Completed Task: {"fixture-org/frontend-craft-plugin":121.5,"fixture-org/browser-qa-plugin":122.5,"fixture-org/a11y-guard-plugin":null,"originals-union":61,"frontend-quality-plugin":68.625}
-- Execution Time per Quality Criterion: {"fixture-org/frontend-craft-plugin":243,"fixture-org/browser-qa-plugin":81.667,"fixture-org/a11y-guard-plugin":null,"originals-union":61,"frontend-quality-plugin":78.429}
+- Execution Time: {"fixture-org/frontend-craft-plugin":246,"fixture-org/browser-qa-plugin":251,"fixture-org/a11y-guard-plugin":null,"originals-union":235,"frontend-quality-plugin":556}
+- Execution Time per Completed Task: {"fixture-org/frontend-craft-plugin":123,"fixture-org/browser-qa-plugin":125.5,"fixture-org/a11y-guard-plugin":null,"originals-union":58.75,"frontend-quality-plugin":69.5}
+- Execution Time per Quality Criterion: {"fixture-org/frontend-craft-plugin":246,"fixture-org/browser-qa-plugin":83.667,"fixture-org/a11y-guard-plugin":null,"originals-union":58.75,"frontend-quality-plugin":79.429}
 
 The integration architecture must account for this before the plugin is presented as better than its sources.

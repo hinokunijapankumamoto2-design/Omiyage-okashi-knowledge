@@ -1,5 +1,52 @@
 # Changelog
 
+## 0.1.0 — Codex independent review round — 2026-08-30
+
+**No product code changed.** The Codex review could not run; this round records
+that fact with evidence, and adds one safety test.
+
+### Codex
+
+```
+CODEX_CONNECTION: FAIL
+CODEX REVIEW:     NOT_RUN
+REASON:           CONNECTION_FAILED
+```
+
+`codex-cli` 0.151.0 installed and `codex@openai-codex` v1.0.6 marketplace-added
+and **enabled** — the tooling is in place. Both auth routes the plugin documents
+are closed here: `api.openai.com`, `chatgpt.com` and `auth.openai.com` all
+return `connect_rejected` (the egress proxy answers **403 to CONNECT**,
+organization policy), and no credential exists (`codex login status` →
+`Not logged in`, no `~/.codex`, `OPENAI_API_KEY` unset). Seven recovery attempts
+are recorded in `CODEX_REVIEW_REPORT.md`. Routing "Codex" through some other
+reachable model was considered and **rejected** — it would make the label false.
+
+**The self-review is not promoted to fill the gap.** It stays labelled
+`SELF_REVIEW` wherever it appears.
+
+### Added
+
+- `reports/PRE_CODEX_BASELINE.md` — frozen state at commit `8a778c3`.
+- `reports/codex-package/` — the full independent-review package (standard,
+  adversarial, benchmark audit, security/licence/provenance), written to
+  withhold the author's recommendation so it cannot anchor the reviewer, plus
+  `RUN_CODEX_REVIEW.sh` to execute all four in one command.
+- `CODEX_REVIEW_REPORT.md` — connection failure, cause, commands, errors,
+  recovery attempts, and an explicitly empty findings table.
+- `reports/POST_CODEX_COMPARISON.md` — PRE / POST / DELTA.
+- **Cache-safety test** (`tests/real-task.test.ts`): the suite shares one
+  browser and caches the axe-core source, so a subject *without* an
+  accessibility capability must report "not measured" rather than inherit the
+  previous subject's real violation count. **No leakage detected**, now asserted
+  permanently.
+
+### Revalidated, all unchanged
+
+10/10 security categories detectable; empty scan still `UNKNOWN`, never `PASS`;
+licence table intact (`UNKNOWN` and `NONE` both `mayCopy=false`); provenance
+audit green; 0 unresolved conflicts; generated plugin valid in both runs.
+
 ## 0.1.0 — release gate — 2026-08-30
 
 Benchmark policy **v0.1.1**. No new capability; optimization, measurement

@@ -180,22 +180,78 @@ EQUIVALENT; **one** material regression only — Distinct Upstream Projects.
 5. Retroactively editing v0.1's verdict, or removing a regressing metric from
    the verdict.
 
-## CODEX INDEPENDENT REVIEW
+## CODEX CONNECTION
 
 ```
-STATUS: NOT_RUN
-REASON: CODEX_UNAVAILABLE
+CODEX_CONNECTION: FAIL
 ```
 
-No party other than the author has reviewed this code.
+| | |
+| --- | --- |
+| Codex CLI | ✅ `codex-cli 0.151.0` installed |
+| Plugin | ✅ `codex@openai-codex` v1.0.6 marketplace-added, installed, **enabled** |
+| Commands available | `/codex:review`, `/codex:adversarial-review`, `/codex:status`, `/codex:setup`, … |
+| Auth | ❌ `codex login status` → **Not logged in**; no `~/.codex`; `OPENAI_API_KEY` unset |
+| Network | ❌ `api.openai.com` / `chatgpt.com` / `auth.openai.com` → `connect_rejected`, **403 to CONNECT (organization policy)** |
+| Recovery attempts | 7, all recorded in `CODEX_REVIEW_REPORT.md` |
+
+The tooling side is complete; the blocker is egress policy plus absent
+credentials. Substituting a different model and calling it Codex was considered
+and **rejected**.
+
+## CODEX STANDARD REVIEW / ADVERSARIAL REVIEW / BENCHMARK AUDIT / SECURITY-LICENCE-PROVENANCE AUDIT
+
+```
+NOT_RUN — REASON: CONNECTION_FAILED
+```
+
+All four review packages are written and committed at `reports/codex-package/`,
+deliberately withholding this report's recommendation so it cannot anchor the
+reviewer. One command runs all four once access exists.
+
+## CODEX FINDINGS
+
+```
+CRITICAL: 0    HIGH: 0    MEDIUM: 0    LOW: 0
+```
+
+**Zero findings because nobody looked.** This is not a clean bill of health and
+must not be read as one.
+
+## CLAUDE VERIFIED FINDINGS / FALSE POSITIVES / FIXED FINDINGS
+
+None — there were no external findings to verify, dismiss or fix.
 
 ## CLAUDE SELF REVIEW
 
-**SELF_REVIEW — not independent.** 17 defects found and fixed across the
-verification rounds; this round added a measurement-fairness defect (cold start
-charged to whichever subject ran first) and two ablation-harness defects
-(self-reference counted as indexing). Evidence that specific defects were found;
-**not** evidence the code is correct.
+**SELF_REVIEW — not independent, and not promoted to fill the Codex gap.**
+19 defects found and fixed across the verification and convergence rounds.
+Evidence that specific defects were found; **not** evidence the code is correct.
+
+Three of the most consequential were caught only on a *later* self-pass, invisible
+to the pass that wrote them: a live-fetch TDZ error that made every live fetch
+silently fall back to seed data; a security rule that BLOCKed a clean dependency
+because it never checked the path breadth its own description claimed; and a
+benchmark that scored a subject *worse* for being able to see a real defect.
+That is the failure mode independent review exists to catch, and the best
+argument that this project still needs the review it could not run.
+
+## PRE-CODEX BASELINE → POST-CODEX RESULTS
+
+No product code changed this round; one test was added. Full table in
+`reports/POST_CODEX_COMPARISON.md`.
+
+| | PRE | POST | Δ |
+| --- | --- | --- | --- |
+| Offline / live / browser tests | 86 / 4 / 9 | 86 / 4 / **10** | +1 (cache safety) |
+| Execution Time (integrated) | 549 ms | 556 ms | +1.3%, noise |
+| Same-task (union → integrated) | 252 → 249 ms | 256 → 252 ms | **EQUIVALENT** both runs |
+| Material regressions | 5 synthetic / 1 live | 5 synthetic / 1 live | unchanged |
+| Cache / shared-state leakage | untested | **NONE**, now asserted | new evidence |
+
+**Same-task reads EQUIVALENT — no material orchestration overhead detected.**
+"The integrated plugin is faster" is not supported by n=3 on one machine and is
+not claimed.
 
 ## PROVENANCE
 
@@ -205,7 +261,13 @@ MIT) credited as concept-only and pinned `REFERENCE_ONLY` by policy.
 
 ## KNOWN LIMITATIONS
 
+- **This code has never been reviewed by anyone but its author.** Codex could
+  not be reached; the review package is ready but unrun. This is the single
+  largest limitation on confidence in everything below.
 - Remote real-site validation `NOT_VERIFIED` (environment restriction).
+- Benchmark n=3 on one machine; no p95 reported. Sufficient for the direction
+  of large effects, not for small ones — which is why same-task is read as
+  EQUIVALENT rather than as a win.
 - GitHub REST API unreachable → latest commit SHA always `UNKNOWN`.
 - UX, Setup Time, Token Usage never measured; no proxy substituted.
 - Synthetic fixtures are not real projects and are never reported as such.
@@ -231,8 +293,9 @@ Every clause above is backed by a committed measurement.
 
 "World's best"; "best Claude Code plugin"; "always faster" (it is not — raw time
 regressed); "more secure than every alternative"; "better in every metric" (five
-metrics regressed); "production proven" (never run outside this sandbox);
-"independently reviewed" (Codex NOT_RUN).
+metrics regressed); "production proven" (never run outside this sandbox); **"independently
+reviewed", "Codex-verified", "externally audited"** — the review did not run;
+"faster at the same work" (same-task is EQUIVALENT, not faster).
 
 ## FINAL RECOMMENDATION
 
@@ -246,5 +309,14 @@ integration debt. Five metrics regress; all five are quantified, none is hidden,
 none was tuned away, and each is a disclosed trade-off rather than a defect.
 `--live` is the recommended operating mode: it takes unscanned dependencies to
 zero and leaves a single material regression.
+
+One release-blocker check, run explicitly: no critical security defect, no
+blocking licence issue, no provenance integrity failure, no core-flow failure,
+no invalid generated plugin, no material benchmark invalidity, no unresolved
+high-severity correctness defect. **None present** — so the blocker rule does
+not force `DO_NOT_SHIP`. "Never independently reviewed" is not on that list, and
+is neither silently promoted onto it nor silently dismissed: it is the headline
+limitation, and any CRITICAL or HIGH finding from a future Codex run moves this
+to `DO_NOT_SHIP` until fixed.
 
 **CONDITIONAL is the truth, so CONDITIONAL is reported.**

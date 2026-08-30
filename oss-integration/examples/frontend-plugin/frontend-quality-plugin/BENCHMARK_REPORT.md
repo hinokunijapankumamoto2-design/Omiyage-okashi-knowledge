@@ -32,7 +32,7 @@ A regression is MATERIAL if it degrades the user's ability to achieve the stated
 - `T8` Run the end-to-end test suite — requires: testing
 - `T9` Give an evidence-backed verdict on whether the page is ready to ship — requires: visual-review, accessibility-audit, performance-audit
 
-Executed against a real page in a real browser at http://127.0.0.1:38047/, 3 repeat(s). Each subject gets its own browser pass performing only the collection its capabilities imply, so Execution Time is that subject's own cost rather than a shared figure.
+Executed against a real page in a real browser at http://127.0.0.1:44109/, 3 repeat(s). Each subject gets its own browser pass performing only the collection its capabilities imply, so Execution Time is that subject's own cost rather than a shared figure.
 
 **Excluded from this run (1):** `T7` Review the diff for correctness and convention — no executable implementation exists for them against a rendered page, so scoring any subject on them would deflate every result equally and measure nothing.
 
@@ -50,10 +50,10 @@ Executed against a real page in a real browser at http://127.0.0.1:38047/, 3 rep
 | Unscanned Dependencies | ↓ better | 0 | 0 | 0 | 0 | 2 | REGRESSION | **YES** |
 | Output Quality | ↑ better | n/a | n/a | n/a | 1 | 1 | EQUIVALENT | — |
 | Quality Criteria Covered | ↑ better | 1 | 3 | 0 | 4 | 7 | IMPROVED | — |
-| Execution Time | ↓ better | 243 | 245 | n/a | 244 | 549 | REGRESSION | **YES** |
+| Execution Time | ↓ better | 246 | 251 | n/a | 235 | 556 | REGRESSION | **YES** |
 | Reliability | ↑ better | 1 | 1 | n/a | 1 | 1 | EQUIVALENT | — |
-| Execution Time per Completed Task | ↓ better | 121.5 | 122.5 | n/a | 61 | 68.625 | REGRESSION | **YES** |
-| Execution Time per Quality Criterion | ↓ better | 243 | 81.667 | n/a | 61 | 78.429 | REGRESSION | **YES** |
+| Execution Time per Completed Task | ↓ better | 123 | 125.5 | n/a | 58.75 | 69.5 | REGRESSION | **YES** |
+| Execution Time per Quality Criterion | ↓ better | 246 | 83.667 | n/a | 58.75 | 79.429 | REGRESSION | **YES** |
 | UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Token Usage | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
@@ -64,11 +64,11 @@ Executed against a real page in a real browser at http://127.0.0.1:38047/, 3 rep
 
 > **Unscanned Dependencies regressed.** An unknown dependency is a security exposure, and the project's own rule is that UNKNOWN is never PASS.
 
-> **Execution Time regressed.** MATERIAL: 549 is worse than the realistic alternative (originals-union = 244), so integrating costs more than what it replaces.
+> **Execution Time regressed.** MATERIAL: 556 is worse than the realistic alternative (originals-union = 235), so integrating costs more than what it replaces.
 
-> **Execution Time per Completed Task regressed.** MATERIAL: 68.625 is worse than the realistic alternative (originals-union = 61), so integrating costs more than what it replaces.
+> **Execution Time per Completed Task regressed.** MATERIAL: 69.5 is worse than the realistic alternative (originals-union = 58.75), so integrating costs more than what it replaces.
 
-> **Execution Time per Quality Criterion regressed.** MATERIAL: 78.429 is worse than the realistic alternative (originals-union = 61), so integrating costs more than what it replaces.
+> **Execution Time per Quality Criterion regressed.** MATERIAL: 79.429 is worse than the realistic alternative (originals-union = 58.75), so integrating costs more than what it replaces.
 
 **Overall: REGRESSION**
 
@@ -99,10 +99,10 @@ Tasks: `T1`, `T2`, `T3`, `T8`
 | Unscanned Dependencies | ↓ better | 0 | 0 | 0 | 0 | 2 | REGRESSION | **YES** |
 | Output Quality | ↑ better | n/a | n/a | n/a | 1 | 1 | EQUIVALENT | — |
 | Quality Criteria Covered | ↑ better | 1 | 3 | 0 | 4 | 4 | EQUIVALENT | — |
-| Execution Time | ↓ better | 234 | 259 | n/a | 252 | 249 | REGRESSION | no |
+| Execution Time | ↓ better | 254 | 252 | n/a | 256 | 252 | EQUIVALENT | — |
 | Reliability | ↑ better | 1 | 1 | n/a | 1 | 1 | EQUIVALENT | — |
-| Execution Time per Completed Task | ↓ better | 117 | 129.5 | n/a | 63 | 62.25 | IMPROVED | — |
-| Execution Time per Quality Criterion | ↓ better | 234 | 86.333 | n/a | 63 | 62.25 | IMPROVED | — |
+| Execution Time per Completed Task | ↓ better | 127 | 126 | n/a | 64 | 63 | IMPROVED | — |
+| Execution Time per Quality Criterion | ↓ better | 254 | 84 | n/a | 64 | 63 | IMPROVED | — |
 | UX | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Setup Time | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
 | Token Usage | not measured | n/a | n/a | n/a | n/a | n/a | NOT_VERIFIED (no verdict) | — |
@@ -112,8 +112,6 @@ Tasks: `T1`, `T2`, `T3`, `T8`
 > **Distinct Upstream Projects regressed.** MATERIAL: 5 is worse than the realistic alternative (originals-union = 3), so integrating costs more than what it replaces.
 
 > **Unscanned Dependencies regressed.** An unknown dependency is a security exposure, and the project's own rule is that UNKNOWN is never PASS.
-
-> **Execution Time regressed.** Not material: 249 is better than the realistic alternative (originals-union = 252). It regresses only against the single cheapest original, which cannot do the same work.
 
 **SAME-TASK overall: REGRESSION**
 
@@ -268,7 +266,7 @@ it removes work the baselines cannot do.
 | **Measurement method** | EXECUTED. Measured on one machine in one session; treat as indicative, not as a portable figure. |
 | **Counts toward verdict** | yes |
 | **Material?** | no — A cost metric under the same threshold rule. |
-| **Results** | fixture-org/frontend-craft-plugin=243, fixture-org/browser-qa-plugin=245, fixture-org/a11y-guard-plugin=n/a, originals-union=244, frontend-quality-plugin=549 |
+| **Results** | fixture-org/frontend-craft-plugin=246, fixture-org/browser-qa-plugin=251, fixture-org/a11y-guard-plugin=n/a, originals-union=235, frontend-quality-plugin=556 |
 | **Verdict** | REGRESSION |
 | **Confidence** | high — produced by executing the task against a real page |
 
@@ -283,7 +281,7 @@ it removes work the baselines cannot do.
 | **Measurement method** | EXECUTED. Derived from two measured metrics. Undefined when a subject completes nothing, and reported n/a rather than 0 in that case. |
 | **Counts toward verdict** | yes |
 | **Material?** | no — A cost-efficiency ratio under the same threshold rule. ADDED beside raw Execution Time, which keeps its own verdict and its own materiality. |
-| **Results** | fixture-org/frontend-craft-plugin=121.5, fixture-org/browser-qa-plugin=122.5, fixture-org/a11y-guard-plugin=n/a, originals-union=61, frontend-quality-plugin=68.625 |
+| **Results** | fixture-org/frontend-craft-plugin=123, fixture-org/browser-qa-plugin=125.5, fixture-org/a11y-guard-plugin=n/a, originals-union=58.75, frontend-quality-plugin=69.5 |
 | **Verdict** | REGRESSION |
 | **Confidence** | high — produced by executing the task against a real page |
 
@@ -298,7 +296,7 @@ it removes work the baselines cannot do.
 | **Measurement method** | EXECUTED. Derived from two measured metrics. Undefined when a subject evaluates no criterion. |
 | **Counts toward verdict** | yes |
 | **Material?** | no — A cost-efficiency ratio. Criteria are not equal in cost or value, so this is indicative rather than precise. |
-| **Results** | fixture-org/frontend-craft-plugin=243, fixture-org/browser-qa-plugin=81.667, fixture-org/a11y-guard-plugin=n/a, originals-union=61, frontend-quality-plugin=78.429 |
+| **Results** | fixture-org/frontend-craft-plugin=246, fixture-org/browser-qa-plugin=83.667, fixture-org/a11y-guard-plugin=n/a, originals-union=58.75, frontend-quality-plugin=79.429 |
 | **Verdict** | REGRESSION |
 | **Confidence** | high — produced by executing the task against a real page |
 
@@ -444,7 +442,7 @@ it removes work the baselines cannot do.
 | Accessibility | 0 / 2 | axe-core: 1 violation(s), 1 serious/critical (image-alt). |
 | Functional Correctness | 2 / 2 | cta present: true, cards: 3. |
 | Visual Regression | 2 / 2 | pixel diff ratio 0. |
-| Performance | 2 / 2 | load 14ms, DOMContentLoaded 13ms. |
+| Performance | 2 / 2 | load 13ms, DOMContentLoaded 12ms. |
 | Code Quality | NOT_VERIFIED | NOT_VERIFIED — this suite exercises a rendered page, not a codebase under review. No evidence exists for this criterion. |
 
 ## Per-task outcomes
@@ -509,10 +507,10 @@ it removes work the baselines cannot do.
 | T2 | passed | 0 ms | one h1: true, heading order sound: true | h1Count=1, headingOrderOk=true, title=Kaede Studio — Product Landing Page |
 | T3 | passed | 0 ms | captured 3 screenshots | shot:360x800=55785, shot:768x1024=72411, shot:1440x900=77600 |
 | T4 | passed | 0 ms | axe-core reported 1 violation(s): image-alt | violations=1, serious=1, rules=image-alt |
-| T5 | passed | 0 ms | load 14ms, DOMContentLoaded 13ms | loadMs=14, domContentLoadedMs=13 |
+| T5 | passed | 0 ms | load 13ms, DOMContentLoaded 12ms | loadMs=13, domContentLoadedMs=12 |
 | T6 | passed | 0 ms | pixel diff ratio against baseline: 0 | diffRatio=0 |
 | T8 | passed | 0 ms | DOM assertions: cta present true, cards 3 | ctaPresent=true, cardCount=3 |
-| T9 | passed | 0 ms | verdict assembled from 1 a11y violation(s), load 14ms, 3 screenshots | violations=1, loadMs=14, screenshots=3 |
+| T9 | passed | 0 ms | verdict assembled from 1 a11y violation(s), load 13ms, 3 screenshots | violations=1, loadMs=13, screenshots=3 |
 
 ## Execution profile
 
@@ -520,20 +518,20 @@ Phase breakdown across every measured pass (all subjects, all repeats). Browser 
 
 | Phase | ms | % | calls |
 | --- | --- | --- | --- |
-| screenshot:capture | 1946.2 | 48% | 39 |
-| browser:newPage | 571.1 | 14.1% | 15 |
-| axe:inject | 288.2 | 7.1% | 3 |
-| axe:run | 247.3 | 6.1% | 3 |
-| page:goto | 237.2 | 5.8% | 15 |
-| pixel:diff | 224.7 | 5.5% | 3 |
-| browser:closeContext | 170.9 | 4.2% | 15 |
-| eval:structure | 107.2 | 2.6% | 15 |
-| viewport:resize | 104.3 | 2.6% | 36 |
-| browser:newContext | 88.4 | 2.2% | 15 |
-| eval:layout | 43.7 | 1.1% | 36 |
-| eval:navigation-timing | 28.2 | 0.7% | 15 |
+| screenshot:capture | 1989.3 | 47.9% | 39 |
+| browser:newPage | 598.9 | 14.4% | 15 |
+| axe:inject | 293.3 | 7.1% | 3 |
+| axe:run | 249.2 | 6% | 3 |
+| pixel:diff | 237.6 | 5.7% | 3 |
+| page:goto | 225.5 | 5.4% | 15 |
+| browser:closeContext | 179.8 | 4.3% | 15 |
+| eval:structure | 110 | 2.6% | 15 |
+| viewport:resize | 105.3 | 2.5% | 36 |
+| browser:newContext | 89.3 | 2.1% | 15 |
+| eval:layout | 45 | 1.1% | 36 |
+| eval:navigation-timing | 31.5 | 0.8% | 15 |
 | require:pixelmatch | 0.3 | 0% | 15 |
-| require:pngjs | 0.1 | 0% | 15 |
+| require:pngjs | 0 | 0% | 15 |
 
 ## Not measured
 

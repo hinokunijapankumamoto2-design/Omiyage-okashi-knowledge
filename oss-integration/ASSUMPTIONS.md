@@ -69,6 +69,16 @@ Each one is a decision, not a fact. Overturn any of them by saying so.
 | A31 | **Vendoring is rejected** even where Apache-2.0 permits it. | It would not reduce the project count, and it would move security responsibility and licence-notice duty onto this project. `DECISIONS.md` D2. | An offline-operation requirement would change this. |
 | A32 | `REMOTE_REAL_SITE: NOT_VERIFIED — ENVIRONMENT_RESTRICTION`. The real-task page is served from localhost. | Remote sites are unreachable from this sandbox, and a page that changes under the benchmark would make it unreproducible. | Run the suite where outbound HTTP to a public page is permitted. |
 
+## Codex review round
+
+| # | Assumption | Why | How to overturn |
+| --- | --- | --- | --- |
+| A33 | With Codex unreachable, the round proceeds and reports `NOT_RUN / CONNECTION_FAILED` rather than stopping or substituting. | Development must not halt on an environment restriction, and a substitute reviewer would make the "independent" label false. | Run `reports/codex-package/RUN_CODEX_REVIEW.sh` where egress to OpenAI is permitted. |
+| A34 | **Routing Codex at a different reachable model was rejected.** | It would produce a review labelled "Codex" that Codex did not perform. | — |
+| A35 | The review package deliberately **withholds the author's final recommendation** from the reviewer. | Confirmation bias: a reviewer handed the conclusion tends to confirm it. | The recommendation is in `FINAL_RELEASE_REPORT.md` for reading *after* forming a view. |
+| A36 | The Codex CLI and plugin were installed into the **user's environment**, outside the project tree, and nothing in `src/` imports them. | The user asked for the plugin to be installed. It is inert with respect to the build. | `claude plugin uninstall codex@openai-codex` |
+| A37 | Same-task 252 ms vs 256 ms is reported as **EQUIVALENT**, not as the integrated plugin being faster. | The difference is inside run-to-run noise, and n=3 on one machine does not support a directional claim. | Larger n with p95 reported. |
+
 ## Not built (deferred per rule 43)
 
 SaaS, authentication, billing, enterprise governance, web UI, microservices,

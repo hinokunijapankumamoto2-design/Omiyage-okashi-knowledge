@@ -129,7 +129,7 @@ FINAL RECOMMENDATION  SHIP_WITH_LIMITATIONS
 | Install Actions | 1 | 4 | 2 | REGRESSION | no |
 | **Distinct Upstream Projects** | 1 | 3 | **5** | REGRESSION | **YES** |
 | **Unscanned Dependencies** | 0 | 0 | **2**（`--live` で 0） | REGRESSION | **YES** |
-| **Execution Time** | 243 ms | 244 ms | **549 ms** | REGRESSION | **YES** |
+| **Execution Time** | 246 ms | 235 ms | **556 ms** | REGRESSION | **YES** |
 | **Time / Completed Task・Criterion** | 121.5 / 81.7 | 61 / 61 | **68.6 / 78.4** | REGRESSION | **YES** |
 | UX / Setup Time / Token Usage | — | — | — | NOT_VERIFIED | — |
 
@@ -142,11 +142,13 @@ Distinct Upstream Projects の**1件のみ**。
 **Execution Timeの差はOverheadではなく実作業である（証明済み）。** 同一4Task・
 Capability Setを交差させ、どのSubjectも余分な作業をしない条件で比較：
 
-| | originals-union | 統合Plugin |
-| --- | --- | --- |
-| Execution Time（SAME-TASK） | 252 ms | **249 ms** |
+| | originals-union | 統合Plugin | 判定 |
+| --- | --- | --- | --- |
+| Execution Time（SAME-TASK） | 256 ms | 252 ms | **EQUIVALENT** |
 
-同一作業では統合Pluginは遅くありません。FULL-CAPABILITYでの差は、元Pluginが
+Material な Orchestration Overhead は検出されませんでした。差は実行ごとの
+ノイズの範囲内であるため **EQUIVALENT** と判定し、「統合Pluginの方が速い」
+とは主張しません。FULL-CAPABILITYでの差は、元Pluginが
 一切実行できないAccessibility監査とVisual Regressionで完全に説明できます
 （追加作業実測 ~315 ms に対し、実測差 ~316 ms）。ただしRaw Execution Timeの
 REGRESSIONはそのまま残し、Verdictにも算入しています。SAME-TASKは診断用であり、
@@ -166,17 +168,30 @@ Skipしていません。**
 ### レビュー状況
 
 ```
-CODEX REVIEW        STATUS: NOT_RUN   REASON: CODEX_UNAVAILABLE
-CLAUDE SELF REVIEW  19件の欠陥を発見・修正 — CHANGELOG.md 参照
+Independent Codex Review: Not Run
+  CODEX_CONNECTION: FAIL   REASON: CONNECTION_FAILED
+
+CLAUDE SELF REVIEW: 19件の欠陥を発見・修正 — CHANGELOG.md 参照
 ```
 
-このSelf Reviewはコードを書いた本人によるものです。**Independent Reviewでは
-ありません。**
+Codex CLI（0.151.0）と `codex@openai-codex` Plugin（v1.0.6）はいずれも
+インストール・有効化済みで、ツール側の準備は完了しています。しかしPluginが
+要求する認証経路は本環境では両方閉じています：OpenAIの各エンドポイントは
+組織ポリシーにより **CONNECTに403** を返し、認証情報も存在しません。
+7件の復旧試行は [CODEX_REVIEW_REPORT.md](./CODEX_REVIEW_REPORT.md) に記録
+しています。別モデルで代替して「Codex」と称することは却下しました。
+
+**本コードは作者以外の誰からもレビューを受けていません。** Self Reviewは
+特定の欠陥を発見した証拠ではありますが、コードが正しいことの証拠ではなく、
+Independent Reviewの代替でもありません。レビューパッケージは
+`reports/codex-package/` にコミット済みで、アクセス可能な環境では1コマンドで
+実行できます。
 
 ## v0.1 完成条件
 
-24項目すべて充足。`npm run verify` でビルドと91件のテスト、加えてLive Repository
-テスト4件・実ブラウザテスト9件が通ります。総合ステータスは PASS ではなく
+24項目すべて充足。`npm run verify` でビルドと92件のテスト、加えてLive Repository
+テスト4件・実ブラウザテスト10件（共有BrowserのState Leakageが無いことを検証する
+Cache Safetyテストを含む）が通ります。総合ステータスは PASS ではなく
 **CONDITIONAL** です（Material Regressionが残存。詳細は
 `FINAL_RELEASE_REPORT.md`）。
 
