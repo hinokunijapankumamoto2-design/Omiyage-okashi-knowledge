@@ -170,10 +170,27 @@ exit 2
 
 That breaks the review under Git Bash and WSL, and it was found by *running* the
 runner in such a clone — the hashes were already correct and said nothing about
-it. `oss-integration/.gitattributes` now pins `*.sh text eol=lf` (and `*.ps1
-text eol=crlf` for convention). It sits inside the package lock, because it
-governs how the runner is checked out. Adding it changed neither canonical
-hash, which is the expected behaviour of the v2 model.
+it.
+
+`oss-integration/.gitattributes` pins exactly one path:
+
+```gitattributes
+reports/codex-package/RUN_CODEX_REVIEW.sh text eol=lf
+```
+
+Nothing else is normalised, deliberately:
+
+- No `* text=auto` and no `*.ts` / `*.json` rules. Product source is frozen; its
+  checkout semantics are not this fix's business, and the v2 canonical hash is
+  line-ending independent, so nothing needs them.
+- No `*.ps1` rule. PowerShell reads either ending, and a repo-wide rule would
+  also reach `install/install.ps1`, outside review scope.
+- No `*.mjs` rule. Node executes CRLF scripts correctly — verified, not assumed.
+
+Classified **`REVIEW_INFRASTRUCTURE_FIX`**: it restores the runner's
+executability. It is not a product capability or architecture change. It sits
+inside the review-package lock because it governs how the runner is checked out,
+and it is not a self-reference exclusion because it contains no hash.
 
 ### File-set integrity
 

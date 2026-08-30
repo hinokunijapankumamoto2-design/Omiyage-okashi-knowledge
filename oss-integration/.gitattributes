@@ -1,11 +1,19 @@
-# Shell scripts MUST check out with LF on every platform. Without this, a
-# Windows clone with the Git default core.autocrlf=true writes CRLF into
-# RUN_CODEX_REVIEW.sh and bash refuses to run it:
+# REVIEW_INFRASTRUCTURE_FIX — narrowest possible scope.
+#
+# The bash review runner must check out with LF on every platform. Without this,
+# a clone using the Git for Windows default core.autocrlf=true writes CRLF into
+# the script and bash refuses to execute it:
 #   RUN_CODEX_REVIEW.sh: line 13: $'\r': command not found
-#   set: pipefail: invalid option name
-# That breaks the review runner under Git Bash and WSL. Found by executing the
-# runner in an autocrlf=true clone, not by inspection.
-*.sh text eol=lf
-
-# PowerShell is fine with either, but keep Windows tooling conventional.
-*.ps1 text eol=crlf
+#   RUN_CODEX_REVIEW.sh: line 14: set: pipefail: invalid option name
+#   exit 2
+# That breaks the review under Git Bash and WSL. Found by executing the runner
+# in an autocrlf=true clone, not by inspection.
+#
+# Deliberately NOT normalising anything else:
+#   - no `* text=auto`, no `*.ts`/`*.json` rules. Product source is frozen; its
+#     checkout semantics are not this fix's business, and the v2 canonical hash
+#     is line-ending independent anyway, so nothing needs them.
+#   - no rule for *.ps1. PowerShell reads either ending, and a repo-wide *.ps1
+#     rule would also reach install/install.ps1, which is outside review scope.
+#   - no rule for *.mjs. Node executes CRLF scripts correctly (verified).
+reports/codex-package/RUN_CODEX_REVIEW.sh text eol=lf

@@ -1,7 +1,7 @@
 {
   "manifest_version": "2.0.0",
   "$comment": "Content-addressed integrity lock for the external Codex review. The PRIMARY integrity proof is the content hashes below, not a commit SHA and not a git tag. A commit cannot contain its own SHA (self-reference), and remote tag push is rejected by repository permissions, so neither can be required for a fresh clone to verify.",
-  "created_at": "2026-08-30T09:28:29Z",
+  "created_at": "2026-08-30T09:39:41Z",
   "hash_algorithm": "SHA-256 over git blob ids",
   "canonicalization": [
     "Only git-TRACKED files in scope are hashed; untracked files are reported by the file-set check, never silently ignored",
@@ -34,7 +34,7 @@
     "tsconfig.json"
   ],
   "source_paths_note": "Review documentation is excluded from the product-source hash by construction.",
-  "review_package_content_hash": "bdf0a2b41d68c9487baa1bb7fd8e533acbf8fc91b288e2339ac7989eff64809e",
+  "review_package_content_hash": "137ccdd154993073c4368b6f9f79909ad7fe6f7baeb7b50697c611f99049f69c",
   "review_package_file_count": 23,
   "review_package_paths": [
     ".gitattributes",
@@ -103,5 +103,31 @@
     "result": "PASS - identical",
     "note": "Verified by executing the shared Node hasher under both checkout modes on Linux. The PowerShell RUNNER itself was not executed: pwsh is unavailable in the authoring environment."
   },
-  "gitattributes_note": "oss-integration/.gitattributes pins *.sh to eol=lf. Without it, a clone with the Git for Windows default core.autocrlf=true writes CRLF into RUN_CODEX_REVIEW.sh and bash refuses to run it (\"$'\\\\r': command not found\", \"set: pipefail: invalid option name\"), breaking the runner under Git Bash and WSL. Found by executing the runner in an autocrlf=true clone. It is inside the package lock because it governs how the runner is checked out, so a change to it changes reproducibility. Adding it did NOT change either canonical hash, which is the expected behaviour of the v2 git-canonical model."
+  "gitattributes_note": "oss-integration/.gitattributes pins exactly ONE path: reports/codex-package/RUN_CODEX_REVIEW.sh text eol=lf. .gitattributes affects checkout/runtime behavior of review runners, so it is inside the review-package lock; it is NOT a self-reference exclusion because it contains no hash. Classified REVIEW_INFRASTRUCTURE_FIX, not a product capability or architecture change. Deliberately narrow: no '* text=auto', no *.ts/*.json rules (product source is frozen and the v2 canonical hash is line-ending independent), no *.ps1 rule (PowerShell reads either ending and a repo-wide rule would reach install/install.ps1, outside review scope), no *.mjs rule (Node executes CRLF scripts correctly — verified).",
+  "hash_model": "git-canonical-v2",
+  "file_set_manifest": [
+    ".gitattributes",
+    "CODEX_HANDOFF_REPORT.md",
+    "CODEX_REVIEW_REPORT.md",
+    "FINAL_RELEASE_REPORT.md",
+    "reports/codex-package/EVIDENCE_MANIFEST.md",
+    "reports/codex-package/FINDING_SCHEMA.md",
+    "reports/codex-package/POST_CODEX_INSTRUCTIONS.md",
+    "reports/codex-package/PROMPT_ADVERSARIAL.md",
+    "reports/codex-package/PROMPT_BENCHMARK_AUDIT.md",
+    "reports/codex-package/PROMPT_SEC_LIC_PROV.md",
+    "reports/codex-package/README.md",
+    "reports/codex-package/REVIEW_BRIEF.md",
+    "reports/codex-package/RUN_CODEX_REVIEW.ps1",
+    "reports/codex-package/RUN_CODEX_REVIEW.sh",
+    "reports/codex-package/evidence/benchmark-evidence.md",
+    "reports/codex-package/evidence/claims-to-audit.md",
+    "reports/codex-package/evidence/evidence-classification.md",
+    "reports/codex-package/evidence/license-evidence.md",
+    "reports/codex-package/evidence/provenance-evidence.md",
+    "reports/codex-package/evidence/security-evidence.md",
+    "reports/codex-package/hash-manifest.mjs",
+    "reports/codex-package/import-codex-results.mjs",
+    "reports/codex-results/README.md"
+  ]
 }
