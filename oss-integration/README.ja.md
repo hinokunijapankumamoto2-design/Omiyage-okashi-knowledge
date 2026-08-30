@@ -169,7 +169,8 @@ Skipしていません。**
 
 ```
 Independent Codex Review: Not Run
-  CODEX_CONNECTION: FAIL   REASON: CONNECTION_FAILED
+  理由: 本実行環境が OpenAI のネットワーク/認証アクセスを遮断しているため。
+  分類: ENVIRONMENT_RESTRICTION — Product の欠陥ではありません。
 
 CLAUDE SELF REVIEW: 19件の欠陥を発見・修正 — CHANGELOG.md 参照
 ```
@@ -179,7 +180,8 @@ Codex CLI（0.151.0）と `codex@openai-codex` Plugin（v1.0.6）はいずれも
 要求する認証経路は本環境では両方閉じています：OpenAIの各エンドポイントは
 組織ポリシーにより **CONNECTに403** を返し、認証情報も存在しません。
 7件の復旧試行は [CODEX_REVIEW_REPORT.md](./CODEX_REVIEW_REPORT.md) に記録
-しています。別モデルで代替して「Codex」と称することは却下しました。
+しています。別モデルで代替して「Codex」と称することは却下しました。Handoff Package は
+完成済みです — [CODEX_HANDOFF_REPORT.md](./CODEX_HANDOFF_REPORT.md) を参照。
 
 **本コードは作者以外の誰からもレビューを受けていません。** Self Reviewは
 特定の欠陥を発見した証拠ではありますが、コードが正しいことの証拠ではなく、

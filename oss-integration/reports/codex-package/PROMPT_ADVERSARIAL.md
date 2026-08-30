@@ -1,19 +1,52 @@
-Perform an ADVERSARIAL review of this MVP. Your job is to try to prove the
-release conclusion wrong. Attack the assumptions, the architecture, the
-benchmarks and the claims.
+# Adversarial review
 
-Per attack, output:
-CLAIM OR ASSUMPTION ATTACKED / EVIDENCE / SEVERITY / REPRODUCTION /
-EXPECTED / ACTUAL / VERDICT / FIX OR EXPERIMENT REQUIRED
+**Your position: try to prove this MVP should NOT ship.**
 
-Do not optimize for agreement with the author. Specifically try to break:
+You are not looking for balance. You are looking for the evidence that would
+change a release decision. Assume the implementation and its reports may be
+wrong. Do not optimize for agreement with the author.
 
-- The claim that the same-task comparison shows no orchestration overhead.
-  Is the capability intersection honest? Does restricting the task set hide work?
-- The claim that 5 upstream projects is irreducible. Find a fourth route.
-- The claim that `Reused Code: None` holds. Try to find copied text the
-  8-word shingle audit would miss (reformatted, reordered, translated).
-- The materiality rule. Is comparing against `originals-union` a rigged
-  counterfactual?
-- The warm-up pass. Does discarding cold start hide a real user-facing cost?
-- The shared browser. Can state leak between subjects and change a result?
+## Output format, one block per attack
+
+```
+CLAIM OR ASSUMPTION ATTACKED
+EVIDENCE
+SEVERITY          CRITICAL | HIGH | MEDIUM | LOW
+REPRODUCTION
+EXPECTED
+ACTUAL
+VERDICT           attack succeeded | attack failed | inconclusive
+FIX OR EXPERIMENT REQUIRED
+```
+
+## Attack surface
+
+- **Hidden regression** — a metric that got worse and is not in the verdict.
+- **Benchmark gaming** — any definition, threshold, baseline or aggregation
+  that flatters the integrated plugin.
+- **Acceptance-test overfitting** — behaviour that exists to pass a test rather
+  than to serve the goal. `tests/acceptance.test.ts` versus `src/`.
+- **False live verification** — anything reported as network-verified that was
+  not actually fetched. Cross-check `LIVE_REPOSITORY_REPORT.md` fetch logs
+  against `src/repository/live-fetch.ts`.
+- **Synthetic/live contamination** — `fixture-org` data reported as a fact
+  about a real project, anywhere.
+- **Unsafe dependency** — anything installed, executed or trusted without a gate.
+- **Incorrect licence assumption** — `src/license/gate.ts` conditions per SPDX id.
+- **Missing provenance** — a generated component with no traceable source.
+- **Dead original layer** — a component that exists for appearance. Audit
+  `tests/ablation.test.ts` itself: could it pass for a component that does
+  nothing?
+- **Fragile heuristics** — goal archetypes, alias matching, licence-text
+  matching, the tar reader, the security regexes.
+- **Security false negative** — what does `src/security/gate.ts` miss?
+  Obfuscation, base64, dynamic import, path traversal, prototype pollution,
+  ReDoS, unicode tricks.
+- **Misleading claim** — every superlative or comparative in `README.md`,
+  `README.ja.md` and the reports, checked against its cited measurement.
+- **Untested failure mode** — what happens on network partial failure, a
+  malformed tarball, a cyclic capability graph, a zero-capability goal, a
+  repository with no licence, two sources declaring the same capability at
+  identical evidence.
+- **Conditions where the generated plugin is WORSE than its originals** — find
+  and characterise at least one, or state that you could not.

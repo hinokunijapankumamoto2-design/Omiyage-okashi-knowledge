@@ -187,7 +187,8 @@ would move security responsibility onto this project.
 
 ```
 Independent Codex Review: Not Run
-  CODEX_CONNECTION: FAIL   REASON: CONNECTION_FAILED
+  Reason: this execution environment blocks OpenAI network/authentication access.
+  Classification: ENVIRONMENT_RESTRICTION — not a product defect.
 
 CLAUDE SELF REVIEW: 19 defects found and fixed — see CHANGELOG.md
 ```
@@ -197,7 +198,8 @@ installed and enabled — the tooling is in place. Both auth routes the plugin
 documents are closed in this environment: OpenAI endpoints answer **403 to
 CONNECT** under organization policy, and no credential exists. Seven recovery
 attempts are recorded in [CODEX_REVIEW_REPORT.md](./CODEX_REVIEW_REPORT.md).
-Substituting another model and calling it Codex was rejected.
+Substituting another model and calling it Codex was rejected. The full
+handoff package is ready — see [CODEX_HANDOFF_REPORT.md](./CODEX_HANDOFF_REPORT.md).
 
 **This code has never been reviewed by anyone but its author.** The self-review
 is evidence that specific defects were found — not evidence the code is
