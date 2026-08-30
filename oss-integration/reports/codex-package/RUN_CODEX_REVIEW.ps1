@@ -83,6 +83,24 @@ if ($PkgHash -ne $ExpectedPkgHash) {
     Write-Host "  The evidence Codex would read is not the evidence that was locked."
     exit 4
 }
+# File-set integrity. Hashes cover TRACKED files only, so an untracked file
+# dropped into a scoped directory would otherwise be read by Codex without ever
+# entering the hash. That is exactly the silent gap this check closes.
+$FsBad = (node $Hasher fileset 2>$null | Out-String).Trim()
+if ($LASTEXITCODE -ne 0) {
+    Write-Host "ERROR: BASELINE_GATE_FAILED - FILE_SET_CHECK_FAILED" -ForegroundColor Red
+    Write-Host "  hash-manifest.mjs could not report file-set integrity."
+    exit 4
+}
+if ($FsBad) {
+    Write-Host "ERROR: BASELINE_GATE_FAILED - FILE_SET_MISMATCH" -ForegroundColor Red
+    foreach ($line in ($FsBad -split "`r?`n")) { Write-Host "  $line" }
+    Write-Host "  A tracked file is missing, or an untracked file sits inside a scoped"
+    Write-Host "  directory. Untracked files are not hashed, so Codex could read content"
+    Write-Host "  that was never locked. Remove it or commit it, then re-lock."
+    exit 4
+}
+
 $BaselineGate = 'PASS'
 Write-Host "GATE 1 baseline: PASS"
 Write-Host "  source baseline   $SourceBaselineSha"
@@ -90,6 +108,7 @@ Write-Host "  source content    $SrcHash"
 Write-Host "  package content   $PkgHash"
 Write-Host "  HEAD              $CurrentSha (provenance only)"
 Write-Host "  tag               $TagState (optional provenance signal)"
+Write-Host "  file set          clean (no missing tracked, no untracked in scope)"
 
 # --- GATE 2: Codex host -----------------------------------------------------
 if (-not (Get-Command codex -ErrorAction SilentlyContinue)) {

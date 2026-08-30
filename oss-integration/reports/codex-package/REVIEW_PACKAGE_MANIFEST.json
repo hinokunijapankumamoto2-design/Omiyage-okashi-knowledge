@@ -1,20 +1,23 @@
 {
-  "manifest_version": "1.0.0",
+  "manifest_version": "2.0.0",
   "$comment": "Content-addressed integrity lock for the external Codex review. The PRIMARY integrity proof is the content hashes below, not a commit SHA and not a git tag. A commit cannot contain its own SHA (self-reference), and remote tag push is rejected by repository permissions, so neither can be required for a fresh clone to verify.",
-  "created_at": "2026-08-30T09:15:01Z",
-  "hash_algorithm": "SHA-256",
+  "created_at": "2026-08-30T09:28:29Z",
+  "hash_algorithm": "SHA-256 over git blob ids",
   "canonicalization": [
+    "Only git-TRACKED files in scope are hashed; untracked files are reported by the file-set check, never silently ignored",
     "Repo-relative paths, POSIX '/' separators, UTF-8 path encoding",
     "Paths sorted by UTF-8 bytes, never by locale collation",
-    "File bytes hashed exactly as stored: no line-ending translation, no encoding conversion",
+    "Per-file value is the git blob id from 'git hash-object --path=<path> -- <path>', so gitattributes and clean filters apply exactly as Git would apply them on any platform",
+    "Text files therefore hash identically under core.autocrlf=false and =true; files marked -text or binary are NOT normalised, matching Git",
     "No timestamps, permissions, ownership or other filesystem metadata",
-    "Per-file line '<sha256-hex>  <path>\\n'; tree hash = sha256 of their UTF-8 concatenation",
-    "Excluded files removed before sorting"
+    "Per-file line '<blob-id>  <path>\\n'; tree hash = sha256 of their UTF-8 concatenation",
+    "Excluded files removed before sorting",
+    "git is invoked via execFile, never a shell, so no path interpolation"
   ],
   "implementation": "reports/codex-package/hash-manifest.mjs — one implementation called by both the bash and PowerShell runners, so cross-platform parity is structural rather than asserted.",
   "source_baseline_commit": "04fab5b51b62dbba03d744e50b03ee1ea1c80a33",
   "source_baseline_commit_role": "Provenance / history evidence only. The product freeze point. NOT the integrity gate.",
-  "source_baseline_content_hash": "3da63a6b6f2e2d0f428c1fc527536efedcc9e1e437dc160052e7c62901fb56a6",
+  "source_baseline_content_hash": "a3c8652d4a6e94d5350bf86a16e036281575479a01428565ad2043caf1dcabca",
   "source_baseline_content_hash_role": "Artifact identity evidence. THIS is the product-source gate value.",
   "source_file_count": 92,
   "source_paths": [
@@ -31,7 +34,7 @@
     "tsconfig.json"
   ],
   "source_paths_note": "Review documentation is excluded from the product-source hash by construction.",
-  "review_package_content_hash": "fa91959b6501e5f46479b88d6c2a042b181293e1d72c05d368f5eccf3c8cd56f",
+  "review_package_content_hash": "baad89bc36dfc8a87c37f1510b0724a12259fad32d6d6eef6f4efef39947dae3",
   "review_package_file_count": 22,
   "review_package_paths": [
     "reports/codex-package",
@@ -75,5 +78,27 @@
   "handoff_history_commit": "e023389e701958212c4d799def7b906a72244f63",
   "handoff_history_commit_note": "Latest known documentation commit at manifest creation. Provenance evidence only; superseded by the commit that carries this manifest.",
   "reason": "Documentation-only handoff and evidence refresh commits after product freeze. Product source verified byte-identical to the freeze point.",
-  "independent_review_status": "NOT_RUN"
+  "independent_review_status": "NOT_RUN",
+  "superseded_models": [
+    {
+      "model_version": "v1",
+      "hash_input": "RAW_WORKTREE_BYTES",
+      "line_ending_sensitive": true,
+      "source_baseline_content_hash": "3da63a6b6f2e2d0f428c1fc527536efedcc9e1e437dc160052e7c62901fb56a6",
+      "review_package_content_hash": "fa91959b6501e5f46479b88d6c2a042b181293e1d72c05d368f5eccf3c8cd56f",
+      "superseded_reason": "Not portable. This repository has no .gitattributes and sets no core.autocrlf, so Git for Windows applies its default core.autocrlf=true and checks text files out with CRLF while Linux checks the same commit out with LF. Measured on the same commit: src/types.ts was 12009 bytes / 0 CRLF at autocrlf=false and 12455 bytes / 446 CRLF at autocrlf=true, and the v1 source hash differed (3da63a6b...fb56a6 vs a8debd75...9769ab). A Windows reviewer would have failed the gate on an untouched checkout.",
+      "superseded_at": "2026-08-30T09:28:29Z"
+    }
+  ],
+  "model_version": "v2",
+  "hash_input": "GIT_CANONICAL_CONTENT",
+  "line_ending_sensitive": false,
+  "file_set_integrity_gate": "Gate 1 fails FILE_SET_MISMATCH on any tracked-but-missing file or any untracked file inside a scoped directory. Verified: an untracked file added under reports/codex-package/ does not change the package hash, so the hash alone was insufficient.",
+  "cross_platform_verification": {
+    "method": "Two clones of the same commit, core.autocrlf=false and core.autocrlf=true, hashed with the same v2 hasher.",
+    "autocrlf_false_source": "a3c8652d4a6e94d5350bf86a16e036281575479a01428565ad2043caf1dcabca",
+    "autocrlf_true_source": "a3c8652d4a6e94d5350bf86a16e036281575479a01428565ad2043caf1dcabca",
+    "result": "PASS - identical",
+    "note": "Verified by executing the shared Node hasher under both checkout modes on Linux. The PowerShell RUNNER itself was not executed: pwsh is unavailable in the authoring environment."
+  }
 }

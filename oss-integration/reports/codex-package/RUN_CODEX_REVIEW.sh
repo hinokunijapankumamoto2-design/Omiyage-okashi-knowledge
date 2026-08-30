@@ -78,6 +78,24 @@ if [ "$PKG_HASH" != "$EXPECTED_PKG_HASH" ]; then
   echo "  The evidence Codex would read is not the evidence that was locked." >&2
   exit 4
 fi
+# File-set integrity. Hashes cover TRACKED files only, so an untracked file
+# dropped into a scoped directory would otherwise be read by Codex without ever
+# entering the hash. That is exactly the silent gap this check closes.
+FS_BAD="$(node "$HERE/hash-manifest.mjs" fileset 2>/dev/null || echo FILESET_ERROR)"
+if [ "$FS_BAD" = "FILESET_ERROR" ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - FILE_SET_CHECK_FAILED" >&2
+  echo "  hash-manifest.mjs could not report file-set integrity." >&2
+  exit 4
+fi
+if [ -n "$FS_BAD" ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - FILE_SET_MISMATCH" >&2
+  printf '%s\n' "$FS_BAD" | sed 's/^/  /' >&2
+  echo "  A tracked file is missing, or an untracked file sits inside a scoped" >&2
+  echo "  directory. Untracked files are not hashed, so Codex could read content" >&2
+  echo "  that was never locked. Remove it or commit it, then re-lock." >&2
+  exit 4
+fi
+
 BASELINE_GATE=PASS
 echo "GATE 1 baseline: PASS"
 echo "  source baseline   $SOURCE_BASELINE_SHA"
@@ -85,6 +103,7 @@ echo "  source content    $SRC_HASH"
 echo "  package content   $PKG_HASH"
 echo "  HEAD              $CURRENT_SHA (provenance only)"
 echo "  tag               $TAG_STATE (optional provenance signal)"
+echo "  file set          clean (no missing tracked, no untracked in scope)"
 
 # --- GATE 2: Codex host -----------------------------------------------------
 if ! command -v codex >/dev/null 2>&1; then

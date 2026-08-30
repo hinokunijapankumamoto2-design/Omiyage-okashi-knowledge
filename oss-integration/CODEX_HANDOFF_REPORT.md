@@ -123,12 +123,47 @@ uncommitted edit to `src/` passed the gate. That was caught by a negative test,
 not by reading the code.
 
 **One hasher, two runners.** `hash-manifest.mjs` is called by both
-`RUN_CODEX_REVIEW.sh` and `.ps1`, so cross-platform parity is structural rather
-than asserted — there is no second implementation to drift. Canonicalisation is
-fixed: repo-relative POSIX paths, sorted by UTF-8 bytes, file bytes hashed
-as-is with no line-ending translation, no filesystem metadata, no timestamps.
+`RUN_CODEX_REVIEW.sh` and `.ps1`, so there is no second implementation to drift.
 `BASELINE.json` and `REVIEW_PACKAGE_MANIFEST.json` are excluded from the package
 hash so the manifest cannot contain its own hash.
+
+### Hash model v1 → v2: a corrected claim
+
+An earlier round reported cross-platform parity as `PASS (structural)` on the
+grounds that both runners call one hasher. **That reasoning was wrong**, and
+testing showed it. One hasher guarantees the same *algorithm*; it says nothing
+about the *input*.
+
+v1 hashed raw working-tree bytes. This repository has no `.gitattributes` and
+sets no `core.autocrlf`, so Git for Windows applies its default
+`core.autocrlf=true` and checks text files out with CRLF, while Linux checks the
+same commit out with LF. Measured on the same commit:
+
+| | `autocrlf=false` | `autocrlf=true` |
+| --- | --- | --- |
+| `src/types.ts` | 12009 bytes, 0 CRLF | 12455 bytes, 446 CRLF |
+| v1 source hash | `3da63a6b…fb56a6` | `a8debd75…9769ab` |
+
+A Windows reviewer would have failed the gate on an untouched checkout.
+
+**v2 hashes git-canonical content.** Each file's value is its Git blob id from
+`git hash-object --path=<path>`, which applies the same attributes and clean
+filters Git would apply when storing it. Identical repository content therefore
+hashes identically on every platform, while any real edit — staged, unstaged, or
+binary — still changes it. Files marked `-text` or binary are not normalised,
+matching Git. `git` is invoked through `execFile`, never a shell.
+
+Verified by hashing two clones of the same commit, `core.autocrlf=false` and
+`core.autocrlf=true`, with the same hasher: identical source and package hashes.
+v1 is retained in the manifest as a superseded record with the reason.
+
+### File-set integrity
+
+Hashes cover **tracked** files only. An untracked file dropped into
+`reports/codex-package/` was verified **not** to change the package hash — so
+the hash alone could not have caught smuggled evidence. Gate 1 now also fails
+`FILE_SET_MISMATCH` on any tracked-but-missing file and on any untracked file
+inside a scoped directory.
 
 ## REVIEW PACKAGE
 
