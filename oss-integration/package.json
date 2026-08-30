@@ -1,0 +1,26 @@
+{
+  "name": "oss-integration",
+  "version": "0.1.0",
+  "private": true,
+  "description": "OSS Scout x Integration Architect - discover, verify, select and re-architect OSS capabilities into one optimized Claude Code plugin.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "oss-integrate": "./dist/src/cli.js"
+  },
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "cli": "node dist/src/cli.js",
+    "test": "node --test \"dist/tests/*.test.js\"",
+    "acceptance": "node --test \"dist/tests/acceptance.test.js\"",
+    "verify": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "ajv": "^8.20.0",
+    "typescript": "^5.7.2"
+  }
+}

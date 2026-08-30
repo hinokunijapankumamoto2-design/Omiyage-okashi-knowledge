@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oss-integration.local/schemas/repository.schema.json",
+  "title": "RepositoryProfile",
+  "description": "Also the on-disk format for tests/fixtures/repos/*.json. Every optional-in-reality field is representable as the literal string UNKNOWN so nothing has to be guessed.",
+  "type": "object",
+  "required": ["id", "url", "owner", "name", "description", "kind", "licenseSpdx", "licenseEvidence", "latestRelease", "lastMeaningfulUpdate", "documentation", "tests", "dependencies", "architecture", "installation", "primaryCapability", "secondaryCapabilities", "stars", "inspected", "artifacts", "surface", "source", "capturedAt", "dataProvenance"],
+  "properties": {
+    "$comment": { "type": "string" },
+    "id": { "type": "string", "pattern": "^[^/]+/[^/]+$" },
+    "url": { "type": "string", "format": "uri" },
+    "owner": { "type": "string" },
+    "name": { "type": "string" },
+    "description": { "type": "string" },
+    "kind": { "enum": ["claude-plugin", "skill", "agent", "hook", "mcp-server", "library", "cli", "framework", "unknown"] },
+    "licenseSpdx": { "type": "string", "description": "SPDX id, or UNKNOWN. Never inferred from the repository being public." },
+    "licenseEvidence": { "$ref": "capability.schema.json#/$defs/evidence" },
+    "latestRelease": { "type": "string" },
+    "lastMeaningfulUpdate": { "type": "string" },
+    "documentation": { "enum": ["PRESENT", "ABSENT", "UNKNOWN"] },
+    "tests": { "enum": ["PRESENT", "ABSENT", "UNKNOWN"] },
+    "dependencies": { "type": "array", "items": { "type": "string" } },
+    "architecture": { "type": "string" },
+    "installation": { "type": "string" },
+    "primaryCapability": { "type": "string" },
+    "secondaryCapabilities": { "type": "array", "items": { "type": "string" } },
+    "stars": { "type": ["integer", "null"], "description": "null means not observed. Never defaulted to 0, which would read as a real measurement." },
+    "inspected": { "type": "array", "items": { "type": "string" }, "description": "Artifact kinds actually inspected. Drives the evidence class; an empty list means UNKNOWN." },
+    "artifacts": { "type": "object", "additionalProperties": { "type": "string" }, "description": "Path to text. The only thing the security gate is allowed to scan." },
+    "surface": {
+      "type": "object",
+      "required": ["commands", "skills", "agents", "hooks", "mcpServers", "configKeys", "writesPaths", "envVars"],
+      "properties": {
+        "commands": { "type": "array", "items": { "type": "string" } },
+        "skills": { "type": "array", "items": { "type": "string" } },
+        "agents": { "type": "array", "items": { "type": "string" } },
+        "hooks": { "type": "array", "items": { "type": "string" } },
+        "mcpServers": { "type": "array", "items": { "type": "string" } },
+        "configKeys": { "type": "array", "items": { "type": "string" } },
+        "writesPaths": { "type": "array", "items": { "type": "string" } },
+        "envVars": { "type": "array", "items": { "type": "string" } }
+      }
+    },
+    "source": { "enum": ["fixture", "live-github", "registry-seed"] },
+    "capturedAt": { "type": "string" },
+    "dataProvenance": { "type": "array", "items": { "type": "string" }, "description": "Where this profile's data came from. Feeds the SOURCE_INTEGRITY gate." }
+  }
+}

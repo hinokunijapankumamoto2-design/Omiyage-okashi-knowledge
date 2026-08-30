@@ -1,0 +1,121 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oss-integration.local/schemas/stack.schema.json",
+  "title": "CapabilityStack",
+  "description": "The Best Capability Stack: at most one entry per capabilityId, every decision carrying a reason.",
+  "type": "object",
+  "required": ["goal", "entries", "decisions", "duplicates", "conflicts", "gaps", "rejected"],
+  "properties": {
+    "goal": { "$ref": "#/$defs/goalSpec" },
+    "entries": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["capabilityId", "capability", "origin", "selectionAxis", "rejectedAlternatives"],
+        "properties": {
+          "capabilityId": { "type": "string" },
+          "capability": { "$ref": "capability.schema.json" },
+          "origin": { "enum": ["user-supplied", "discovered", "original"] },
+          "selectionAxis": { "enum": ["BEST_EVIDENCE", "BEST_IMPLEMENTATION", "BEST_MAINTENANCE", "BEST_ARCHITECTURE", "BEST_COMPATIBILITY", "BEST_INTEGRATION_VALUE", "BEST_REFERENCE", "ORIGINAL"] },
+          "rejectedAlternatives": {
+            "type": "array",
+            "items": { "type": "object", "required": ["candidate", "reason"], "properties": { "candidate": { "type": "string" }, "reason": { "type": "string" } } }
+          }
+        }
+      }
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["capabilityId", "candidate", "decision", "reason"],
+        "properties": {
+          "capabilityId": { "type": "string" },
+          "candidate": { "type": "string" },
+          "decision": { "enum": ["KEEP", "REPLACE", "ADD", "REMOVE", "WATCH", "REJECT", "UNKNOWN"] },
+          "reason": { "type": "string", "minLength": 20, "description": "Rule 19: a decision without a real reason is not a decision." },
+          "replacedBy": { "type": "string" }
+        }
+      }
+    },
+    "duplicates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["capabilityId", "members", "winner", "axis", "reason"],
+        "properties": {
+          "capabilityId": { "type": "string" },
+          "members": { "type": "array", "items": { "type": "string" }, "minItems": 2 },
+          "winner": { "type": "string" },
+          "axis": { "type": "string" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "conflicts": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["kind", "subject", "parties", "detail", "resolution", "resolved"],
+        "properties": {
+          "kind": { "enum": ["command-namespace", "duplicate-hook", "overlapping-agent", "incompatible-dependency", "runtime-conflict", "configuration-conflict", "filesystem-conflict", "duplicated-mcp-responsibility", "environment-conflict"] },
+          "subject": { "type": "string" },
+          "parties": { "type": "array", "items": { "type": "string" } },
+          "detail": { "type": "string" },
+          "resolution": { "type": "string" },
+          "resolved": { "type": "boolean", "description": "false means unresolved and reported, never swallowed." }
+        }
+      }
+    },
+    "gaps": {
+      "type": "object",
+      "required": ["required", "current", "missing", "coveredByUnlock", "nearMisses"],
+      "properties": {
+        "required": { "type": "array", "items": { "type": "string" } },
+        "current": { "type": "array", "items": { "type": "string" } },
+        "missing": { "type": "array", "items": { "type": "string" } },
+        "coveredByUnlock": { "type": "array", "items": { "type": "string" }, "description": "Required capabilities the held combination already unlocks. Not gaps to shop for." },
+        "nearMisses": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["unlocks", "have", "missing", "distance"],
+            "properties": {
+              "unlocks": { "type": "string" },
+              "have": { "type": "array", "items": { "type": "string" } },
+              "missing": { "type": "array", "items": { "type": "string" } },
+              "distance": { "type": "integer", "minimum": 1 }
+            }
+          }
+        }
+      }
+    },
+    "rejected": {
+      "type": "array",
+      "items": { "type": "object", "required": ["capabilityId", "candidate", "reason"], "properties": { "capabilityId": { "type": "string" }, "candidate": { "type": "string" }, "reason": { "type": "string" } } }
+    }
+  },
+  "$defs": {
+    "goalSpec": {
+      "type": "object",
+      "required": ["raw", "goal", "targetEnvironment", "requiredCapabilities", "optionalCapabilities", "constraints", "userSuppliedOss", "commercialUse", "evidenceStandard", "derivedFrom", "unknowns"],
+      "properties": {
+        "raw": { "type": "string" },
+        "goal": { "type": "string" },
+        "targetEnvironment": { "type": "string" },
+        "requiredCapabilities": { "type": "array", "items": { "type": "string" } },
+        "optionalCapabilities": { "type": "array", "items": { "type": "string" } },
+        "constraints": { "type": "array", "items": { "type": "string" } },
+        "userSuppliedOss": { "type": "array", "items": { "type": "string" } },
+        "commercialUse": { "enum": ["YES", "NO", "UNKNOWN"] },
+        "evidenceStandard": { "enum": ["VERIFIED", "SUPPORTED", "INFERRED", "CLAIMED", "UNKNOWN"] },
+        "derivedFrom": {
+          "type": "array",
+          "description": "Goal archetypes that expanded the capability set, with the rationale, so the expansion is auditable rather than invented.",
+          "items": { "type": "object", "required": ["archetype", "rationale"], "properties": { "archetype": { "type": "string" }, "rationale": { "type": "string" } } }
+        },
+        "unknowns": { "type": "array", "items": { "type": "string" }, "description": "Everything the user did not state. Never silently filled in." }
+      }
+    }
+  }
+}

@@ -1,0 +1,8 @@
+node_modules/
+dist/
+*.tsbuildinfo
+.cache/
+
+# Build output. examples/frontend-plugin/ holds the committed reference run.
+generated/plugins/*
+!generated/plugins/.gitkeep

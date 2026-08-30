@@ -1,0 +1,374 @@
+{
+  "$comment": "Canonical capability vocabulary. Repository names never appear here - this file is the Capability-first layer. 'aliases' drive goal decomposition (ja + en).",
+  "version": "0.1.0",
+  "capabilities": [
+    {
+      "id": "visual-design",
+      "name": "Visual Design",
+      "category": "design",
+      "description": "Produce and critique layout, typography, colour and visual hierarchy decisions.",
+      "aliases": [
+        "visual design",
+        "ui design",
+        "design system",
+        "デザイン",
+        "ビジュアル",
+        "見た目",
+        "UIデザイン",
+        "配色",
+        "タイポグラフィ"
+      ]
+    },
+    {
+      "id": "frontend-implementation",
+      "name": "Frontend Implementation",
+      "category": "implementation",
+      "description": "Write and modify HTML/CSS/JS or component-framework code for a web UI.",
+      "aliases": [
+        "frontend",
+        "front-end",
+        "web site",
+        "website",
+        "web page",
+        "ui implementation",
+        "フロントエンド",
+        "ウェブサイト",
+        "Webサイト",
+        "サイト",
+        "実装",
+        "コーディング"
+      ]
+    },
+    {
+      "id": "responsive-design",
+      "name": "Responsive Design",
+      "category": "implementation",
+      "description": "Make a UI correct across viewport sizes and input modalities.",
+      "aliases": [
+        "responsive",
+        "mobile first",
+        "breakpoint",
+        "レスポンシブ",
+        "モバイル対応",
+        "画面幅"
+      ]
+    },
+    {
+      "id": "accessibility-audit",
+      "name": "Accessibility Audit",
+      "category": "verification",
+      "description": "Detect WCAG / ARIA violations on a rendered page and report actionable fixes.",
+      "aliases": [
+        "accessibility",
+        "a11y",
+        "wcag",
+        "aria",
+        "アクセシビリティ",
+        "a11y監査"
+      ]
+    },
+    {
+      "id": "browser-automation",
+      "name": "Browser Automation",
+      "category": "automation",
+      "description": "Drive a real browser programmatically: navigate, interact, evaluate, and read page state.",
+      "aliases": [
+        "browser automation",
+        "headless browser",
+        "e2e",
+        "playwright",
+        "puppeteer",
+        "ブラウザ自動化",
+        "ブラウザ操作",
+        "E2E"
+      ]
+    },
+    {
+      "id": "screenshot-capture",
+      "name": "Screenshot Capture",
+      "category": "automation",
+      "description": "Capture deterministic page or element screenshots at defined viewports.",
+      "aliases": [
+        "screenshot",
+        "screen capture",
+        "スクリーンショット",
+        "画面キャプチャ",
+        "キャプチャ"
+      ]
+    },
+    {
+      "id": "image-comparison",
+      "name": "Image Comparison",
+      "category": "verification",
+      "description": "Diff two images pixel-wise or perceptually and produce a pass/fail with a diff artifact.",
+      "aliases": [
+        "image diff",
+        "pixel diff",
+        "image comparison",
+        "画像比較",
+        "画像差分"
+      ]
+    },
+    {
+      "id": "visual-regression",
+      "name": "Visual Regression Testing",
+      "category": "verification",
+      "description": "Detect unintended visual change between a baseline and the current build.",
+      "aliases": [
+        "visual regression",
+        "vrt",
+        "ビジュアルリグレッション",
+        "見た目の差分検知"
+      ]
+    },
+    {
+      "id": "visual-review",
+      "name": "Visual Review",
+      "category": "quality",
+      "description": "Judge a rendered UI against design intent and report concrete defects.",
+      "aliases": [
+        "visual review",
+        "design review",
+        "ui review",
+        "ビジュアルレビュー",
+        "デザインレビュー",
+        "品質",
+        "高品質"
+      ]
+    },
+    {
+      "id": "performance-audit",
+      "name": "Performance Audit",
+      "category": "verification",
+      "description": "Measure loading and runtime performance metrics for a page and report regressions.",
+      "aliases": [
+        "performance",
+        "lighthouse",
+        "core web vitals",
+        "パフォーマンス",
+        "表示速度",
+        "性能"
+      ]
+    },
+    {
+      "id": "testing",
+      "name": "Testing",
+      "category": "verification",
+      "description": "Define and execute automated tests, and report pass/fail with reproducible output.",
+      "aliases": [
+        "testing",
+        "tests",
+        "test runner",
+        "テスト",
+        "自動テスト"
+      ]
+    },
+    {
+      "id": "security-review",
+      "name": "Security Review",
+      "category": "security",
+      "description": "Inspect code or configuration for security defects and unsafe operations.",
+      "aliases": [
+        "security",
+        "vulnerability",
+        "セキュリティ",
+        "脆弱性"
+      ]
+    },
+    {
+      "id": "code-review",
+      "name": "Code Review",
+      "category": "quality",
+      "description": "Review a diff for correctness, maintainability and convention adherence.",
+      "aliases": [
+        "code review",
+        "review",
+        "lint",
+        "コードレビュー",
+        "レビュー"
+      ]
+    },
+    {
+      "id": "capability-orchestration",
+      "name": "Capability Orchestration",
+      "category": "orchestration",
+      "description": "Route a goal to the right capability, sequence capabilities, and fall back when one is unavailable.",
+      "aliases": [
+        "orchestration",
+        "routing",
+        "workflow",
+        "オーケストレーション",
+        "ルーティング"
+      ]
+    },
+    {
+      "id": "evidence-tracking",
+      "name": "Evidence Tracking",
+      "category": "orchestration",
+      "description": "Record what was actually verified versus merely claimed, per capability.",
+      "aliases": [
+        "evidence",
+        "provenance",
+        "エビデンス",
+        "根拠"
+      ]
+    }
+  ],
+  "relations": [
+    {
+      "from": [
+        "screenshot-capture"
+      ],
+      "kind": "REQUIRES",
+      "to": "browser-automation",
+      "note": "A screenshot of a rendered page needs a driven browser."
+    },
+    {
+      "from": [
+        "visual-regression"
+      ],
+      "kind": "REQUIRES",
+      "to": "screenshot-capture"
+    },
+    {
+      "from": [
+        "visual-regression"
+      ],
+      "kind": "REQUIRES",
+      "to": "image-comparison"
+    },
+    {
+      "from": [
+        "accessibility-audit"
+      ],
+      "kind": "REQUIRES",
+      "to": "browser-automation",
+      "note": "Automated WCAG checks run against a rendered DOM."
+    },
+    {
+      "from": [
+        "performance-audit"
+      ],
+      "kind": "REQUIRES",
+      "to": "browser-automation"
+    },
+    {
+      "from": [
+        "responsive-design"
+      ],
+      "kind": "REQUIRES",
+      "to": "frontend-implementation"
+    },
+    {
+      "from": [
+        "accessibility-audit"
+      ],
+      "kind": "COMPLEMENTS",
+      "to": "visual-review"
+    },
+    {
+      "from": [
+        "visual-design"
+      ],
+      "kind": "COMPLEMENTS",
+      "to": "frontend-implementation"
+    },
+    {
+      "from": [
+        "performance-audit"
+      ],
+      "kind": "COMPLEMENTS",
+      "to": "code-review"
+    },
+    {
+      "from": [
+        "security-review"
+      ],
+      "kind": "COMPLEMENTS",
+      "to": "code-review"
+    },
+    {
+      "from": [
+        "browser-automation",
+        "screenshot-capture",
+        "image-comparison"
+      ],
+      "kind": "UNLOCKS",
+      "to": "visual-regression",
+      "note": "The three together make automated visual regression possible."
+    },
+    {
+      "from": [
+        "browser-automation",
+        "accessibility-audit",
+        "performance-audit"
+      ],
+      "kind": "UNLOCKS",
+      "to": "visual-review",
+      "note": "Machine-checkable page facts make a visual review evidence-based rather than impressionistic."
+    }
+  ],
+  "goalArchetypes": [
+    {
+      "id": "high-quality-website",
+      "description": "A goal about producing a web site or web UI at production quality.",
+      "match": [
+        "webサイト",
+        "web site",
+        "website",
+        "ウェブサイト",
+        "web page",
+        "ウェブページ",
+        "landing page",
+        "ランディングページ",
+        "frontend",
+        "フロントエンド",
+        "サイトを作",
+        "サイト制作"
+      ],
+      "required": [
+        "visual-design",
+        "frontend-implementation",
+        "responsive-design",
+        "accessibility-audit",
+        "browser-automation",
+        "screenshot-capture",
+        "visual-review",
+        "performance-audit",
+        "testing",
+        "security-review"
+      ],
+      "optional": [
+        "image-comparison",
+        "visual-regression",
+        "code-review"
+      ],
+      "rationale": "'Quality' for a web artifact is not a single capability. Shipping a page at production quality means designing it, implementing it responsively, and then proving it against a11y, performance and visual criteria. This archetype makes that expansion explicit and auditable instead of leaving it to the model's mood; the matched archetype is recorded on the GoalSpec so the user can reject it."
+    },
+    {
+      "id": "code-quality-review",
+      "description": "A goal about reviewing or hardening existing code rather than producing a UI.",
+      "match": [
+        "code review",
+        "コードレビュー",
+        "codebase",
+        "code quality",
+        "コード品質",
+        "リファクタ",
+        "refactor",
+        "静的解析",
+        "static analysis",
+        "ソースレビュー"
+      ],
+      "required": [
+        "code-review",
+        "testing",
+        "security-review"
+      ],
+      "optional": [
+        "performance-audit"
+      ],
+      "rationale": "A review goal needs a reviewer, a way to run the tests it cites, and a security pass; anything visual is out of scope unless the user says otherwise."
+    }
+  ]
+}

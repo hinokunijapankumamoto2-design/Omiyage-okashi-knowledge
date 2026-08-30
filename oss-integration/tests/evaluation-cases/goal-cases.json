@@ -1,0 +1,41 @@
+{
+  "$comment": "Goal Engine evaluation cases. `mustInclude` are capabilities the decomposition must produce; `mustNotInclude` guards against over-expansion, which is how a goal-driven system quietly turns into a bundler. `mustBeUnknown` guards the other failure mode: inventing a value the user never stated.",
+  "cases": [
+    {
+      "id": "G1",
+      "goal": "Claude Codeで最高品質のWebサイトを作れるPluginを作って",
+      "expectEnvironment": "Claude Code",
+      "expectArchetype": "high-quality-website",
+      "mustInclude": ["visual-design", "frontend-implementation", "responsive-design", "accessibility-audit", "browser-automation", "screenshot-capture", "visual-review", "performance-audit", "testing", "security-review"],
+      "mustNotInclude": [],
+      "mustBeUnknown": ["constraints", "commercialUse"]
+    },
+    {
+      "id": "G2",
+      "goal": "Review this codebase for correctness and security",
+      "expectEnvironment": "UNKNOWN",
+      "expectArchetype": "code-quality-review",
+      "mustInclude": ["code-review", "security-review", "testing"],
+      "mustNotInclude": ["visual-design", "screenshot-capture", "responsive-design"],
+      "mustBeUnknown": ["targetEnvironment", "constraints", "commercialUse"]
+    },
+    {
+      "id": "G3",
+      "goal": "build something",
+      "expectEnvironment": "UNKNOWN",
+      "expectArchetype": null,
+      "mustInclude": [],
+      "mustNotInclude": ["accessibility-audit", "performance-audit", "browser-automation"],
+      "mustBeUnknown": ["targetEnvironment", "constraints", "commercialUse"]
+    },
+    {
+      "id": "G4",
+      "goal": "Claude Code用のブラウザ自動化とスクリーンショットのPluginが欲しい。商用利用します。",
+      "expectEnvironment": "Claude Code",
+      "expectArchetype": null,
+      "mustInclude": ["browser-automation", "screenshot-capture"],
+      "mustNotInclude": ["visual-design", "responsive-design"],
+      "mustBeUnknown": ["constraints"]
+    }
+  ]
+}

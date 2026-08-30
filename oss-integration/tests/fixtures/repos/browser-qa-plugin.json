@@ -1,0 +1,44 @@
+{
+  "$comment": "SYNTHETIC FIXTURE. 'fixture-org' is not a real GitHub organisation.",
+  "id": "fixture-org/browser-qa-plugin",
+  "url": "https://github.com/fixture-org/browser-qa-plugin",
+  "owner": "fixture-org",
+  "name": "browser-qa-plugin",
+  "description": "Claude Code plugin that drives a headless browser to capture screenshots and run end-to-end checks.",
+  "kind": "claude-plugin",
+  "licenseSpdx": "Apache-2.0",
+  "licenseEvidence": {
+    "class": "SUPPORTED",
+    "basis": ["source-inspection"],
+    "notes": ["LICENSE and NOTICE files present in the fixture and read."]
+  },
+  "latestRelease": "v0.9.2",
+  "lastMeaningfulUpdate": "2026-06-02",
+  "documentation": "PRESENT",
+  "tests": "PRESENT",
+  "dependencies": ["node@20", "playwright@1"],
+  "architecture": "One MCP server wrapping a browser driver, plus two skills.",
+  "installation": "npx browser-qa install",
+  "primaryCapability": "browser-automation",
+  "secondaryCapabilities": ["screenshot-capture", "testing"],
+  "stars": 2140,
+  "inspected": ["README", "source", "tests", "package-metadata"],
+  "artifacts": {
+    "README.md": "# browser-qa-plugin\n\nDrives Chromium for screenshots and e2e assertions.\n\n## Install\n\n```\nnpx browser-qa install\n```\n",
+    "package.json": "{\n  \"name\": \"browser-qa\",\n  \"version\": \"0.9.2\",\n  \"dependencies\": { \"playwright\": \"^1.40.0\" }\n}\n",
+    "src/capture.ts": "export async function capture(page: Page, path: string) {\n  await page.screenshot({ path, fullPage: true });\n}\n"
+  },
+  "surface": {
+    "commands": ["review", "shot"],
+    "skills": ["screenshot", "e2e-run"],
+    "agents": ["qa-agent"],
+    "hooks": ["PostToolUse:Write"],
+    "mcpServers": ["browser-qa"],
+    "configKeys": ["viewports", "baseUrl"],
+    "writesPaths": [".qa/"],
+    "envVars": ["BROWSER_QA_HEADLESS"]
+  },
+  "source": "fixture",
+  "capturedAt": "2026-08-30",
+  "dataProvenance": ["Synthetic fixture authored for this repository's acceptance tests."]
+}

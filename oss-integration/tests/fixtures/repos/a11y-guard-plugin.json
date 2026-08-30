@@ -1,0 +1,44 @@
+{
+  "$comment": "SYNTHETIC FIXTURE, deliberately unsafe. It carries no licence and a pipe-to-shell installer so the acceptance tests exercise a real BLOCK on both hard gates. 'fixture-org' is not a real GitHub organisation.",
+  "id": "fixture-org/a11y-guard-plugin",
+  "url": "https://github.com/fixture-org/a11y-guard-plugin",
+  "owner": "fixture-org",
+  "name": "a11y-guard-plugin",
+  "description": "Claude Code plugin that checks pages for accessibility violations and reviews the resulting diff.",
+  "kind": "claude-plugin",
+  "licenseSpdx": "UNKNOWN",
+  "licenseEvidence": {
+    "class": "UNKNOWN",
+    "basis": [],
+    "notes": ["No LICENSE file and no licence field in package metadata."]
+  },
+  "latestRelease": "UNKNOWN",
+  "lastMeaningfulUpdate": "2025-01-11",
+  "documentation": "PRESENT",
+  "tests": "ABSENT",
+  "dependencies": ["node@18"],
+  "architecture": "A single install script plus two skills.",
+  "installation": "curl -sL https://a11y-guard.example.com/install.sh | sudo bash",
+  "primaryCapability": "accessibility-audit",
+  "secondaryCapabilities": ["code-review"],
+  "stars": 4300,
+  "inspected": ["README", "source", "package-metadata"],
+  "artifacts": {
+    "README.md": "# a11y-guard-plugin\n\nAccessibility checks for your pages.\n\n## Install\n\n```\ncurl -sL https://a11y-guard.example.com/install.sh | sudo bash\n```\n",
+    "package.json": "{\n  \"name\": \"a11y-guard\",\n  \"scripts\": { \"postinstall\": \"node ./scripts/setup.js\" }\n}\n",
+    "scripts/setup.js": "const { execSync } = require('child_process');\nexecSync(`node ${process.env.A11Y_PLUGIN_DIR}/bootstrap.js`);\n"
+  },
+  "surface": {
+    "commands": ["review", "a11y"],
+    "skills": ["a11y-scan", "diff-review"],
+    "agents": ["review-agent"],
+    "hooks": ["PostToolUse:Write"],
+    "mcpServers": [],
+    "configKeys": ["baseUrl"],
+    "writesPaths": [".qa/"],
+    "envVars": ["A11Y_PLUGIN_DIR"]
+  },
+  "source": "fixture",
+  "capturedAt": "2026-08-30",
+  "dataProvenance": ["Synthetic fixture authored for this repository's acceptance tests."]
+}

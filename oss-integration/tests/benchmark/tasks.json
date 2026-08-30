@@ -1,0 +1,14 @@
+{
+  "$comment": "Evaluation task suite. Each task states the capabilities that must ALL be held for the task to be completable. This is a static coverage suite - it checks capability presence, not runtime output quality.",
+  "tasks": [
+    { "id": "T1", "name": "Build a responsive landing page from a brief", "requires": ["frontend-implementation", "responsive-design"] },
+    { "id": "T2", "name": "Critique the visual design of an existing page", "requires": ["visual-design"] },
+    { "id": "T3", "name": "Capture the page at three viewports", "requires": ["browser-automation", "screenshot-capture"] },
+    { "id": "T4", "name": "Report WCAG violations on a live page", "requires": ["browser-automation", "accessibility-audit"] },
+    { "id": "T5", "name": "Report loading performance metrics", "requires": ["browser-automation", "performance-audit"] },
+    { "id": "T6", "name": "Detect unintended visual change against a baseline", "requires": ["browser-automation", "screenshot-capture", "image-comparison", "visual-regression"] },
+    { "id": "T7", "name": "Review the diff for correctness and convention", "requires": ["code-review"] },
+    { "id": "T8", "name": "Run the end-to-end test suite", "requires": ["testing"] },
+    { "id": "T9", "name": "Give an evidence-backed verdict on whether the page is ready to ship", "requires": ["visual-review", "accessibility-audit", "performance-audit"] }
+  ]
+}

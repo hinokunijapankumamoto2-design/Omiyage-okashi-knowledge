@@ -1,0 +1,44 @@
+{
+  "$comment": "SYNTHETIC FIXTURE. 'fixture-org' is not a real GitHub organisation. These files exist so the acceptance tests are deterministic and offline. Real repositories are resolved through the seed registry or the --live GitHub adapter.",
+  "id": "fixture-org/frontend-craft-plugin",
+  "url": "https://github.com/fixture-org/frontend-craft-plugin",
+  "owner": "fixture-org",
+  "name": "frontend-craft-plugin",
+  "description": "Claude Code plugin with skills for visual design critique and responsive frontend implementation.",
+  "kind": "claude-plugin",
+  "licenseSpdx": "MIT",
+  "licenseEvidence": {
+    "class": "SUPPORTED",
+    "basis": ["source-inspection"],
+    "notes": ["LICENSE file present in the fixture and read."]
+  },
+  "latestRelease": "v1.4.0",
+  "lastMeaningfulUpdate": "2026-07-14",
+  "documentation": "PRESENT",
+  "tests": "PRESENT",
+  "dependencies": ["node@20"],
+  "architecture": "Three skills plus one agent; no runtime services.",
+  "installation": "npm i -g @fixture-org/frontend-craft && claude plugin add frontend-craft",
+  "primaryCapability": "frontend-implementation",
+  "secondaryCapabilities": ["visual-design", "responsive-design"],
+  "stars": 812,
+  "inspected": ["README", "source", "tests", "package-metadata"],
+  "artifacts": {
+    "README.md": "# frontend-craft-plugin\n\nSkills for building web UI: design critique, responsive layout, component structure.\n\n## Install\n\n```\nnpm i -g @fixture-org/frontend-craft\n```\n",
+    "package.json": "{\n  \"name\": \"@fixture-org/frontend-craft\",\n  \"version\": \"1.4.0\",\n  \"dependencies\": { \"node\": \"20\" }\n}\n",
+    "skills/responsive-layout/SKILL.md": "---\nname: responsive-layout\ndescription: Apply breakpoint-driven layout.\n---\nUse container queries where supported."
+  },
+  "surface": {
+    "commands": ["review", "design"],
+    "skills": ["visual-critique", "responsive-layout", "component-scaffold"],
+    "agents": ["frontend-agent"],
+    "hooks": [],
+    "mcpServers": [],
+    "configKeys": ["viewports"],
+    "writesPaths": [".craft/"],
+    "envVars": []
+  },
+  "source": "fixture",
+  "capturedAt": "2026-08-30",
+  "dataProvenance": ["Synthetic fixture authored for this repository's acceptance tests."]
+}

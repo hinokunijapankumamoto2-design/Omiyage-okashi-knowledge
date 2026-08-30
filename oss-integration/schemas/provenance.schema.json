@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oss-integration.local/schemas/provenance.schema.json",
+  "title": "ProvenanceRecord",
+  "description": "One row of a generated plugin's PROVENANCE.md. Rule 27/28: what was the idea, what code was reused, what was changed, what is original.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["source", "repository", "author", "license", "commitOrRelease", "researchDate", "capability", "adoptedConcept", "reusedCode", "modification", "originalContribution", "evidence", "decision", "generatedComponent"],
+  "properties": {
+    "source": { "type": "string", "description": "Where the material came from, e.g. 'public GitHub repository', 'official documentation', 'original'." },
+    "repository": { "type": "string" },
+    "author": { "type": "string" },
+    "license": { "type": "string" },
+    "commitOrRelease": { "type": "string" },
+    "researchDate": { "type": "string", "format": "date" },
+    "capability": { "type": "string" },
+    "adoptedConcept": { "type": "string" },
+    "reusedCode": { "type": "string", "description": "In v0.1 this is always 'None', enforced by the builder rather than promised." },
+    "modification": { "type": "string" },
+    "originalContribution": { "type": "string" },
+    "evidence": { "enum": ["VERIFIED", "SUPPORTED", "INFERRED", "CLAIMED", "UNKNOWN"] },
+    "decision": { "enum": ["KEEP", "REPLACE", "ADD", "REMOVE", "WATCH", "REJECT", "UNKNOWN"] },
+    "generatedComponent": { "type": "string" }
+  }
+}
