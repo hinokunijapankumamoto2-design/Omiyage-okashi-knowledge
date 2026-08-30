@@ -157,6 +157,24 @@ Verified by hashing two clones of the same commit, `core.autocrlf=false` and
 `core.autocrlf=true`, with the same hasher: identical source and package hashes.
 v1 is retained in the manifest as a superseded record with the reason.
 
+### The runner itself must check out with LF
+
+Fixing the hash was not enough. In an `autocrlf=true` clone the **runner script**
+is written with CRLF and bash refuses to execute it:
+
+```
+RUN_CODEX_REVIEW.sh: line 13: $'\r': command not found
+RUN_CODEX_REVIEW.sh: line 14: set: pipefail: invalid option name
+exit 2
+```
+
+That breaks the review under Git Bash and WSL, and it was found by *running* the
+runner in such a clone — the hashes were already correct and said nothing about
+it. `oss-integration/.gitattributes` now pins `*.sh text eol=lf` (and `*.ps1
+text eol=crlf` for convention). It sits inside the package lock, because it
+governs how the runner is checked out. Adding it changed neither canonical
+hash, which is the expected behaviour of the v2 model.
+
 ### File-set integrity
 
 Hashes cover **tracked** files only. An untracked file dropped into

@@ -64,6 +64,9 @@ export const SOURCE_PATHS = [
 
 // Artifacts actually handed to Codex.
 export const PACKAGE_PATHS = [
+  // .gitattributes decides how the runner itself is checked out (LF for *.sh),
+  // so it belongs inside the lock: a change to it changes reproducibility.
+  '.gitattributes',
   'reports/codex-package',
   'reports/codex-results/README.md',
   'CODEX_HANDOFF_REPORT.md',

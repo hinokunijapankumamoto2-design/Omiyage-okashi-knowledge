@@ -34,9 +34,10 @@
     "tsconfig.json"
   ],
   "source_paths_note": "Review documentation is excluded from the product-source hash by construction.",
-  "review_package_content_hash": "baad89bc36dfc8a87c37f1510b0724a12259fad32d6d6eef6f4efef39947dae3",
-  "review_package_file_count": 22,
+  "review_package_content_hash": "bdf0a2b41d68c9487baa1bb7fd8e533acbf8fc91b288e2339ac7989eff64809e",
+  "review_package_file_count": 23,
   "review_package_paths": [
+    ".gitattributes",
     "reports/codex-package",
     "reports/codex-results/README.md",
     "CODEX_HANDOFF_REPORT.md",
@@ -44,6 +45,7 @@
     "FINAL_RELEASE_REPORT.md"
   ],
   "review_package_files": [
+    ".gitattributes",
     "CODEX_HANDOFF_REPORT.md",
     "CODEX_REVIEW_REPORT.md",
     "FINAL_RELEASE_REPORT.md",
@@ -100,5 +102,6 @@
     "autocrlf_true_source": "a3c8652d4a6e94d5350bf86a16e036281575479a01428565ad2043caf1dcabca",
     "result": "PASS - identical",
     "note": "Verified by executing the shared Node hasher under both checkout modes on Linux. The PowerShell RUNNER itself was not executed: pwsh is unavailable in the authoring environment."
-  }
+  },
+  "gitattributes_note": "oss-integration/.gitattributes pins *.sh to eol=lf. Without it, a clone with the Git for Windows default core.autocrlf=true writes CRLF into RUN_CODEX_REVIEW.sh and bash refuses to run it (\"$'\\\\r': command not found\", \"set: pipefail: invalid option name\"), breaking the runner under Git Bash and WSL. Found by executing the runner in an autocrlf=true clone. It is inside the package lock because it governs how the runner is checked out, so a change to it changes reproducibility. Adding it did NOT change either canonical hash, which is the expected behaviour of the v2 git-canonical model."
 }

@@ -1,0 +1,11 @@
+# Shell scripts MUST check out with LF on every platform. Without this, a
+# Windows clone with the Git default core.autocrlf=true writes CRLF into
+# RUN_CODEX_REVIEW.sh and bash refuses to run it:
+#   RUN_CODEX_REVIEW.sh: line 13: $'\r': command not found
+#   set: pipefail: invalid option name
+# That breaks the review runner under Git Bash and WSL. Found by executing the
+# runner in an autocrlf=true clone, not by inspection.
+*.sh text eol=lf
+
+# PowerShell is fine with either, but keep Windows tooling conventional.
+*.ps1 text eol=crlf
