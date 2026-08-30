@@ -1,0 +1,11 @@
+{
+  "$comment": "Version lock for the external review. The Codex review applies to THIS commit. Any later fix must be diffed against it so reviewed source and fixed source are never confused.",
+  "BASELINE_GIT_COMMIT": "04fab5b51b62dbba03d744e50b03ee1ea1c80a33",
+  "branch": "claude/oss-scout-integration-mvp-514zru",
+  "review_package_version": "1.0.0",
+  "benchmark_policy_version": "v0.1.1",
+  "source_tree_hash": "95613846689a2c2ea5362304d99c8f28a82b1ad84c979d1d0855bc1009d49d26",
+  "source_tree_hash_method": "sha256 of 'git ls-files -s' over src, data, schemas, tests, package.json, tsconfig.json",
+  "frozen": true,
+  "product_code_frozen_until": "external Codex findings are returned, reproduced and classified"
+}

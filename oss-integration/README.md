@@ -193,18 +193,15 @@ Independent Codex Review: Not Run
 CLAUDE SELF REVIEW: 19 defects found and fixed — see CHANGELOG.md
 ```
 
-The Codex CLI (0.151.0) and the `codex@openai-codex` plugin (v1.0.6) are both
-installed and enabled — the tooling is in place. Both auth routes the plugin
-documents are closed in this environment: OpenAI endpoints answer **403 to
-CONNECT** under organization policy, and no credential exists. Seven recovery
-attempts are recorded in [CODEX_REVIEW_REPORT.md](./CODEX_REVIEW_REPORT.md).
-Substituting another model and calling it Codex was rejected. The full
-handoff package is ready — see [CODEX_HANDOFF_REPORT.md](./CODEX_HANDOFF_REPORT.md).
-
 **This code has never been reviewed by anyone but its author.** The self-review
 is evidence that specific defects were found — not evidence the code is
-correct, and not a substitute. The full review package is committed at
-`reports/codex-package/` and runs in one command wherever Codex has access.
+correct, and not a substitute.
+
+The independent review package is ready and runs in one command wherever Codex
+has network access:
+
+→ **[reports/codex-package/README.md](./reports/codex-package/README.md)**
+→ Handoff status: [CODEX_HANDOFF_REPORT.md](./CODEX_HANDOFF_REPORT.md)
 
 ### What may and may not be claimed
 

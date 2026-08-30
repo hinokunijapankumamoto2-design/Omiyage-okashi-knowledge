@@ -43,3 +43,36 @@ Audit these three independently. **Do not assume the current gates are correct.*
 
 Per finding: `FINDING / SEVERITY / EVIDENCE / FILE:LINE / IMPACT /
 RECOMMENDED ACTION / CONFIDENCE`.
+
+## Evidence handed to you
+
+Read these before forming a view. They separate what was observed from what was
+concluded:
+
+| File | What it is |
+| --- | --- |
+| `EVIDENCE_CLASSIFICATION.md` | Facts, measured results, claims, assumptions and unknowns, kept apart |
+| `CLAIMS_TO_AUDIT.md` | 10 claims to judge `SUPPORT` / `PARTIALLY_SUPPORT` / `REFUTE` / `NOT_VERIFIED` |
+| `RAW_BENCHMARK_DATA.md` | Where every raw measurement is — **and what was not retained** |
+| `SECURITY_EVIDENCE.md` | Matched rules, files, excerpts, and the two rules deliberately narrowed |
+| `LICENSE_EVIDENCE.md` | Per-repository licence file, detection, classification, conditions |
+| `PROVENANCE_EVIDENCE.md` | The `Reused Code: None` method, its parameters and its stated limits |
+| `EVIDENCE_MANIFEST.md` | Everything else, mapped to its real path |
+| `FINDING_SCHEMA.md` | The output shape |
+
+## Read-only review
+
+**Do not modify, create or delete any file in this repository.** Your role is
+`ANALYZE` · `CHALLENGE` · `FIND` · `REPORT`. Automatic fixes are out of scope:
+every change is made later, by the author, only after independently reproducing
+the finding.
+
+If you would normally apply a patch, describe it under `RECOMMENDATION` instead.
+
+**Baseline:** this review applies to commit `04fab5b51b62dbba03d744e50b03ee1ea1c80a33`. Record that SHA in your
+output so reviewed source and later-fixed source are never confused.
+
+## Finding format
+
+Use the schema in `FINDING_SCHEMA.md` for every finding. Reporting **no
+finding** in an area is a valid, useful result — say so rather than padding.

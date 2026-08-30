@@ -1,26 +1,44 @@
-# Codex review results — drop zone
+# Codex review results
 
-The four runners write here:
+These files contain **independent Codex review outputs**.
 
 ```
 standard-review.md
 adversarial-review.md
 benchmark-audit.md
 security-license-provenance-audit.md
+RUN_METADATA.json
 ```
 
-Transcripts are **raw Codex output**. Do not edit them: they are the evidence.
-Corrections and disagreements belong in `CODEX_REVIEW_REPORT.md`, alongside the
-finding they refer to.
+**Do not treat findings as automatically correct.**
 
-Once the files are here:
+Claude must reproduce and classify each finding as:
+
+```
+CONFIRMED
+PARTIALLY_CONFIRMED
+FALSE_POSITIVE
+NOT_REPRODUCED
+OUT_OF_SCOPE
+UNKNOWN
+```
+
+A finding is not a fact because Codex said it, and not wrong because the author
+disagrees. Evidence decides. False positives are **documented** — finding, why
+false, evidence — never silently dropped.
+
+## Rules
+
+- Transcripts are raw output and are the evidence of record. **Do not edit
+  them.** Disagreements belong in `CODEX_REVIEW_REPORT.md` beside the finding.
+- `RUN_METADATA.json` records the commit the review actually examined. Check it
+  against `reports/codex-package/BASELINE.json` before acting on any finding.
+- No credential is ever written here.
+
+## Next step
 
 ```bash
 node reports/codex-package/import-codex-results.mjs
 ```
 
-That aggregates every finding into `CODEX_REVIEW_REPORT.md` with each one marked
-`UNVERIFIED`. Nothing is treated as correct on arrival — Codex can be wrong, and
-so can the author. Each finding is then reproduced and reclassified as
-`CONFIRMED` / `PARTIALLY_CONFIRMED` / `FALSE_POSITIVE` / `NOT_REPRODUCED` /
-`OUT_OF_SCOPE` / `UNKNOWN`.
+Then follow `reports/codex-package/POST_CODEX_INSTRUCTIONS.md`.

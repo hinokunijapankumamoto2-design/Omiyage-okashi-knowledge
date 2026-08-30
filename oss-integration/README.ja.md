@@ -175,19 +175,15 @@ Independent Codex Review: Not Run
 CLAUDE SELF REVIEW: 19件の欠陥を発見・修正 — CHANGELOG.md 参照
 ```
 
-Codex CLI（0.151.0）と `codex@openai-codex` Plugin（v1.0.6）はいずれも
-インストール・有効化済みで、ツール側の準備は完了しています。しかしPluginが
-要求する認証経路は本環境では両方閉じています：OpenAIの各エンドポイントは
-組織ポリシーにより **CONNECTに403** を返し、認証情報も存在しません。
-7件の復旧試行は [CODEX_REVIEW_REPORT.md](./CODEX_REVIEW_REPORT.md) に記録
-しています。別モデルで代替して「Codex」と称することは却下しました。Handoff Package は
-完成済みです — [CODEX_HANDOFF_REPORT.md](./CODEX_HANDOFF_REPORT.md) を参照。
-
 **本コードは作者以外の誰からもレビューを受けていません。** Self Reviewは
 特定の欠陥を発見した証拠ではありますが、コードが正しいことの証拠ではなく、
-Independent Reviewの代替でもありません。レビューパッケージは
-`reports/codex-package/` にコミット済みで、アクセス可能な環境では1コマンドで
-実行できます。
+Independent Reviewの代替でもありません。
+
+Independent Review Package は完成済みで、Codexがネットワークに到達できる環境
+なら1コマンドで実行できます：
+
+→ **[reports/codex-package/README.md](./reports/codex-package/README.md)**
+→ Handoff状況: [CODEX_HANDOFF_REPORT.md](./CODEX_HANDOFF_REPORT.md)
 
 ## v0.1 完成条件
 

@@ -1,157 +1,175 @@
-# CODEX HANDOFF STATUS
+# CODEX HANDOFF REPORT
 
 ```
 STATUS                     READY
-CLASSIFICATION             ENVIRONMENT_RESTRICTION  (not a product defect)
-INDEPENDENT REVIEW         Pending
-v0.1                       FROZEN at fb76b8a
+BASELINE COMMIT            04fab5b51b62dbba03d744e50b03ee1ea1c80a33
+PRODUCT CODE               FROZEN
+CURRENT ENVIRONMENT        BLOCKED
+INDEPENDENT REVIEW         PENDING
 ```
 
 ## CODEX CLI
 
-**Installed** — `codex-cli 0.151.0`, at `/opt/node22/bin/codex`.
+Installed — `codex-cli 0.151.0`.
 
 ## CODEX PLUGIN
 
-**Installed and enabled** — `codex@openai-codex` v1.0.6, user scope, added from
-the `openai/codex-plugin-cc` marketplace. Command surface read from its own
-manifest: `/codex:review`, `/codex:adversarial-review`, `/codex:rescue`,
-`/codex:transfer`, `/codex:status`, `/codex:result`, `/codex:cancel`,
-`/codex:setup`.
+Installed and enabled — `codex@openai-codex` v1.0.6, user scope, from the
+`openai/codex-plugin-cc` marketplace.
 
-## CURRENT ENVIRONMENT CONNECTION
+## CURRENT ENVIRONMENT
 
-**Blocked.**
+**BLOCKED.**
 
-| Endpoint | Result |
-| --- | --- |
-| `api.openai.com:443` | `connect_rejected` — gateway answered **403 to CONNECT** |
-| `auth.openai.com:443` | same |
-| `chatgpt.com:443` | same |
+## BLOCK REASON
 
-`codex login status` → **`Not logged in`**. No `~/.codex`. `OPENAI_API_KEY`
-unset. Both auth routes the plugin documents — ChatGPT subscription OAuth and
-API key — are therefore unavailable here.
+Organization network policy on the execution environment's egress proxy.
+`api.openai.com`, `auth.openai.com` and `chatgpt.com` all answer **403 to
+CONNECT**; `codex login status` reports **Not logged in**; no `~/.codex`;
+`OPENAI_API_KEY` unset. Classified `ENVIRONMENT_RESTRICTION` — **not a product
+defect**. No further connection attempts are made from here.
 
-## CAUSE
+## REVIEW PROMPTS
 
-Organization network policy on the execution environment's egress proxy. Not
-transient, not a misconfiguration of the plugin, and not fixable from inside
-the sandbox. **No further connection attempts will be made from here.**
+**4 / 4 READY** — standard, adversarial, benchmark audit, security/licence/provenance.
 
-## PRODUCT IMPACT
+Each carries the read-only rule, the baseline SHA, the finding schema, and an
+index of the evidence files.
 
-**None detected.** The blocker is entirely outside the project: nothing in
-`src/` imports, calls or depends on Codex, and the full test matrix passes
-unchanged at the freeze commit. This is recorded as `ENVIRONMENT_RESTRICTION`,
-not as a product defect.
+## ANCHORING AUDIT
 
-## INDEPENDENT REVIEW
+**PASS.** No confirm-seeking phrasing, no statement of the author's ship
+decision or improvement verdict, no stale benchmark numbers, in any of the four
+prompts. Three leaks were found and removed in an earlier pass: two stated
+conclusions and one stale timing pair. The same-task figures are now handed over
+as raw numbers with **no interpretation attached**, and the reviewer is asked to
+decide independently what they support — including whether the sample supports
+any directional conclusion at all.
 
-**Pending.** No party other than the author has reviewed this code. That remains
-the single largest limitation on confidence in the release, and it is stated as
-such in `README.md`, `FINAL_RELEASE_REPORT.md` and `CODEX_REVIEW_REPORT.md`.
-The self-review is **not** promoted to fill the gap.
+Re-runnable:
 
-## REVIEW PACKAGE
+```bash
+grep -rniE "confirm that|verify .* conclusion|approve|is correct" \\
+  reports/codex-package/REVIEW_BRIEF.md reports/codex-package/PROMPT_*.md
+```
 
-**Ready** — `reports/codex-package/`.
+Returns nothing.
 
-| File | Purpose |
-| --- | --- |
-| `README.md` | Six-step local run instructions |
-| `EVIDENCE_MANIFEST.md` | Every required evidence item mapped to its real path |
-| `REVIEW_BRIEF.md` | Standard review |
-| `PROMPT_ADVERSARIAL.md` | Adversarial — "try to prove this should not ship" |
-| `PROMPT_BENCHMARK_AUDIT.md` | Hostile benchmark peer review |
-| `PROMPT_SEC_LIC_PROV.md` | Security / licence / provenance |
-| `RUN_CODEX_REVIEW.sh` | Bash runner |
-| `RUN_CODEX_REVIEW.ps1` | PowerShell runner |
-| `import-codex-results.mjs` | Aggregates transcripts into `CODEX_REVIEW_REPORT.md` |
+**Adversarial framing is deliberate but not rejection-forcing:** the adversarial
+prompt asks the reviewer to try to prove the MVP should not ship, and its verdict
+scale explicitly includes *attack failed* and *inconclusive*. An attack that
+fails is recorded as evidence.
 
-**Anchoring removed.** The prompts contain no confirm-seeking phrasing and no
-statement of the author's conclusions — verified by a grep check documented in
-the package README, currently returning nothing. The same-task timing figures
-are handed over as raw numbers with **no interpretation**, and the prompt asks
-the reviewer to decide independently what they support. `FINAL_RELEASE_REPORT.md`
-is flagged read-last in the manifest so it cannot anchor the review.
+## FACT / CLAIM SEPARATION
+
+`EVIDENCE_CLASSIFICATION.md` splits everything handed over into `FACT`,
+`MEASURED_RESULT`, `CLAIM_TO_AUDIT`, `ASSUMPTION` and `UNKNOWN`. The author's
+interpretations are filed as claims — **inputs to the review, not premises of it**
+— and `CLAIMS_TO_AUDIT.md` lists ten of them for a
+`SUPPORT` / `PARTIALLY_SUPPORT` / `REFUTE` / `NOT_VERIFIED` verdict.
+
+## WINDOWS RUNNER
+
+`reports/codex-package/RUN_CODEX_REVIEW.ps1` — uses existing Codex
+authentication, embeds no key, exports no credential, runs no destructive
+command, modifies no tracked file, writes only to `reports/codex-results/`.
+Stops with `CODEX_NOT_AUTHENTICATED` (exit 3) or `CODEX_CONNECTION_UNAVAILABLE`
+(exit 2). `Join-Path` nested so Windows PowerShell 5.1 works.
+
+**Limitation, stated rather than glossed:** `pwsh` is not installed in this
+environment, so the PowerShell syntax could **not** be machine-verified. Written
+and reviewed by hand, with prompt/output/order and metadata-key parity against
+the Bash runner verified automatically. Run it once on Windows before relying on it.
 
 ## BASH RUNNER
 
-`bash reports/codex-package/RUN_CODEX_REVIEW.sh` — syntax verified with
-`bash -n`. Refuses to run if `codex` is missing or reports `Not logged in`.
-Keeps the transcript even when a review fails, so the error is evidence too.
+`reports/codex-package/RUN_CODEX_REVIEW.sh` — same four prompts, same four
+output names, same order, same metadata keys, same exit codes. Syntax verified
+with `bash -n`. Failure behaviour tested live:
 
-## POWERSHELL RUNNER
+| Condition | Result |
+| --- | --- |
+| Codex present, not logged in | `ERROR: CODEX_NOT_AUTHENTICATED`, exit **3** |
+| Codex absent from PATH | `ERROR: CODEX_CONNECTION_UNAVAILABLE`, exit **2** |
+| Either failure | **No files written**, no fallback to an API key |
+| Importer with no transcripts | Exit **1**, `CODEX_REVIEW_REPORT.md` left unchanged |
 
-`./reports/codex-package/RUN_CODEX_REVIEW.ps1` — same four prompt files, same
-four output names, same order, verified by an automated parity check.
-`Join-Path` is nested so it also works on Windows PowerShell 5.1.
-
-**Honest limitation:** `pwsh` is not installed in the environment this was
-authored in, so the PowerShell script's syntax could **not** be machine-verified.
-It was written and reviewed by hand. Run it once on Windows before relying on it.
-The Bash runner is machine-verified.
-
-## AUTHENTICATION
-
-**External by design.** No script reads, writes, prints or stores a credential.
-No `.env`, key, token, cookie or `~/.codex` content is committed. Secret scan
-over all 121 tracked and new files: **clean** — every `OPENAI_API_KEY` mention is
-either documentation of its *absence*, the pipe-from-environment guidance, or
-the project's own security-gate detection pattern.
-
-## EXPECTED OUTPUT
+## OUTPUT STRUCTURE
 
 ```
 reports/codex-results/
 ├── standard-review.md
 ├── adversarial-review.md
 ├── benchmark-audit.md
-└── security-license-provenance-audit.md
+├── security-license-provenance-audit.md
+└── RUN_METADATA.json
 ```
 
-## HOW TO RETURN RESULTS
+`RUN_METADATA.json` records timestamp, git commit, baseline commit, codex
+version, review package version, benchmark policy version, source tree hash,
+runner and failure count. **No credential is ever written.**
 
-1. Run the review in a Codex-connected environment (see the package README).
-2. `node reports/codex-package/import-codex-results.mjs` — rewrites
-   `CODEX_REVIEW_REPORT.md` with every finding marked **`UNVERIFIED`**.
-3. Hand that back to Claude Code for verification.
+## BASELINE LOCK
 
-Each finding is then reproduced and reclassified `CONFIRMED` /
-`PARTIALLY_CONFIRMED` / `FALSE_POSITIVE` / `NOT_REPRODUCED` / `OUT_OF_SCOPE` /
-`UNKNOWN`. **A finding is not a fact because Codex said it, and not wrong
-because the author disagrees.** False positives are documented, not dropped.
+`reports/codex-package/BASELINE.json` pins `BASELINE_GIT_COMMIT` and a source
+tree hash. Both runners compare the working tree against it and warn on drift,
+so source that was reviewed is never confused with source that was later fixed.
 
-Post-import flow: A import · B verify · C fix confirmed CRITICAL/HIGH ·
-D full test matrix · E security/licence/provenance audit · F benchmark re-run ·
-G PRE/POST comparison · H final release decision.
+## READ-ONLY REVIEW
 
-Any **CRITICAL or HIGH** that verifies as `CONFIRMED` moves the ship decision to
-`DO_NOT_SHIP` until fixed and re-verified.
+Codex is instructed to `ANALYZE` · `CHALLENGE` · `FIND` · `REPORT` only.
+Automatic fixes are out of scope; every change is made afterwards, by the
+author, only after independently reproducing the finding.
 
-## CURRENT RELEASE STATUS — unchanged until the external review returns
+## SECRET SCAN
+
+**PASS** — 131 tracked and new files. No credential-shaped content, no hardcoded
+key assignment, no `~/.codex` copying, no suspicious filenames. Every
+`OPENAI_API_KEY` mention is documentation of its absence, pipe-from-environment
+guidance, or the project's own security-gate detection pattern.
+
+## PRODUCT CODE CHANGED
+
+**NO.** `src/`, `data/`, `schemas/`, `tests/`, `skills/`, `benchmark/`,
+`package.json`, `tsconfig.json` and both generated example plugins are unchanged
+since the freeze. Only review prompts, runners, review documentation, result
+structure and this report were touched.
+
+## INDEPENDENT REVIEW
+
+**PENDING.** No party other than the author has reviewed this code. That remains
+the largest limitation on confidence in the release. The self-review is **not**
+promoted to fill the gap.
+
+## CURRENT RELEASE STATUS
 
 ```
 BUILD STATUS               CONDITIONAL
 IMPROVEMENT VERDICT        REGRESSION (full-capability)
 RELEASE READINESS          READY_WITH_KNOWN_TRADEOFFS
-SHIP DECISION              SHIP_WITH_LIMITATIONS
 INDEPENDENT CODEX REVIEW   NOT_RUN
 ```
 
-Frozen at `fb76b8a`, with generated-plugin content hashes recorded in
-`reports/PRE_EXTERNAL_CODEX_REVIEW.md` and re-verified as matching at handoff.
-**No product code will change while this freeze holds.**
+## CURRENT SHIP DECISION
+
+```
+SHIP_WITH_LIMITATIONS
+```
+
+Unchanged, and it stays unchanged until the external review returns. Neither
+zero findings nor a single HIGH finding decides it on its own: zero findings
+requires checking review completeness first, and a HIGH is reproduced, fixed and
+re-verified before any verdict moves.
 
 ## NEXT ACTION
 
-Run the review in a Codex-connected environment:
+Run the Codex package in a Codex-connected environment:
 
 ```bash
 codex login && codex login status
-bash reports/codex-package/RUN_CODEX_REVIEW.sh     # or the .ps1 on Windows
+bash reports/codex-package/RUN_CODEX_REVIEW.sh     # or ./RUN_CODEX_REVIEW.ps1
 node reports/codex-package/import-codex-results.mjs
 ```
 
-Then return `CODEX_REVIEW_REPORT.md` to Claude Code for verification.
+Then return `CODEX_REVIEW_REPORT.md` to Claude Code and follow
+`reports/codex-package/POST_CODEX_INSTRUCTIONS.md`.

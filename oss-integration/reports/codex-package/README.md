@@ -70,6 +70,32 @@ in the same order, and write the same four output names.
 | 3 | Benchmark audit | `PROMPT_BENCHMARK_AUDIT.md` | `benchmark-audit.md` |
 | 4 | Security / licence / provenance | `PROMPT_SEC_LIC_PROV.md` | `security-license-provenance-audit.md` |
 
+Both runners stop before contacting Codex if the CLI is missing
+(`CODEX_CONNECTION_UNAVAILABLE`, exit 2) or not logged in
+(`CODEX_NOT_AUTHENTICATED`, exit 3). **Neither falls back to an API key on its
+own.** They are read-only with respect to the project and write only into
+`reports/codex-results/`.
+
+## Package contents
+
+| File | Purpose |
+| --- | --- |
+| `REVIEW_BRIEF.md` | Standard review |
+| `PROMPT_ADVERSARIAL.md` | Adversarial review |
+| `PROMPT_BENCHMARK_AUDIT.md` | Benchmark audit |
+| `PROMPT_SEC_LIC_PROV.md` | Security / licence / provenance audit |
+| `CLAIMS_TO_AUDIT.md` | 10 claims to judge, with the verdict scale |
+| `EVIDENCE_CLASSIFICATION.md` | Fact / measured result / claim / assumption / unknown |
+| `EVIDENCE_MANIFEST.md` | Every evidence item mapped to its real path |
+| `RAW_BENCHMARK_DATA.md` | Where raw measurements are, and what was not retained |
+| `SECURITY_EVIDENCE.md` | Matched rules, files, excerpts, narrowed rules |
+| `LICENSE_EVIDENCE.md` | Per-repository licence detection and classification |
+| `PROVENANCE_EVIDENCE.md` | The `Reused Code: None` method and its limits |
+| `FINDING_SCHEMA.md` | The output shape for every finding |
+| `BASELINE.json` | Version lock: the commit this review applies to |
+| `POST_CODEX_INSTRUCTIONS.md` | What Claude Code does with the results |
+| `import-codex-results.mjs` | Aggregates transcripts into `CODEX_REVIEW_REPORT.md` |
+
 ## 5. Confirm results exist
 
 ```
@@ -93,7 +119,9 @@ then hand that back to Claude Code for verification.
 
 ---
 
-## What happens next, and what must not
+## What happens next
+
+Full procedure in `POST_CODEX_INSTRUCTIONS.md`. In short:
 
 Each finding is independently reproduced and reclassified:
 
