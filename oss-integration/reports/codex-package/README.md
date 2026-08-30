@@ -121,7 +121,10 @@ it cannot anchor the review.
 If a prompt is ever edited, re-run the anchoring check:
 
 ```bash
-grep -rniE "confirm that|verify .* conclusion|approve|is correct" reports/codex-package/*.md
+grep -rniE "confirm that|verify .* conclusion|approve|is correct" \
+  reports/codex-package/REVIEW_BRIEF.md \
+  reports/codex-package/PROMPT_*.md
 ```
 
-It should return nothing.
+It should return nothing. Scan only the prompt files — this README describes the
+check and would match itself.
