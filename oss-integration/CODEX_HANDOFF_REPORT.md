@@ -46,6 +46,57 @@ The cause was already established; this is one confirming observation with a
 current timestamp, not a retry loop. `ENVIRONMENT_RESTRICTION` is the correct
 classification — this is **not** a Codex product failure.
 
+## BASELINE MODEL — TWO BASELINES, DELIBERATELY
+
+The product baseline was **not** moved after freeze.
+
+```
+SOURCE_BASELINE_COMMIT   04fab5b   product source frozen here — immutable
+REVIEW_PACKAGE_COMMIT    tag codex-review-package/v1.1.0
+                                   documentation-only evidence corrections
+SOURCE_TREE_IDENTICAL    YES
+```
+
+`04fab5b` remains the immutable product source baseline. The review-package
+commit carries documentation-only evidence corrections made after the freeze —
+the handoff package itself, and the refresh that replaced the stale `no
+~/.codex` statement. The product source tree is verified identical between both
+commits, under two independent scopes:
+
+| Scope | At 04fab5b | At review package |
+| --- | --- | --- |
+| `src data schemas tests package.json tsconfig.json` | `6247cfff…f69c23` | `6247cfff…f69c23` |
+| + `skills generated examples benchmark package-lock.json` | `c07efa36…e75b294a` | `c07efa36…e75b294a` |
+
+So Codex reviews **frozen product code plus the latest accurate evidence**. This
+is classified `REVIEW_PACKAGE_VERSION_LOCK`, not a baseline relock: overwriting
+`SOURCE_BASELINE_COMMIT` with the newer SHA would have erased the record of
+where the product was actually frozen, and would have made a documentation
+commit look like a product change.
+
+### Why this is better than a single moving baseline
+
+A single `BASELINE_GIT_COMMIT` forces a false choice: either freeze the evidence
+along with the code — so Codex reads a package containing a statement now known
+to be false — or move the baseline and lose the freeze point. Splitting the two
+keeps both true at once, and makes any future product change immediately visible
+as a source-hash mismatch rather than being absorbed into a moved baseline.
+
+### Gate logic
+
+The baseline gate checks **both**, and a failure is a hard stop (exit 4), never
+a warning:
+
+1. `HEAD` equals the commit tagged `codex-review-package/v1.1.0`.
+2. The product source hash equals the hash recorded at `SOURCE_BASELINE_COMMIT`.
+3. The review-package content hash equals the recorded value.
+
+Neither check alone is sufficient. A matching `HEAD` says nothing about whether
+the source still matches the freeze; a matching source hash says nothing about
+which evidence Codex will be handed. A tag is used for check 1 because a commit
+cannot contain its own SHA — recording the SHA inside the committed file would
+be self-referential and could never match.
+
 ## REVIEW PACKAGE
 
 **READY** — `reports/codex-package/`, 15 files.

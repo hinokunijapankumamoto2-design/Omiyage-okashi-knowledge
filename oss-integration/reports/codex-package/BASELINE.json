@@ -1,11 +1,77 @@
 {
-  "$comment": "Version lock for the external review. The Codex review applies to THIS commit. Any later fix must be diffed against it so reviewed source and fixed source are never confused.",
-  "BASELINE_GIT_COMMIT": "04fab5b51b62dbba03d744e50b03ee1ea1c80a33",
+  "$comment": "Version lock for the external Codex review. TWO baselines are recorded deliberately. The product baseline was NOT moved after freeze: source_baseline_commit stays at the commit where MVP v0.1 product code was frozen. review_package_commit is the later commit carrying documentation-only evidence corrections that Codex should read. This is a REVIEW_PACKAGE_VERSION_LOCK, not a baseline relock.",
+  "lock_type": "REVIEW_PACKAGE_VERSION_LOCK",
+  "source_baseline_commit": "04fab5b51b62dbba03d744e50b03ee1ea1c80a33",
+  "source_baseline_commit_short": "04fab5b",
+  "source_baseline_meaning": "The commit at which MVP v0.1 product code was frozen. Immutable. Never overwritten by a documentation change.",
+  "review_package_tag": "codex-review-package/v1.1.0",
+  "review_package_tag_meaning": "Git tag naming the commit that carries the evidence, prompts, runners and handoff documentation Codex reads. A tag is used instead of a literal SHA because a commit cannot contain its own hash — a recorded SHA inside this file could never match HEAD.",
+  "review_package_content_hash": "33e7bcf2ff5f77ec144eb552dd8c1dd82023416ad7bac4af01641b6a4b21ae33",
+  "review_package_content_hash_method": "sha256 over 'sha256sum' of every file under reports/codex-package/, sorted by path, excluding BASELINE.json itself.",
+  "source_tree_identical": true,
+  "reason": "Documentation-only handoff and evidence refresh commits after product freeze",
+  "source_tree_hashes": {
+    "working_tree_content": {
+      "method": "sha256 over the per-file sha256sum listing of 'git ls-files' across src, data, schemas, tests, package.json, tsconfig.json, sorted by path (working-tree CONTENT).",
+      "note": "Authoritative gate value. Content-based on purpose: the earlier index-based method read staged blobs, so an uncommitted edit to product source passed the gate unnoticed. Verified: editing src/types.ts changes this hash and did not change the index-based one.",
+      "value": "83e808f48cc747c2e0f09f7f6de413af60354e0b92dd01238c45bb76051ed390"
+    },
+    "working_tree_method": {
+      "method": "sha256 of 'git ls-files -s' over src, data, schemas, tests, package.json, tsconfig.json (working tree)",
+      "note": "Superseded as the gate value. Retained so the value recorded in v0.1 stays verifiable. NOT used by the gate: 'git ls-files -s' hashes the index, not working-tree content, so it cannot detect an uncommitted product-source edit.",
+      "value": "95613846689a2c2ea5362304d99c8f28a82b1ad84c979d1d0855bc1009d49d26",
+      "status": "SUPERSEDED_BY working_tree_content"
+    },
+    "commit_addressable_narrow": {
+      "method": "sha256 of sorted 'git ls-tree -r <commit>' entries over oss-integration/{src,data,schemas,tests,package.json,tsconfig.json}",
+      "note": "Commit-addressable equivalent of the original scope, so both commits can be compared without a checkout.",
+      "at_source_baseline": "6247cfff3c07ffbccd5da38063714e7b231ffb720b57d98a360649e6c0f69c23",
+      "at_review_package": "6247cfff3c07ffbccd5da38063714e7b231ffb720b57d98a360649e6c0f69c23",
+      "identical": true
+    },
+    "commit_addressable_broad": {
+      "method": "sha256 of sorted 'git ls-tree -r <commit>' entries over oss-integration/{src,data,schemas,tests,skills,generated,examples,benchmark,package.json,package-lock.json,tsconfig.json}",
+      "note": "Widened product scope: adds skills/, the generated plugin, examples/ and benchmark/. Review documentation is excluded by construction.",
+      "at_source_baseline": "c07efa36151e638d7bb51e572a55d507de931b494086de5b901e0aabe75b294a",
+      "at_review_package": "c07efa36151e638d7bb51e572a55d507de931b494086de5b901e0aabe75b294a",
+      "identical": true
+    }
+  },
+  "intervening_commits": [
+    {
+      "commit": "8dc0d5cb",
+      "subject": "chore: finalize external Codex review handoff",
+      "files_changed": 20,
+      "classification": "REVIEW_HANDOFF_ONLY",
+      "product_code_changed": false,
+      "why_needed": "Built the external review package: four prompts, evidence files, both runners, result drop zone and README links."
+    },
+    {
+      "commit": "45625e7",
+      "subject": "chore: finalize external Codex review handoff",
+      "files_changed": 19,
+      "classification": "REVIEW_HANDOFF_ONLY",
+      "product_code_changed": false,
+      "why_needed": "Moved evidence under evidence/, marked per-repeat timings NOT_AVAILABLE, added CLAIM 11, added RUN_METADATA and review-completeness tracking to both runners."
+    },
+    {
+      "commit": "946158a",
+      "subject": "docs: refresh Codex auth and environment evidence",
+      "files_changed": 4,
+      "classification": "EVIDENCE_REFRESH_ONLY",
+      "product_code_changed": false,
+      "why_needed": "The Codex CLI was installed, so the committed 'no ~/.codex' evidence statement went stale. Corrected to the measured state without changing the conclusion or deleting the earlier observation."
+    }
+  ],
+  "review_target_rule": {
+    "product_source": "Identical to 04fab5b. Codex reviews the frozen product code.",
+    "evidence_and_review_package": "946158a. Codex reads the corrected evidence, not the stale copy."
+  },
   "branch": "claude/oss-scout-integration-mvp-514zru",
-  "review_package_version": "1.0.0",
+  "review_package_version": "1.1.0",
   "benchmark_policy_version": "v0.1.1",
-  "source_tree_hash": "95613846689a2c2ea5362304d99c8f28a82b1ad84c979d1d0855bc1009d49d26",
-  "source_tree_hash_method": "sha256 of 'git ls-files -s' over src, data, schemas, tests, package.json, tsconfig.json",
   "frozen": true,
-  "product_code_frozen_until": "external Codex findings are returned, reproduced and classified"
+  "product_code_frozen_until": "external Codex findings are returned, reproduced and classified",
+  "independent_review_status": "NOT_RUN",
+  "review_package_commit_meaning": "The commit carrying the evidence, prompts, runners and handoff documentation that Codex actually reads. Later than the source baseline, and documentation-only."
 }

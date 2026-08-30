@@ -18,7 +18,69 @@ ROOT="$(cd "$HERE/../.." && pwd)"
 OUT="$ROOT/reports/codex-results"
 cd "$ROOT"
 
-# --- pre-flight ------------------------------------------------------------
+# --- GATE 1: baseline -------------------------------------------------------
+# TWO checks, both required. HEAD must be the review-package commit, AND the
+# product source tree must still hash to what it hashed at the frozen product
+# baseline. Neither alone is sufficient: matching HEAD says nothing about the
+# source, and a matching hash says nothing about which evidence Codex will read.
+# A failure here is a hard stop, never a warning.
+jq_field () { node -e "process.stdout.write(String(require('$HERE/BASELINE.json')$1))" 2>/dev/null || echo unknown; }
+SOURCE_BASELINE_SHA="$(jq_field .source_baseline_commit)"
+REVIEW_PACKAGE_TAG="$(jq_field .review_package_tag)"
+EXPECTED_TREE_HASH="$(jq_field .source_tree_hashes.working_tree_content.value)"
+EXPECTED_PKG_HASH="$(jq_field .review_package_content_hash)"
+CURRENT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
+# Hash file CONTENT, not the index: 'git ls-files -s' reports staged blobs, so an
+# uncommitted edit to product source would slip past the gate unnoticed.
+TREE_HASH="$(git ls-files -z src data schemas tests package.json tsconfig.json 2>/dev/null | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1 || echo unknown)"
+PKG_HASH="$(cd "$HERE" && find . -type f ! -name BASELINE.json | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d' ' -f1 || echo unknown)"
+REVIEW_PACKAGE_SHA="$(git rev-parse "$REVIEW_PACKAGE_TAG^{commit}" 2>/dev/null || echo unknown)"
+
+BASELINE_GATE=FAIL
+if [ "$SOURCE_BASELINE_SHA" = unknown ] || [ "$REVIEW_PACKAGE_TAG" = unknown ] || \
+   [ "$EXPECTED_TREE_HASH" = unknown ] || [ "$EXPECTED_PKG_HASH" = unknown ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - INCOMPLETE_LOCK" >&2
+  echo "  BASELINE.json is missing source_baseline_commit / review_package_tag /" >&2
+  echo "  source_tree_hashes.working_tree_content.value / review_package_content_hash." >&2
+  echo "  Refusing to guess." >&2
+  exit 4
+fi
+if [ "$REVIEW_PACKAGE_SHA" = unknown ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_TAG_MISSING" >&2
+  echo "  tag not found in this clone: $REVIEW_PACKAGE_TAG" >&2
+  echo "  Fetch tags with: git fetch --tags" >&2
+  exit 4
+fi
+if [ "$CURRENT_SHA" != "$REVIEW_PACKAGE_SHA" ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_MISMATCH" >&2
+  echo "  HEAD                     $CURRENT_SHA" >&2
+  echo "  $REVIEW_PACKAGE_TAG  $REVIEW_PACKAGE_SHA" >&2
+  echo "  Check out the tagged review-package commit, or re-lock BASELINE.json" >&2
+  echo "  deliberately. This script will not review a commit it was not built for." >&2
+  exit 4
+fi
+if [ "$TREE_HASH" != "$EXPECTED_TREE_HASH" ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - SOURCE_TREE_MISMATCH" >&2
+  echo "  product source hash   $TREE_HASH" >&2
+  echo "  frozen at $SOURCE_BASELINE_SHA  $EXPECTED_TREE_HASH" >&2
+  echo "  Product code differs from the frozen v0.1 baseline. Findings would not" >&2
+  echo "  apply to the released product. Not a warning - stopping." >&2
+  exit 4
+fi
+if [ "$PKG_HASH" != "$EXPECTED_PKG_HASH" ]; then
+  echo "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_CONTENT_MISMATCH" >&2
+  echo "  review package hash   $PKG_HASH" >&2
+  echo "  recorded              $EXPECTED_PKG_HASH" >&2
+  echo "  The evidence Codex would read is not the evidence that was locked." >&2
+  exit 4
+fi
+BASELINE_GATE=PASS
+echo "GATE 1 baseline: PASS"
+echo "  source baseline   $SOURCE_BASELINE_SHA (product source hash matches)"
+echo "  review package    $REVIEW_PACKAGE_SHA (= HEAD, tag $REVIEW_PACKAGE_TAG)"
+echo "  package content   $PKG_HASH"
+
+# --- GATE 2: Codex host -----------------------------------------------------
 if ! command -v codex >/dev/null 2>&1; then
   echo "ERROR: CODEX_CONNECTION_UNAVAILABLE" >&2
   echo "  codex CLI not found. Install with: npm install -g @openai/codex" >&2
@@ -36,19 +98,25 @@ if printf '%s' "$LOGIN_STATUS" | grep -qi "not logged in"; then
   exit 3
 fi
 echo "$LOGIN_STATUS"
+echo "GATE 2 codex host: PASS"
+
+# --- GATE 3: review package -------------------------------------------------
+MISSING=""
+for f in REVIEW_BRIEF.md PROMPT_ADVERSARIAL.md PROMPT_BENCHMARK_AUDIT.md \
+         PROMPT_SEC_LIC_PROV.md FINDING_SCHEMA.md POST_CODEX_INSTRUCTIONS.md \
+         evidence/claims-to-audit.md evidence/evidence-classification.md \
+         evidence/benchmark-evidence.md evidence/security-evidence.md \
+         evidence/license-evidence.md evidence/provenance-evidence.md; do
+  [ -f "$HERE/$f" ] || MISSING="$MISSING $f"
+done
+if [ -n "$MISSING" ]; then
+  echo "ERROR: REVIEW_PACKAGE_INCOMPLETE" >&2
+  for f in $MISSING; do echo "  missing: $f" >&2; done
+  exit 5
+fi
+echo "GATE 3 review package: PASS"
 
 mkdir -p "$OUT"
-
-BASELINE_SHA="$(node -e "process.stdout.write(require('$HERE/BASELINE.json').BASELINE_GIT_COMMIT)" 2>/dev/null || echo unknown)"
-CURRENT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
-BASELINE_MISMATCH=false
-if [ "$BASELINE_SHA" != "unknown" ] && [ "$CURRENT_SHA" != "$BASELINE_SHA" ]; then
-  BASELINE_MISMATCH=true
-  echo "WARNING: BASELINE_MISMATCH" >&2
-  echo "         working tree is at $CURRENT_SHA; package was built for $BASELINE_SHA." >&2
-  echo "         Findings are recorded against the CURRENT commit and must be" >&2
-  echo "         diffed against the baseline before being acted on." >&2
-fi
 
 # --- reviews ---------------------------------------------------------------
 # Every review starts NOT_RUN and only becomes PASS on a clean exit, so an
@@ -84,7 +152,6 @@ run_review benchmark   benchmark-audit                     PROMPT_BENCHMARK_AUDI
 run_review seclicprov  security-license-provenance-audit   PROMPT_SEC_LIC_PROV.md
 
 # --- run metadata (never contains a credential) ----------------------------
-TREE_HASH="$(git ls-files -s src data schemas tests package.json tsconfig.json 2>/dev/null | sha256sum | cut -d' ' -f1 || echo unknown)"
 OVERALL=COMPLETE
 [ "$FAILED" -eq 0 ] || OVERALL=INCOMPLETE
 cat > "$OUT/RUN_METADATA.json" <<META
@@ -92,10 +159,13 @@ cat > "$OUT/RUN_METADATA.json" <<META
   "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
   "status": "$OVERALL",
   "git_commit": "$CURRENT_SHA",
-  "baseline_git_commit": "$BASELINE_SHA",
-  "baseline_mismatch": $BASELINE_MISMATCH,
+  "source_baseline_commit": "$SOURCE_BASELINE_SHA",
+  "review_package_commit": "$REVIEW_PACKAGE_SHA",
+  "review_package_tag": "$REVIEW_PACKAGE_TAG",
+  "review_package_content_hash": "$PKG_HASH",
+  "baseline_gate": "$BASELINE_GATE",
   "codex_version": "$CODEX_VERSION",
-  "review_package_version": "1.0.0",
+  "review_package_version": "1.1.0",
   "benchmark_policy_version": "v0.1.1",
   "source_tree_hash": "$TREE_HASH",
   "runner_type": "bash",
