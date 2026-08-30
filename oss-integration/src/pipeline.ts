@@ -129,6 +129,10 @@ export async function runScout(input: GoalInput, opts: ScoutOptions = {}): Promi
   // evidence, and records every move.
   const optimization = optimizeStack(selected, [...suppliedViews, ...discoveredViews]);
 
+  // A capability that discovery could not source but which the final stack
+  // delivers - by combination, for instance - is not unresolved.
+  const delivered = new Set(optimization.stack.entries.map((e) => e.capabilityId));
+
   return {
     goal,
     supplied,
@@ -136,7 +140,7 @@ export async function runScout(input: GoalInput, opts: ScoutOptions = {}): Promi
     stack: optimization.stack,
     graph,
     discoveryNotes,
-    unresolved,
+    unresolved: unresolved.filter((c) => !delivered.has(c)),
     optimization,
   };
 }

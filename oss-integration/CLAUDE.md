@@ -99,7 +99,7 @@ src/
 ```bash
 npm install
 npm run build
-npm test                      # 62 tests: unit, goal cases, schema conformance, acceptance
+npm test                      # 63 tests: unit, goal cases, schema conformance, acceptance
 node dist/src/cli.js build --goal "…" --repo … --repo …
 ```
 

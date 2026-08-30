@@ -22,7 +22,7 @@ conflict resolution → **generated plugin** → benchmark, in one pass.
 - **Plugin Builder** emitting a real Claude Code plugin, plus
   **Package Validator**, **Benchmark Runner** and report renderers.
 - CLI: `goal`, `analyze`, `build`.
-- 62 tests: unit, goal evaluation cases, schema conformance, and 4 acceptance suites.
+- 63 tests: unit, goal evaluation cases, schema conformance, and 4 acceptance suites.
 
 ### Independent review (rule 34)
 

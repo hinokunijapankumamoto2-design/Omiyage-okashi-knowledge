@@ -68,6 +68,13 @@ test('ACCEPTANCE 1: a goal alone runs the whole flow and produces a plugin', asy
     assert.ok(scout.stack.entries.length > 0);
   });
 
+  await t.test('nothing the stack delivers is also reported as unresolved', () => {
+    const delivered = new Set(scout.stack.entries.map((e) => e.capabilityId));
+    for (const u of scout.unresolved) {
+      assert.ok(!delivered.has(u), `"${u}" is in the stack but also reported as having no candidate`);
+    }
+  });
+
   const dir = mkdtempSync(resolve(tmpdir(), 'oss-acc1-'));
   t.after(() => rmSync(dir, { recursive: true, force: true }));
 

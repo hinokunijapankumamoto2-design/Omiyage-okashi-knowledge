@@ -290,6 +290,5 @@ Justified by:
 
 - Goal: CONSTRAINTS: none stated.
 - Goal: COMMERCIAL USE: not stated. Licence gate will assume nothing and stay conservative.
-- No candidate found for required capability `visual-review`.
 - No candidate found for required capability `security-review`.
 - Licence of `fixture-org/a11y-guard-plugin` is UNKNOWN; no code from it may be copied.

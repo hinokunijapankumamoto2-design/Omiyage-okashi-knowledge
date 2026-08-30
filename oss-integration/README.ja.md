@@ -20,7 +20,7 @@ Pluginを束ねるな。再設計せよ。
 cd oss-integration
 npm install
 npm run build
-npm test          # 62件（unit・Goal評価ケース・Schema適合・受入テスト）
+npm test          # 63件（unit・Goal評価ケース・Schema適合・受入テスト）
 ```
 
 ### MODE C — BRING + OPTIMIZE（本MVPの最重要モード）

@@ -22,7 +22,7 @@ Pluginを束ねるな。再設計せよ。
 cd oss-integration
 npm install
 npm run build
-npm test          # 62 tests: unit, goal cases, schema conformance, acceptance
+npm test          # 63 tests: unit, goal cases, schema conformance, acceptance
 ```
 
 ### MODE C — bring your own tools and optimize (the important one)
