@@ -37,7 +37,7 @@ $SourceBaselineSha = $Baseline.source_baseline_commit
 $ReviewPackageTag  = $Baseline.review_package_tag
 $ExpectedTreeHash  = $Baseline.source_tree_hashes.working_tree_content.value
 $ExpectedPkgHash   = $Baseline.review_package_content_hash
-$CurrentSha = (git rev-parse HEAD 2>$null | Out-String).Trim()
+$CurrentSha = (git rev-parse --verify --quiet HEAD 2>$null | Out-String).Trim()
 if (-not $CurrentSha) { $CurrentSha = 'unknown' }
 
 # Hash file CONTENT, not the index: 'git ls-files -s' reports staged blobs, so an
@@ -69,10 +69,19 @@ try {
     $PkgHash = Get-Sha256Hex (($lines -join "`n") + "`n")
 } catch { }
 
+# The expected review-package commit comes from the tag when the clone has it,
+# otherwise from an explicit operator assertion. A commit cannot contain its own
+# SHA, so it cannot be recorded in BASELINE.json. If neither source is available
+# the gate FAILS - it never falls through to "whatever HEAD happens to be".
 $ReviewPackageSha = 'unknown'
+$ReviewPackageSource = 'tag'
 if ($ReviewPackageTag) {
-    $resolved = (git rev-parse "$ReviewPackageTag^{commit}" 2>$null | Out-String).Trim()
+    $resolved = (git rev-parse --verify --quiet "$ReviewPackageTag^{commit}" 2>$null | Out-String).Trim()
     if ($resolved) { $ReviewPackageSha = $resolved }
+}
+if (($ReviewPackageSha -eq 'unknown') -and $env:CODEX_REVIEW_PACKAGE_COMMIT) {
+    $resolved = (git rev-parse --verify --quiet "$($env:CODEX_REVIEW_PACKAGE_COMMIT)^{commit}" 2>$null | Out-String).Trim()
+    if ($resolved) { $ReviewPackageSha = $resolved; $ReviewPackageSource = 'env' }
 }
 
 $BaselineGate = 'FAIL'
@@ -87,7 +96,10 @@ if ((-not $SourceBaselineSha) -or (-not $ReviewPackageTag) -or
 if ($ReviewPackageSha -eq 'unknown') {
     Write-Host "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_TAG_MISSING" -ForegroundColor Red
     Write-Host "  tag not found in this clone: $ReviewPackageTag"
-    Write-Host "  Fetch tags with: git fetch --tags"
+    Write-Host "  Either fetch it:      git fetch --tags"
+    Write-Host "  or create it locally: git tag $ReviewPackageTag <commit>"
+    Write-Host "  or assert it:         `$env:CODEX_REVIEW_PACKAGE_COMMIT='<commit>'"
+    Write-Host "  The commit you name must be the one you intend Codex to review."
     exit 4
 }
 if ($CurrentSha -ne $ReviewPackageSha) {
@@ -116,7 +128,7 @@ if ($PkgHash -ne $ExpectedPkgHash) {
 $BaselineGate = 'PASS'
 Write-Host "GATE 1 baseline: PASS"
 Write-Host "  source baseline   $SourceBaselineSha (product source hash matches)"
-Write-Host "  review package    $ReviewPackageSha (= HEAD, tag $ReviewPackageTag)"
+Write-Host "  review package    $ReviewPackageSha (= HEAD, via $ReviewPackageSource $ReviewPackageTag)"
 Write-Host "  package content   $PkgHash"
 
 # --- GATE 2: Codex host -----------------------------------------------------
@@ -205,6 +217,7 @@ $Arch = if ([System.Environment]::Is64BitOperatingSystem) { 'x64' } else { 'x86'
     source_baseline_commit   = $SourceBaselineSha
     review_package_commit    = $ReviewPackageSha
     review_package_tag       = $ReviewPackageTag
+    review_package_identity_source = $ReviewPackageSource
     review_package_content_hash = $PkgHash
     baseline_gate            = $BaselineGate
     codex_version            = $CodexVersion

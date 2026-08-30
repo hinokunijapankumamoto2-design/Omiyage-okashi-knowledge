@@ -29,12 +29,24 @@ SOURCE_BASELINE_SHA="$(jq_field .source_baseline_commit)"
 REVIEW_PACKAGE_TAG="$(jq_field .review_package_tag)"
 EXPECTED_TREE_HASH="$(jq_field .source_tree_hashes.working_tree_content.value)"
 EXPECTED_PKG_HASH="$(jq_field .review_package_content_hash)"
-CURRENT_SHA="$(git rev-parse HEAD 2>/dev/null || echo unknown)"
+CURRENT_SHA="$(git rev-parse --verify --quiet HEAD 2>/dev/null || true)"
+[ -n "$CURRENT_SHA" ] || CURRENT_SHA=unknown
 # Hash file CONTENT, not the index: 'git ls-files -s' reports staged blobs, so an
 # uncommitted edit to product source would slip past the gate unnoticed.
 TREE_HASH="$(git ls-files -z src data schemas tests package.json tsconfig.json 2>/dev/null | LC_ALL=C sort -z | xargs -0 sha256sum | sha256sum | cut -d' ' -f1 || echo unknown)"
 PKG_HASH="$(cd "$HERE" && find . -type f ! -name BASELINE.json | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d' ' -f1 || echo unknown)"
-REVIEW_PACKAGE_SHA="$(git rev-parse "$REVIEW_PACKAGE_TAG^{commit}" 2>/dev/null || echo unknown)"
+# The expected review-package commit comes from the tag when the clone has it,
+# otherwise from an explicit operator assertion. A commit cannot contain its own
+# SHA, so it cannot be recorded in BASELINE.json. If neither source is available
+# the gate FAILS - it never falls through to "whatever HEAD happens to be".
+REVIEW_PACKAGE_SHA="$(git rev-parse --verify --quiet "$REVIEW_PACKAGE_TAG^{commit}" 2>/dev/null || true)"
+[ -n "$REVIEW_PACKAGE_SHA" ] || REVIEW_PACKAGE_SHA=unknown
+REVIEW_PACKAGE_SOURCE=tag
+if [ "$REVIEW_PACKAGE_SHA" = unknown ] && [ -n "${CODEX_REVIEW_PACKAGE_COMMIT:-}" ]; then
+  REVIEW_PACKAGE_SHA="$(git rev-parse --verify --quiet "${CODEX_REVIEW_PACKAGE_COMMIT}^{commit}" 2>/dev/null || true)"
+  [ -n "$REVIEW_PACKAGE_SHA" ] || REVIEW_PACKAGE_SHA=unknown
+  REVIEW_PACKAGE_SOURCE=env
+fi
 
 BASELINE_GATE=FAIL
 if [ "$SOURCE_BASELINE_SHA" = unknown ] || [ "$REVIEW_PACKAGE_TAG" = unknown ] || \
@@ -48,7 +60,10 @@ fi
 if [ "$REVIEW_PACKAGE_SHA" = unknown ]; then
   echo "ERROR: BASELINE_GATE_FAILED - REVIEW_PACKAGE_TAG_MISSING" >&2
   echo "  tag not found in this clone: $REVIEW_PACKAGE_TAG" >&2
-  echo "  Fetch tags with: git fetch --tags" >&2
+  echo "  Either fetch it:      git fetch --tags" >&2
+  echo "  or create it locally: git tag $REVIEW_PACKAGE_TAG <commit>" >&2
+  echo "  or assert it:         CODEX_REVIEW_PACKAGE_COMMIT=<commit> $0" >&2
+  echo "  The commit you name must be the one you intend Codex to review." >&2
   exit 4
 fi
 if [ "$CURRENT_SHA" != "$REVIEW_PACKAGE_SHA" ]; then
@@ -77,7 +92,7 @@ fi
 BASELINE_GATE=PASS
 echo "GATE 1 baseline: PASS"
 echo "  source baseline   $SOURCE_BASELINE_SHA (product source hash matches)"
-echo "  review package    $REVIEW_PACKAGE_SHA (= HEAD, tag $REVIEW_PACKAGE_TAG)"
+echo "  review package    $REVIEW_PACKAGE_SHA (= HEAD, via $REVIEW_PACKAGE_SOURCE $REVIEW_PACKAGE_TAG)"
 echo "  package content   $PKG_HASH"
 
 # --- GATE 2: Codex host -----------------------------------------------------
@@ -162,6 +177,7 @@ cat > "$OUT/RUN_METADATA.json" <<META
   "source_baseline_commit": "$SOURCE_BASELINE_SHA",
   "review_package_commit": "$REVIEW_PACKAGE_SHA",
   "review_package_tag": "$REVIEW_PACKAGE_TAG",
+  "review_package_identity_source": "$REVIEW_PACKAGE_SOURCE",
   "review_package_content_hash": "$PKG_HASH",
   "baseline_gate": "$BASELINE_GATE",
   "codex_version": "$CODEX_VERSION",

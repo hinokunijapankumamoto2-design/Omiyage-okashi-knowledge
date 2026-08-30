@@ -97,6 +97,35 @@ which evidence Codex will be handed. A tag is used for check 1 because a commit
 cannot contain its own SHA — recording the SHA inside the committed file would
 be self-referential and could never match.
 
+The source hash is taken over **working-tree file content**, not `git ls-files -s`.
+The index-based form was tried first and rejected: it reports staged blobs, so an
+uncommitted edit to `src/` passed the gate. That was caught by a negative test,
+not by reading the code.
+
+**If the clone has no tag.** The tag could not be pushed from the authoring
+environment — the git credential there is scoped to branch refs and answers 403
+on `refs/tags/*`. So the reviewer either creates the tag locally, or asserts the
+commit explicitly:
+
+```
+CODEX_REVIEW_PACKAGE_COMMIT=<commit> ./reports/codex-package/RUN_CODEX_REVIEW.sh
+$env:CODEX_REVIEW_PACKAGE_COMMIT='<commit>'   # PowerShell
+```
+
+With neither, the gate fails `REVIEW_PACKAGE_TAG_MISSING` (exit 4). It never
+falls through to reviewing whatever `HEAD` happens to be. `RUN_METADATA.json`
+records which source was used, in `review_package_identity_source`.
+
+### Gate negative tests
+
+| Test | Expected | Result |
+| --- | --- | --- |
+| HEAD ≠ review-package commit | exit 4 `REVIEW_PACKAGE_MISMATCH` | PASS |
+| Uncommitted edit to `src/types.ts` | exit 4 `SOURCE_TREE_MISMATCH` | PASS (after the index→content fix) |
+| Evidence file tampered | exit 4 `REVIEW_PACKAGE_CONTENT_MISMATCH` | PASS |
+| Package file removed | exit 4 `REVIEW_PACKAGE_CONTENT_MISMATCH` | PASS |
+| Clean state, no Codex auth | GATE 1 PASS, exit 3 `CODEX_NOT_AUTHENTICATED`, no artifacts | PASS |
+
 ## REVIEW PACKAGE
 
 **READY** — `reports/codex-package/`, 15 files.

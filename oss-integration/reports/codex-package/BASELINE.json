@@ -6,7 +6,7 @@
   "source_baseline_meaning": "The commit at which MVP v0.1 product code was frozen. Immutable. Never overwritten by a documentation change.",
   "review_package_tag": "codex-review-package/v1.1.0",
   "review_package_tag_meaning": "Git tag naming the commit that carries the evidence, prompts, runners and handoff documentation Codex reads. A tag is used instead of a literal SHA because a commit cannot contain its own hash — a recorded SHA inside this file could never match HEAD.",
-  "review_package_content_hash": "33e7bcf2ff5f77ec144eb552dd8c1dd82023416ad7bac4af01641b6a4b21ae33",
+  "review_package_content_hash": "b3e634e495c656a1e7344b7060b7f24422e8029c51ec89f563d4aa539b64bd85",
   "review_package_content_hash_method": "sha256 over 'sha256sum' of every file under reports/codex-package/, sorted by path, excluding BASELINE.json itself.",
   "source_tree_identical": true,
   "reason": "Documentation-only handoff and evidence refresh commits after product freeze",
@@ -73,5 +73,6 @@
   "frozen": true,
   "product_code_frozen_until": "external Codex findings are returned, reproduced and classified",
   "independent_review_status": "NOT_RUN",
-  "review_package_commit_meaning": "The commit carrying the evidence, prompts, runners and handoff documentation that Codex actually reads. Later than the source baseline, and documentation-only."
+  "review_package_commit_meaning": "The commit carrying the evidence, prompts, runners and handoff documentation that Codex actually reads. Later than the source baseline, and documentation-only.",
+  "review_package_identity_note": "The tag could not be pushed from the authoring environment (git credential scoped to branch refs, 403 on refs/tags/*). A reviewer without the tag must create it locally or set CODEX_REVIEW_PACKAGE_COMMIT. With neither, the gate fails closed."
 }
