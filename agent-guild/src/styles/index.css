@@ -1,0 +1,143 @@
+@import "tailwindcss";
+
+/*
+ * Design tokens. The office is a dark, low-glare surface with a single accent
+ * ramp; everything else is derived from these so a re-theme is one block.
+ */
+@theme {
+  --color-ink-950: #0b0d13;
+  --color-ink-900: #11141d;
+  --color-ink-850: #161a25;
+  --color-ink-800: #1c2130;
+  --color-ink-700: #262c3e;
+  --color-ink-600: #364054;
+  --color-ink-400: #6d7893;
+  --color-ink-200: #aab3c7;
+  --color-ink-050: #e8ecf5;
+
+  --color-accent: #7c9cff;
+  --color-accent-soft: #2b3457;
+  --color-mint: #4fd1a5;
+  --color-amber: #ffc857;
+  --color-rose: #ff7a90;
+  --color-violet: #a78bfa;
+
+  --font-display: "Inter", "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink-950);
+  color: var(--color-ink-050);
+  font-family: var(--font-display);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbars that do not fight the dark surface. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-700) transparent;
+}
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--color-ink-700);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: content-box;
+}
+
+.panel {
+  background: color-mix(in srgb, var(--color-ink-900) 92%, transparent);
+  border: 1px solid var(--color-ink-800);
+  border-radius: 14px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  border: 1px solid var(--color-ink-700);
+  color: var(--color-ink-200);
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 10px;
+  padding: 0.45rem 0.85rem;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--color-ink-700);
+  background: var(--color-ink-850);
+  color: var(--color-ink-050);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease, transform 120ms ease;
+}
+.btn:hover:not(:disabled) {
+  background: var(--color-ink-800);
+  border-color: var(--color-ink-600);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+.btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.btn-primary {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: #0b0d13;
+}
+.btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-accent) 85%, white);
+  border-color: color-mix(in srgb, var(--color-accent) 85%, white);
+}
+
+.field {
+  width: 100%;
+  background: var(--color-ink-950);
+  border: 1px solid var(--color-ink-700);
+  border-radius: 10px;
+  padding: 0.5rem 0.7rem;
+  font-size: 13px;
+  color: var(--color-ink-050);
+  outline: none;
+}
+.field:focus {
+  border-color: var(--color-accent);
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+@keyframes ag-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+.pulse {
+  animation: ag-pulse 1.6s ease-in-out infinite;
+}

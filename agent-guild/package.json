@@ -1,0 +1,57 @@
+{
+  "name": "agent-guild",
+  "version": "0.1.0",
+  "private": false,
+  "license": "MIT",
+  "type": "module",
+  "description": "AgentGuild - a local-first virtual AI-agent company simulator. Original, dependency-clean, commercially free (MIT).",
+  "engines": {
+    "node": ">=22.5"
+  },
+  "scripts": {
+    "dev": "concurrently -n web,api -c cyan,magenta \"vite --host 127.0.0.1 --port 5310\" \"cross-env NODE_ENV=development tsx watch server/index.ts\"",
+    "dev:api": "cross-env NODE_ENV=development tsx watch server/index.ts",
+    "build": "tsc -b && vite build",
+    "start": "cross-env NODE_ENV=production tsx server/index.ts",
+    "seed": "tsx server/db/seed-cli.ts",
+    "typecheck": "tsc -b --pretty false",
+    "lint": "eslint server src",
+    "format": "prettier --write \"**/*.{ts,tsx,css,json,md}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "license:check": "node scripts/license-report.mjs",
+    "verify": "npm run typecheck && npm run lint && npm run test && npm run license:check"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "pptxgenjs": "^3.12.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "ws": "^8.18.3",
+    "zod": "^4.1.5"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@tailwindcss/vite": "^4.1.13",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/node": "^22.15.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/ws": "^8.18.1",
+    "@vitejs/plugin-react": "^5.0.2",
+    "concurrently": "^9.2.1",
+    "cross-env": "^10.0.0",
+    "eslint": "^9.36.0",
+    "globals": "^17.12.0",
+    "playwright": "^1.58.2",
+    "prettier": "^3.6.2",
+    "tailwindcss": "^4.1.13",
+    "tsx": "^4.20.5",
+    "typescript": "~5.9.2",
+    "typescript-eslint": "^8.44.0",
+    "vite": "^7.1.5",
+    "vitest": "^3.2.4"
+  }
+}
