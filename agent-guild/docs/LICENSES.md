@@ -18,7 +18,6 @@ It exits non-zero if a copyleft or non-commercial licence enters the tree, so it
 | `express` | MIT | HTTP server |
 | `cors` | MIT | development-time CORS |
 | `ws` | MIT | WebSocket transport |
-| `zod` | MIT | request validation |
 | `react`, `react-dom` | MIT | UI |
 | `pptxgenjs` | MIT | PPTX export |
 

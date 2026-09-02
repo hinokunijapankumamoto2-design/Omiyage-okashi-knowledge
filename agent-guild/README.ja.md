@@ -11,7 +11,7 @@ Anthropic / Ollama）を「社員」として編成し、部署・タスクボ�
 > 経緯と設計判断は [`docs/ANALYSIS.ja.md`](docs/ANALYSIS.ja.md) を参照。
 
 - 画像・フォント・音声ファイルを**一切同梱しない**（キャラクターは実行時に手続き的に描画）
-- 実行時依存は 7 パッケージ、すべて MIT
+- 実行時依存は 6 パッケージ、すべて MIT
 - SQLite は Node 22 標準の `node:sqlite`。ネイティブビルド不要
 
 ---

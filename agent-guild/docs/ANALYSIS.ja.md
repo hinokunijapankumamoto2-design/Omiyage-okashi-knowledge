@@ -102,7 +102,6 @@ Remotion は MIT ではなく独自の **Remotion License**（ソース公開だ
 | express | MIT | HTTP |
 | cors | MIT | 開発時 CORS |
 | ws | MIT | WebSocket |
-| zod | MIT | 入力検証 |
 | react / react-dom | MIT | UI |
 | pptxgenjs | MIT | PPTX 出力 |
 

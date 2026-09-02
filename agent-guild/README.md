@@ -13,7 +13,7 @@ a task board, a review loop, isolated git worktrees, and a pixel office you can 
 > and the licensing reasoning behind that decision.
 
 - **No bundled assets.** No images, fonts or audio — characters are drawn procedurally at runtime.
-- **7 runtime dependencies, all MIT.** No copyleft, no source-available commercial terms.
+- **6 runtime dependencies, all MIT.** No copyleft, no source-available commercial terms.
 - **No native build step.** SQLite comes from Node 22's built-in `node:sqlite`.
 
 ---
