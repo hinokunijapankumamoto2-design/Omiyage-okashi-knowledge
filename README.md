@@ -117,11 +117,40 @@ cd Omiyage-okashi-knowledge
 
 ---
 
+## 🧩 Claude Code プラグイン: Kumiki（組木）
+
+本リポジトリは **Claude Code のプラグインマーケットプレイス** も兼ねています。
+
+**Kumiki** は「調べる → 束ねる → 出す」を1本の工程として扱う調査・ナレッジ構築
+プラグインです。Web 収集・ナレッジ監査・トークン最適化を、外部の有料 API に
+依存せず Python 標準ライブラリのみで実装しています。
+
+```
+/plugin marketplace add hinokunijapankumamoto2-design/Omiyage-okashi-knowledge
+/plugin install kumiki@omiyage-okashi-lab
+```
+
+| 工程 | スキル | 内容 |
+|---|---|---|
+| 集材 | `/kumiki:gather` | robots.txt 尊重・レート制限・キャッシュ付き収集、CSSセレクタ抽出 |
+| 木取り | `/kumiki:plan` | 問いを反証可能な主張に割り、検証ゲートを先に決める |
+| 組む | `/kumiki:weave` | 1主張1ノート化と7種類の機械監査 |
+| 鉋 | `/kumiki:thrift` | 読む前のコスト計測、アウトライン→スライス、索引化 |
+| 仕上げ | `/kumiki:compose` | ノートから出典付き成果物を組み上げる |
+
+詳細は [plugins/kumiki/README.md](plugins/kumiki/README.md)。
+
+---
+
 ## 📚 ディレクトリ構成
 
 ```
 Omiyage-okashi-knowledge/
 ├── README.md                    ← このファイル
+├── .claude-plugin/              ← プラグインマーケットプレイス定義
+│   └── marketplace.json
+├── plugins/                     ← 配布用 Claude Code プラグイン
+│   └── kumiki/                  ← Kumiki（調査→ナレッジ→出力）
 ├── skills/                      ← Claude Code スキル
 │   ├── second-brain/
 │   │   └── SKILL.md

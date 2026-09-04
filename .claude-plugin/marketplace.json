@@ -1,0 +1,38 @@
+{
+  "$schema": "https://code.claude.com/schemas/marketplace.json",
+  "name": "omiyage-okashi-lab",
+  "description": "Claude Code plugins from Omiyage Okashi Lab — research, knowledge engineering, and token economy.",
+  "version": "0.1.0",
+  "owner": {
+    "name": "Omiyage Okashi Lab / お土産お菓子研究所",
+    "url": "https://github.com/hinokunijapankumamoto2-design"
+  },
+  "metadata": {
+    "pluginRoot": "./plugins"
+  },
+  "plugins": [
+    {
+      "name": "kumiki",
+      "displayName": "Kumiki — Research to Output",
+      "source": "./plugins/kumiki",
+      "version": "0.1.0",
+      "description": "Gather web sources into citable Markdown, weave them into an auditable knowledge base, and compose reports from it — measuring and cutting token spend at every step. Standard library only: no pip install, no API keys.",
+      "author": {
+        "name": "Omiyage Okashi Lab / お土産お菓子研究所",
+        "url": "https://github.com/hinokunijapankumamoto2-design"
+      },
+      "homepage": "https://github.com/hinokunijapankumamoto2-design/Omiyage-okashi-knowledge/tree/main/plugins/kumiki",
+      "repository": "https://github.com/hinokunijapankumamoto2-design/Omiyage-okashi-knowledge",
+      "license": "LicenseRef-Kumiki-Source-Available-1.0",
+      "category": "research",
+      "tags": ["research", "scraping", "knowledge-base", "token-optimization"],
+      "keywords": [
+        "research", "web-scraping", "crawler", "knowledge-base",
+        "token-optimization", "context-management", "citations",
+        "japanese", "markdown", "skills"
+      ],
+      "defaultEnabled": true,
+      "strict": true
+    }
+  ]
+}

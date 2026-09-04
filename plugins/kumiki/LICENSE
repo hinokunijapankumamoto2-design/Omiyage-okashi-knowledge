@@ -1,0 +1,62 @@
+Kumiki Source-Available License 1.0
+SPDX identifier: LicenseRef-Kumiki-Source-Available-1.0
+
+Copyright (c) 2026 Omiyage Okashi Lab / お土産お菓子研究所
+
+This is a source-available licence. It is NOT an OSI-approved open source
+licence. Read the two grants below; they are short on purpose.
+
+1. FREE USE
+
+   You may use, copy, modify, and run this software at no charge for:
+
+   a. personal use;
+   b. evaluation of any kind, for any length of time;
+   c. internal use within a single organisation, including modified copies,
+      by that organisation's own members;
+   d. education and academic research;
+   e. contributing changes back to the original project.
+
+   "Internal use" includes running it on work you deliver to your own clients.
+   It does not include handing the software itself to them as a product.
+
+2. LICENCE REQUIRED
+
+   You need a separate written licence from the copyright holder to:
+
+   a. sell, resell, sublicense, or otherwise distribute this software, or a
+      derivative of it, to a third party, whether standalone or bundled;
+   b. offer this software, or a derivative of it, as a hosted or managed
+      service whose primary value is this software's functionality;
+   c. distribute it under a different name in a way that obscures its origin.
+
+   Contact the copyright holder through the project repository.
+
+3. ATTRIBUTION
+
+   Retain this notice in copies and substantial portions of the software.
+
+4. NO WARRANTY
+
+   THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+   IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+   FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+   AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+   LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+   FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
+   DEALINGS IN THE SOFTWARE.
+
+5. RESPONSIBLE COLLECTION
+
+   This software fetches web pages. You remain responsible for complying with
+   the terms of service, robots.txt directives, copyright, and applicable law
+   of every site you point it at. The defaults respect robots.txt and rate
+   limits; if you override them, that is your decision and your liability.
+
+---
+
+日本語要約（正文は上記英文）
+
+- 個人利用・評価・1組織内での業務利用・教育研究は無償です。
+- 第三者への販売・再配布・SaaS 提供には別途ライセンスが必要です。
+- 無保証です。収集先サイトの規約・robots.txt・著作権の順守は利用者の責任です。

@@ -1,0 +1,26 @@
+{
+  "name": "kumiki",
+  "displayName": "Kumiki — Research to Output",
+  "version": "0.1.0",
+  "description": "Gather web sources into citable Markdown, weave them into an auditable knowledge base, and compose reports from it — while measuring and cutting token spend at every step. Dependency-free, no API keys.",
+  "author": {
+    "name": "Omiyage Okashi Lab / お土産お菓子研究所",
+    "url": "https://github.com/hinokunijapankumamoto2-design"
+  },
+  "homepage": "https://github.com/hinokunijapankumamoto2-design/Omiyage-okashi-knowledge/tree/main/plugins/kumiki",
+  "repository": "https://github.com/hinokunijapankumamoto2-design/Omiyage-okashi-knowledge",
+  "license": "LicenseRef-Kumiki-Source-Available-1.0",
+  "keywords": [
+    "research",
+    "web-scraping",
+    "crawler",
+    "knowledge-base",
+    "token-optimization",
+    "context-management",
+    "citations",
+    "japanese",
+    "markdown",
+    "skills"
+  ],
+  "hooks": "./hooks/hooks.json"
+}
