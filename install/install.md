@@ -60,6 +60,7 @@ Claude Code が読み込むユーザー階層にスキルをコピー：
 mkdir -p ~/.claude/skills
 cp -r skills/second-brain ~/.claude/skills/
 cp -r skills/reflection-notes ~/.claude/skills/
+cp -r skills/x-buzz ~/.claude/skills/          # Xバズskill
 ```
 
 ## Step 5: Vault パス設定
@@ -111,7 +112,7 @@ Claude Code が起動したら：
 
 ### スキルが認識されない
 
-- `ls ~/.claude/skills/` で `second-brain` `reflection-notes` があるか確認
+- `ls ~/.claude/skills/` で `second-brain` `reflection-notes` `x-buzz` があるか確認
 - Claude Code を再起動
 
 ### Stop Hook が発火しない

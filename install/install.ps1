@@ -67,8 +67,10 @@ if (-not (Test-Path $skillsBase)) {
 }
 Copy-Item -Path (Join-Path $RepoRoot "skills\second-brain") -Destination $skillsBase -Recurse -Force
 Copy-Item -Path (Join-Path $RepoRoot "skills\reflection-notes") -Destination $skillsBase -Recurse -Force
+Copy-Item -Path (Join-Path $RepoRoot "skills\x-buzz") -Destination $skillsBase -Recurse -Force
 Write-Host "  配置: $skillsBase\second-brain"
 Write-Host "  配置: $skillsBase\reflection-notes"
+Write-Host "  配置: $skillsBase\x-buzz  (Xバズskill)"
 
 # Step 6: knowledge-config.json 作成
 Write-Host "[6/6] 設定ファイルを作成..." -ForegroundColor Green
@@ -89,4 +91,5 @@ Write-Host "  1. $env:USERPROFILE\.claude\settings.json に Stop Hook を追加"
 Write-Host "     (templates\settings.json.template を参考に、既存設定とマージ)"
 Write-Host "  2. Obsidian を起動し、Vault として開く: $VaultPath"
 Write-Host "  3. Claude Code を起動し、/second-brain を実行"
+Write-Host "  4. 𝕏ポストを作るときは /x-buzz を実行（Xバズskill）"
 Write-Host ""

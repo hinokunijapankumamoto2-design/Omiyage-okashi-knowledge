@@ -1,0 +1,10 @@
+{
+  "name": "omiyage-okashi-knowledge",
+  "description": "お土産お菓子研究所（秋坂洋三郎）のKENGOODメソッド ナレッジ基盤。第2の脳・反省ノート・Xバズskill を Claude Code に登録します。",
+  "version": "0.2.0",
+  "author": {
+    "name": "お土産お菓子研究所（秋坂洋三郎）"
+  },
+  "homepage": "https://github.com/hinokunijapankumamoto2-design/Omiyage-okashi-knowledge",
+  "keywords": ["knowledge", "obsidian", "second-brain", "x", "twitter", "marketing", "japanese"]
+}

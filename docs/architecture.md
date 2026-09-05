@@ -22,7 +22,8 @@
 │          ↓                                                │
 │   ┌──────────────┐                                       │
 │   │ ~/.claude/   │                                       │
-│   │  skills/     │  ← second-brain, reflection-notes    │
+│   │  skills/     │  ← second-brain, reflection-notes,   │
+│   │              │     x-buzz (Xバズskill)              │
 │   └──────────────┘                                       │
 └──────────┼──────────────────────────────────────────────┘
            │ API呼び出し（必要時のみ）

@@ -1,0 +1,14 @@
+{
+  "name": "omiyage-okashi-knowledge",
+  "owner": {
+    "name": "お土産お菓子研究所（秋坂洋三郎）",
+    "url": "https://github.com/hinokunijapankumamoto2-design/Omiyage-okashi-knowledge"
+  },
+  "plugins": [
+    {
+      "name": "omiyage-okashi-knowledge",
+      "source": "./",
+      "description": "第2の脳・反省ノート・Xバズskill を含むナレッジ基盤プラグイン"
+    }
+  ]
+}

@@ -56,7 +56,7 @@
 └── CLAUDE.md              ← 業界特化のAI行動ルール
 ```
 
-2つのスキル `/second-brain` と `/reflection-notes` を Claude Code に登録することで、**どのプロジェクトディレクトリからでも呼び出し可能**。
+3つのスキル `/second-brain`・`/reflection-notes`・`/x-buzz`（Xバズskill）を Claude Code に登録することで、**どのプロジェクトディレクトリからでも呼び出し可能**。
 
 ---
 
@@ -122,11 +122,19 @@ cd Omiyage-okashi-knowledge
 ```
 Omiyage-okashi-knowledge/
 ├── README.md                    ← このファイル
+├── .claude-plugin/              ← プラグイン登録用マニフェスト
+│   ├── plugin.json
+│   └── marketplace.json
 ├── skills/                      ← Claude Code スキル
 │   ├── second-brain/
 │   │   └── SKILL.md
-│   └── reflection-notes/
-│       └── SKILL.md
+│   ├── reflection-notes/
+│   │   └── SKILL.md
+│   └── x-buzz/                  ← Xバズskill
+│       ├── SKILL.md
+│       ├── README.md
+│       ├── references/          ← 全6章のナレッジ本体＋検閲シート
+│       └── templates/           ← 穴埋めテンプレート集
 ├── templates/                   ← 各種テンプレート
 │   ├── CLAUDE.md.template
 │   ├── mistakes.md.template
@@ -140,6 +148,53 @@ Omiyage-okashi-knowledge/
 └── docs/                        ← 追加ドキュメント
     └── architecture.md
 ```
+
+---
+
+## 𝕏 Xバズskill（`/x-buzz`）
+
+𝕏（旧Twitter）のポストを「つぶやき」から **24時間働く自動営業マシン** に変えるスキル。
+インプレッションではなく **リスト獲得（LINE/メルマガ登録）** と **プロフ遷移** から逆算してポストを設計します。
+
+### できること
+
+| モード | 用途 | 依頼例 |
+|---|---|---|
+| **A. 単発ポスト生成** | 心理トリガー別に3案生成 | 「この内容でポスト作って」 |
+| **B. スレッド／固定ポスト設計** | 10投で教育する連投、固定ポスト | 「固定ポストを作りたい」 |
+| **C. ローンチ設計（14日）** | D-14〜締切までの投稿カレンダー | 「12/1募集開始の告知を組んで」 |
+| **D. 型抜き＆マージ** | 伸びている投稿の構造だけ抽出して転用 | 「この投稿みたいに書いて」 |
+| **E. 検閲・リライト** | 22項目のチェックシートで添削 | 「この投稿を添削して」 |
+
+### 収録ナレッジ
+
+- **第1章** 設計思想 — 出口逆算、ストック資産（固定ポスト）の作り方
+- **第2章** 1行目フック 50選 — 常識破壊／強欲／損失回避／身体描写／比喩
+- **第3章** ボディのパズル構成 — 5つのピース、スレッド10投の黄金法則、実例50
+- **第4章** 不可抗力CTA — キーワードリプライ、引用RP、希少性の論理、実例50
+- **第5章** 14日間ローンチカレンダー — フェーズ別の訴求と実例50
+- **第6章** AI型抜き＆マージワークフロー — 競合構造の分解と「原液」の注入
+- **第7章** 最終品質検閲チェックシート — 22項目の合否判定とリライト優先順位
+
+### 事実性ガードレール
+
+数字の捏造禁止（未提示は `【要実績】` プレースホルダ）、実行しない限定は書かない、
+断定的利益保証の禁止、健康・医療・投資テーマでの薬機法／金商法チェックを標準で組み込んでいます。
+
+詳細は [skills/x-buzz/README.md](skills/x-buzz/README.md) を参照。
+
+---
+
+## 🔌 プラグインとして登録する
+
+スキルを個別コピーせず、リポジトリごとプラグインとして追加できます。
+
+```
+/plugin marketplace add hinokunijapankumamoto2-design/Omiyage-okashi-knowledge
+/plugin install omiyage-okashi-knowledge@omiyage-okashi-knowledge
+```
+
+登録後、`/second-brain`・`/reflection-notes`・`/x-buzz` がすべてのプロジェクトで使えます。
 
 ---
 
