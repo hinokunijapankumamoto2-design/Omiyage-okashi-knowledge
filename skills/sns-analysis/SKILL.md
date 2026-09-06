@@ -1,6 +1,6 @@
 ---
 name: sns-analysis
-description: 企業・ブランドのSNS影響度を実測データで分析し、ビジネス提案の根拠を自動生成するスキル。X・Instagram・note・YouTubeの投稿状況を比較し、空白ポジションと戦略提案をHTML形式で出力
+description: 企業・ブランドのSNS影響度を実測データで分析し、ビジネス提案の根拠を自動生成するスキル。API不使用、ウェブスクレイピングで公開情報を正確に取得。X・Instagram・note・YouTubeの投稿状況を比較し、空白ポジションと戦略提案をHTML形式で出力
 ---
 
 # SNS分析スキル（sns-analysis）

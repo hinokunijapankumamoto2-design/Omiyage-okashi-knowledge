@@ -2,14 +2,22 @@
 """
 SNS Analysis Skill - Analyzer Module
 企業・ブランドのSNS影響度を実測データで分析する
+API不使用、ウェブスクレイピングで正確な公開情報を取得
 """
 
 import json
 import re
+import sys
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, asdict
 from enum import Enum
+
+# scraper モジュールをインポート
+try:
+    from .scraper import WebScraper, ScrapedData
+except ImportError:
+    from scraper import WebScraper, ScrapedData
 
 
 class SNSPlatform(Enum):
@@ -340,58 +348,115 @@ class SNSAnalyzer:
 
 
 def main():
-    """デモンストレーション"""
-    # 菓匠三全の例
-    analyzer = SNSAnalyzer("菓匠三全")
+    """デモンストレーション - ウェブスクレイピングで自動データ取得"""
+    company_name = "菓匠三全"
+    analyzer = SNSAnalyzer(company_name)
+    scraper = WebScraper(company_name)
 
-    # データを追加
+    print("=" * 70)
+    print("🚀 SNS分析スキル（API不使用版）")
+    print("=" * 70)
+    print()
+
+    # ==================== データ自動取得 ====================
+    print("📊 公開情報からデータを自動取得中...")
+    print()
+
+    # 1. note 言及数取得
+    print("1️⃣ note をスクレイピング中...")
+    note_mentions = scraper.scrape_note_mentions()
+    if note_mentions and note_mentions.posts:
+        analyzer.add_channel_data("note", {
+            "posts": note_mentions.posts,
+            "third_party_mentions": note_mentions.posts,
+            "official_account_exists": False,
+            "content_types": []
+        })
+        print(f"   ✅ {note_mentions.posts} 件の記事を検出")
+    print()
+
+    # 2. note 公式アカウント確認
+    print("2️⃣ note 公式アカウント確認中...")
+    note_official = scraper.scrape_note_official_account("kashosanzen")
+    if note_official:
+        if note_official.posts and note_official.posts > 0:
+            print(f"   ✅ 公式アカウント: {note_official.posts} 本の投稿あり")
+            analyzer.channels["note"].official_account_exists = True
+            analyzer.channels["note"].posts = note_official.posts
+        else:
+            print(f"   ⚠️ 公式アカウント：見つかりませんでした")
+    print()
+
+    # 3. 企業情報取得
+    print("3️⃣ 企業公式サイト情報取得中...")
+    company_info = scraper.scrape_company_info("https://www.sanzen.co.jp/")
+    if company_info:
+        print(f"   ✅ 企業情報を取得: {json.dumps(company_info, ensure_ascii=False)}")
+    print()
+
+    # 手動データ追加（スクレイピング困難な部分）
+    print("4️⃣ 補足データを手動登録...")
     analyzer.add_channel_data("x", {
         "followers": 95816,
         "posts": 4589,
         "impressions": 8491407,
         "third_party_mentions": 2520,
         "official_account_exists": True,
-        "content_types": ["商品紹介", "キャンペーン", "コラボ"]
+        "content_types": ["商品紹介", "キャンペーン", "コラボ"],
+        "note": "X は bot 対策により自動取得困難のため公開プロフィール情報"
     })
-
     analyzer.add_channel_data("instagram", {
         "followers": 11277,
         "posts": 194,
         "official_account_exists": True,
-        "content_types": ["商品", "ギフト提案"]
+        "content_types": ["商品", "ギフト提案"],
+        "note": "Instagram は自動取得困難のため公開情報"
     })
-
-    analyzer.add_channel_data("note", {
-        "third_party_mentions": 2520,
-        "official_account_exists": False,
-        "content_types": []
-    })
-
     analyzer.add_channel_data("youtube", {
         "followers": 1550,
         "posts": 15,
         "official_account_exists": True,
         "content_types": ["CM"]
     })
+    print("   ✅ 補足データを登録")
+    print()
 
-    # 分析実行
+    # ==================== 分析実行 ====================
+    print("🔍 分析を実行中...")
     analyzer.identify_gaps()
     analyzer.generate_recommendations()
+    print()
 
-    # 出力
-    print("=== SNS分析レポート ===")
-    print(f"企業: {analyzer.company_name}")
-    print(f"分析日: {analyzer.analysis_date}")
+    # ==================== 出力 ====================
+    print("=" * 70)
+    print("📋 結果")
+    print("=" * 70)
     print()
-    print("JSON出力:")
-    print(analyzer.to_json())
+
+    print("📊 JSON フォーマット:")
+    print("-" * 70)
+    json_output = analyzer.to_json()
+    print(json_output)
     print()
-    print("HTML出力:")
+
+    # HTML に保存
+    print("📄 HTML レポート生成中...")
     html = analyzer.generate_html_report()
-    # ファイルに保存
-    with open(f"/tmp/sns_analysis_{analyzer.company_name}_{analyzer.analysis_date}.html", "w", encoding="utf-8") as f:
+    html_file = f"/tmp/sns_analysis_{company_name}_{analyzer.analysis_date}.html"
+    with open(html_file, "w", encoding="utf-8") as f:
         f.write(html)
-    print(f"✅ HTML saved to /tmp/sns_analysis_{analyzer.company_name}_{analyzer.analysis_date}.html")
+    print(f"   ✅ {html_file}")
+    print()
+
+    # ソース情報
+    print("📍 データ取得元（すべて API 不使用）")
+    print("-" * 70)
+    print(scraper.get_sources_json())
+    print()
+
+    print("=" * 70)
+    print("✨ 分析完了！")
+    print("=" * 70)
 
 
 if __name__ == "__main__":
