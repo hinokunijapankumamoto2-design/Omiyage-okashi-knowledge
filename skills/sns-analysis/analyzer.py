@@ -332,7 +332,52 @@ class SNSAnalyzer:
 """
         return html
 
-    # ==================== X投稿分析（Playwright対応） ====================
+    # ==================== X投稿分析（OAuth & Playwright対応） ====================
+
+    def fetch_x_posts_with_oauth(
+        self,
+        handles: List[str],
+        bearer_token: Optional[str] = None,
+        limit: int = 10
+    ) -> Dict[str, List[PostMetrics]]:
+        """
+        X API v2（OAuth）を使用して複数アカウントの投稿を取得
+        ユーザーが Developer Portal から取得した Bearer Token を使用
+
+        Args:
+            handles: Xハンドルのリスト
+            bearer_token: X API v2 Bearer Token
+            limit: 各アカウントから取得する投稿数
+
+        Returns:
+            {handle: [PostMetrics, ...]} の辞書
+        """
+        if not bearer_token:
+            print("⚠️ Bearer Token が指定されていません")
+            return {}
+
+        scraper = WebScraper(self.company_name, bearer_token=bearer_token)
+
+        if not scraper.x_client:
+            print("❌ X API v2 クライアント初期化失敗")
+            return {}
+
+        print(f"\n✅ X API v2 (OAuth) でデータ取得を開始します")
+        print(f"   対象: {len(handles)}アカウント")
+        print()
+
+        # 複数アカウント取得
+        posts_data = scraper.scrape_multiple_x_accounts_oauth(handles, limit)
+
+        # 自身の x_posts_by_account に追加
+        for handle, posts in posts_data.items():
+            if posts:
+                self.add_x_posts(handle, posts)
+
+        # ソースを記録
+        self.sources.extend(scraper.sources)
+
+        return posts_data
 
     def add_x_posts(self, handle: str, posts: List[PostMetrics]):
         """X投稿データをアナライザーに追加"""

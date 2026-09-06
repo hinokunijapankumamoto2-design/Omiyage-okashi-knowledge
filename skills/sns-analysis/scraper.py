@@ -27,6 +27,13 @@ try:
 except ImportError:
     PLAYWRIGHT_AVAILABLE = False
 
+# X API v2 対応
+try:
+    import tweepy
+    TWEEPY_AVAILABLE = True
+except ImportError:
+    TWEEPY_AVAILABLE = False
+
 
 @dataclass
 class ScrapedData:
@@ -58,9 +65,9 @@ class PostMetrics:
 
 
 class WebScraper:
-    """API なしで公開情報からデータを取得"""
+    """X API v2 対応の SNS データ取得"""
 
-    def __init__(self, company_name: str):
+    def __init__(self, company_name: str, bearer_token: Optional[str] = None):
         self.company_name = company_name
         self.scraped_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.user_agent = (
@@ -69,6 +76,18 @@ class WebScraper:
             "Chrome/91.0.4472.124 Safari/537.36"
         )
         self.sources: List[Dict] = []
+
+        # X API v2 認証設定
+        self.bearer_token = bearer_token or os.getenv('X_BEARER_TOKEN')
+        self.x_client = None
+
+        # Bearer Token があれば tweepy クライアント初期化
+        if self.bearer_token and TWEEPY_AVAILABLE:
+            try:
+                self.x_client = tweepy.Client(bearer_token=self.bearer_token)
+                print(f"✅ X API v2 認証成功（Bearer Token使用）")
+            except Exception as e:
+                print(f"⚠️ X API v2 初期化エラー: {e}")
 
     def _fetch_page(self, url: str, timeout: int = 10) -> Optional[str]:
         """ウェブページをフェッチ（User-Agent付き）"""
@@ -419,7 +438,148 @@ class WebScraper:
         """
         return json.dumps(self.sources, ensure_ascii=False, indent=2)
 
-    # ==================== X（Twitter）投稿取得（Playwright使用） ====================
+    # ==================== X（Twitter）投稿取得（OAuth API v2使用） ====================
+
+    def scrape_x_posts_oauth(self, handle: str, limit: int = 10) -> List[PostMetrics]:
+        """
+        X API v2 を使用して投稿を取得（OAuth Bearer Token認証）
+
+        Args:
+            handle: Xハンドル（@記号なし）
+            limit: 取得する投稿数
+
+        Returns:
+            PostMetrics のリスト（いいね数でソート済み）
+        """
+        if not self.x_client:
+            print("❌ X API v2 クライアントが初期化されていません")
+            print("   → Bearer Token を設定してください")
+            return []
+
+        print(f"🔍 X投稿を取得中（OAuth）: @{handle} (最新{limit}件)")
+
+        posts = []
+        try:
+            # ユーザー ID を取得
+            print(f"   → ユーザー情報を取得中...")
+            user_response = self.x_client.get_user(username=handle)
+
+            if not user_response.data:
+                print(f"   ⚠️ ユーザー '@{handle}' が見つかりません")
+                return []
+
+            user_id = user_response.data.id
+            user_name = user_response.data.username
+            print(f"   ✅ ユーザー ID: {user_id} (@{user_name})")
+
+            # 投稿を取得
+            print(f"   → 公開投稿を取得中...")
+            tweets_response = self.x_client.get_users_tweets(
+                id=user_id,
+                max_results=min(limit, 100),  # API上限 100
+                tweet_fields=[
+                    'created_at',
+                    'public_metrics',
+                    'author_id'
+                ],
+                expansions=['author_id'],
+                user_fields=['username', 'name']
+            )
+
+            if not tweets_response.data:
+                print(f"   ℹ️ '@{handle}' の公開投稿が見つかりません")
+                return []
+
+            # tweets レスポンスから投稿データを抽出
+            for tweet in tweets_response.data[:limit]:
+                try:
+                    # メトリクス取得
+                    metrics = tweet.public_metrics
+                    likes = metrics['like_count']
+                    retweets = metrics['retweet_count']
+                    replies = metrics['reply_count']
+                    impressions = metrics.get('impression_count', 0)
+
+                    # エンゲージメント率（合計）
+                    total_engagement = likes + retweets + replies
+
+                    # 投稿 URL
+                    tweet_url = f"https://x.com/{user_name}/status/{tweet.id}"
+
+                    # PostMetrics オブジェクト生成
+                    post = PostMetrics(
+                        text=tweet.text[:100] if tweet.text else "",
+                        author=f"@{user_name}",
+                        likes=likes,
+                        retweets=retweets,
+                        replies=replies,
+                        impressions=impressions,
+                        url=tweet_url,
+                        timestamp=tweet.created_at.isoformat() if tweet.created_at else "",
+                        engagement_rate=total_engagement
+                    )
+
+                    posts.append(post)
+                    print(f"      投稿 {len(posts)}: {likes}♥ {retweets}🔄 {impressions}👁️")
+
+                except Exception as e:
+                    print(f"      投稿抽出エラー: {e}")
+                    continue
+
+            # いいね数でソート（降順）
+            posts.sort(key=lambda p: p.likes, reverse=True)
+
+            # ソース記録
+            self.sources.append({
+                "platform": "x",
+                "url": f"https://x.com/{user_name}",
+                "accessed_at": self.scraped_at,
+                "method": "x_api_v2_oauth"
+            })
+
+            print(f"✅ {len(posts)}件の投稿を取得しました")
+            return posts
+
+        except tweepy.errors.TweepyException as e:
+            print(f"❌ X API エラー: {e}")
+            print(f"   → コード: {e.response.status_code if hasattr(e, 'response') else 'N/A'}")
+            print(f"   → メッセージ: {e}")
+            return []
+
+        except Exception as e:
+            print(f"❌ X取得エラー: {e}")
+            return []
+
+    def scrape_multiple_x_accounts_oauth(
+        self,
+        handles: List[str],
+        limit: int = 10
+    ) -> Dict[str, List[PostMetrics]]:
+        """
+        複数のXアカウントの投稿を OAuth で一括取得
+
+        Args:
+            handles: Xハンドルのリスト
+            limit: 各アカウントから取得する投稿数
+
+        Returns:
+            {handle: [PostMetrics, ...]} の辞書
+        """
+        print(f"\n{'='*60}")
+        print(f"🔍 複数Xアカウントを分析中（OAuth）: {len(handles)}個")
+        print(f"{'='*60}\n")
+
+        all_posts = {}
+
+        for handle in handles:
+            print(f"\n📊 @{handle}")
+            posts = self.scrape_x_posts_oauth(handle, limit)
+            all_posts[handle] = posts
+            time.sleep(1)  # Rate limit 回避（API は1時間450リクエスト）
+
+        return all_posts
+
+    # ==================== X（Twitter）投稿取得（Playwright使用・フォールバック） ====================
 
     def scrape_x_posts(self, handle: str, limit: int = 10) -> List[PostMetrics]:
         """
@@ -601,53 +761,106 @@ class WebScraper:
         else:
             return int(num)
 
-    def scrape_multiple_x_accounts(self, handles: List[str], limit: int = 10) -> Dict[str, List[PostMetrics]]:
+    def scrape_multiple_x_accounts(
+        self,
+        handles: List[str],
+        limit: int = 10,
+        use_oauth: bool = True
+    ) -> Dict[str, List[PostMetrics]]:
         """
-        複数のXアカウントの投稿を一括取得
+        複数のXアカウントの投稿を一括取得（OAuth優先）
 
         Args:
             handles: Xハンドルのリスト
             limit: 各アカウントから取得する投稿数
+            use_oauth: OAuth を使用（True）、Playwright使用（False）
 
         Returns:
             {handle: [PostMetrics, ...]} の辞書
         """
         print(f"\n{'='*60}")
         print(f"🔍 複数Xアカウントを分析中 ({len(handles)}個)")
+        print(f"   認証方法: {'X API v2 OAuth' if use_oauth else 'Playwright'}")
         print(f"{'='*60}\n")
 
         all_posts = {}
 
-        for handle in handles:
-            print(f"\n📊 @{handle}")
-            posts = self.scrape_x_posts(handle, limit)
-            all_posts[handle] = posts
-            time.sleep(2)  # Rate limit 回避
+        if use_oauth and self.x_client:
+            # OAuth 版を使用
+            return self.scrape_multiple_x_accounts_oauth(handles, limit)
+        else:
+            # Playwright フォールバック
+            for handle in handles:
+                print(f"\n📊 @{handle}")
+                posts = self.scrape_x_posts(handle, limit)
+                all_posts[handle] = posts
+                time.sleep(2)  # Rate limit 回避
 
-        return all_posts
+            return all_posts
+
+
+def get_bearer_token() -> Optional[str]:
+    """
+    Bearer Token を取得（環境変数 or 手動入力）
+    """
+    # 環境変数をチェック
+    token = os.getenv('X_BEARER_TOKEN')
+    if token:
+        print("✅ 環境変数から Bearer Token を取得")
+        return token
+
+    # 手動入力
+    print("\n🔐 X API v2 Bearer Token が必要です")
+    print("   → Developer Portal から取得してください:")
+    print("      https://developer.twitter.com/en/portal/dashboard")
+    print()
+
+    token = input("Bearer Token を入力してください（Ctrl+C で中止）: ").strip()
+
+    if not token:
+        print("❌ Token が入力されていません")
+        return None
+
+    if not token.startswith("AAAA"):
+        print("⚠️ 警告: 通常の Bearer Token は 'AAAA' で始まります")
+        confirm = input("   このトークンを使用しますか？ (y/n): ")
+        if confirm.lower() != 'y':
+            return None
+
+    return token
 
 
 def main():
     """デモンストレーション"""
-    scraper = WebScraper("いちさん (@ichiaimarketer)")
-
-    print("=" * 60)
-    print("SNS Scraper デモ（Playwright対応）")
-    print("=" * 60)
+    print("=" * 70)
+    print("SNS Scraper - X API v2 OAuth 対応版")
+    print("=" * 70)
     print()
 
-    # 1. note 言及数取得
-    print("📝 Note 言及数取得...")
+    # 1. Bearer Token 取得
+    print("📝 認証準備中...")
+    bearer_token = get_bearer_token()
+    print()
+
+    if not bearer_token:
+        print("❌ Token なしでは X API v2 を使用できません")
+        print("   フォールバック: Playwright を使用します")
+        scraper = WebScraper("いちさん (@ichiaimarketer)")
+    else:
+        scraper = WebScraper("いちさん (@ichiaimarketer)", bearer_token=bearer_token)
+        print()
+
+    # 2. note 言及数取得
+    print("📝 note 言及数取得...")
     note_mentions = scraper.scrape_note_mentions()
     print(f"✅ note 言及数: {note_mentions.posts} 件")
     print(f"   品質: {note_mentions.data_quality}")
     print()
 
-    # 2. X投稿取得（Playwright）
+    # 3. X投稿取得（OAuth または Playwright）
     print("🔍 X投稿取得テスト...")
-    if PLAYWRIGHT_AVAILABLE:
-        print("   注: 実際のX接続はbot対策により失敗する場合があります")
-        print("   これは開発環境での制限です\n")
+    if scraper.x_client:
+        print("   ✅ X API v2 (OAuth) を使用します\n")
 
         # テスト用に複数アカウントのハンドルを指定
         test_handles = [
@@ -656,23 +869,43 @@ def main():
             "AiAircle34052"        # AirCle公式
         ]
 
-        print(f"✅ Playwright は利用可能です")
-        print(f"   以下のアカウントから投稿を取得可能:")
+        print(f"📊 テスト対象: {len(test_handles)}アカウント")
         for handle in test_handles:
-            print(f"     - @{handle}")
+            print(f"   - @{handle}")
         print()
 
-        # 実際のスクレイピングはコメント（環境制限により実行不可）
-        # posts = scraper.scrape_x_posts("ichiaimarketer", limit=10)
-        # print(f"   取得投稿数: {len(posts)}")
+        # 実際の取得（デモでは最初の1アカウントのみ）
+        posts = scraper.scrape_x_posts_oauth(test_handles[0], limit=5)
+        if posts:
+            print(f"\n✅ 取得成功: {len(posts)}件の投稿")
+            for i, post in enumerate(posts[:3], 1):
+                print(f"   {i}. {post.likes}♥ {post.retweets}🔄 - {post.text[:50]}...")
+        else:
+            print("\n⚠️ 投稿取得失敗")
+
     else:
-        print("❌ Playwright がインストールされていません")
+        if PLAYWRIGHT_AVAILABLE:
+            print("   ℹ️ Playwright にフォールバック")
+            print("   注: 実際のX接続はbot対策により失敗する場合があります\n")
+
+            test_handles = [
+                "ichiaimarketer",
+                "ClaudeCode_love",
+                "AiAircle34052"
+            ]
+
+            print(f"✅ Playwright は利用可能です")
+            print(f"   以下のアカウントから投稿を取得可能:")
+            for handle in test_handles:
+                print(f"     - @{handle}")
+        else:
+            print("❌ Playwright も利用できません")
     print()
 
-    # 3. ソース一覧
-    print("=" * 60)
+    # 4. ソース一覧
+    print("=" * 70)
     print("📍 データ取得元")
-    print("=" * 60)
+    print("=" * 70)
     print(scraper.get_sources_json())
 
 
