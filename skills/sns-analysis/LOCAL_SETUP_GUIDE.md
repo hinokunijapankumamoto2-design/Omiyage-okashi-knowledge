@@ -174,6 +174,72 @@ python3 analyze_ichisan.py
 
 ---
 
+## 🤖 Phase 8 AUDIT用: OpenAI(GPT) キーの設定
+
+Phase 8（`phase8_evaluator.AuditAgent`）のAUDITモードは、GPTモデルを
+「敵対的監査官（Challenger）」として使用する。`openai_challenger.py` が
+provider非依存の `challenger_fn` を構築する実装を提供している。
+
+### ステップ A: env.txt にAPIキーを設定（ローカルのみ・絶対にコミットしない）
+
+```bash
+# your_project/env.txt （このリポジトリの .gitignore で除外済み）
+OPENAI_API_KEY=sk-...
+OPENAI_CHALLENGER_MODEL=gpt-5.4-mini
+X_BEARER_TOKEN=AAAA...
+```
+
+⚠️ **`env.txt` / `.env` は絶対にGitへコミットしないこと。** このリポジトリの
+`.gitignore` では `env.txt` と `.env*` を除外設定済みだが、
+`git add -f` などで強制追加しないよう注意する。実際のキー値は
+チャットやコミットメッセージにも書かない。
+
+### ステップ B: openai パッケージをインストール
+
+```bash
+pip install openai python-dotenv
+```
+
+### ステップ C: challenger_fn を組み立てて AuditAgent / KengoodEngineV2 に渡す
+
+```python
+from dotenv import load_dotenv
+load_dotenv("env.txt")  # OPENAI_API_KEY, OPENAI_CHALLENGER_MODEL を読み込む
+
+from openai_challenger import build_openai_challenger_fn
+from phase8_evaluator import AuditAgent
+
+# モデル名は env.txt の OPENAI_CHALLENGER_MODEL（既定: gpt-5.4-mini）を使用
+challenger_fn = build_openai_challenger_fn()
+
+agent = AuditAgent(challenger_fn=challenger_fn)
+audit_result = agent.audit(claims)  # claims: phase8_evaluator.py 参照
+```
+
+`KengoodEngineV2`（`kengood_engine_v2.py`）経由でPhase 0〜8を一気通貫実行する
+場合は、コンストラクタに渡すだけでよい：
+
+```python
+from kengood_engine_v2 import KengoodEngineV2
+from openai_challenger import build_openai_challenger_fn
+
+engine = KengoodEngineV2(challenger_fn=build_openai_challenger_fn())
+result = engine.run_full_pipeline(..., mode="audit")  # AUDITモードで常時実行
+```
+
+`challenger_fn` を渡さない場合は、`phase8_evaluator.py` の決定論的フォールバック
+（Evidence有無・矛盾の構造チェックのみ）で動作する。
+
+### 注意: モデル名について
+
+`gpt-5.4-mini` という名称はユーザー指定の値をそのまま設定している。
+OpenAI側の実際のモデル一覧と食い違う場合、API呼び出し時に
+モデル不明のエラーとして安全に失敗する（存在しないモデル名を
+コード側で機械的に補完・変換したりはしない）。正式なモデルIDは
+OpenAIのモデル一覧で確認すること。
+
+---
+
 ## 🔄 次のステップ: Opus/GPT-5.6 統合
 
 analyzer.py の分析部分を Opus/GPT-5.6 に置き換え：

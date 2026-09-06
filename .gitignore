@@ -33,6 +33,8 @@ knowledge-config.json
 .env
 .env.*
 !.env.example
+env.txt
+**/env.txt
 
 # 認証情報
 **/credentials.json
