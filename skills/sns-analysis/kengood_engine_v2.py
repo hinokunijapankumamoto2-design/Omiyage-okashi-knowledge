@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 KENGOOD SNS Intelligence Engine v2
-統合レイヤー（Phase 0 〜 Phase 4 基盤層）
+統合レイヤー（Phase 0〜8 フルパイプライン）
 
 Phase 0    : Target Resolver        (phase0_target_resolver.py)
 Phase 0.5  : Source Policy Gate     (phase05_source_policy_gate.yaml)
@@ -9,21 +9,32 @@ Phase 1    : Source Gateway         (scraper.py / analyzer.py - 既存実装)
 Phase 2    : Evidence Engine        (phase2_evidence_engine.py)
 Phase 3    : Normalize              (phase3_normalizer.py)
 Phase 4    : Metrics Engine         (phase4_metrics_engine.py)
-
-Phase 5以降（Content Classification 〜 Strategy Engine などLLM統合層）は
-本ファイルのスコープ外（KENGOOD_SNS_Intelligence_Engine_v2.md 参照）。
+Phase 5A   : Content Classification (phase5a_content_classifier.py)
+Phase 5B   : Pattern Intelligence   (phase5b_pattern_intelligence.py)
+Phase 6    : Competitor Intelligence(phase6_competitor_intelligence.py, 任意)
+Phase 7    : Strategy Engine        (phase7_strategy_engine.py)
+Phase 8    : Evaluator / Audit      (phase8_evaluator.py)
+Model Router: モード解決・昇格判定    (model_router.py)
 
 本ファイルはPhase 1（実データ取得）そのものは行わない。
 scraper.py / analyzer.py で取得した生データ（PostMetrics.to_dict() 相当）を
 raw_posts_by_account として受け取り、Phase 0.5 のゲートチェックを経て
-Phase 2〜4 を適用し、エビデンストレース付きのJSONを組み立てる。
+Phase 2〜8 を適用し、エビデンストレース付きのJSONを組み立てる。
+
+重要：Phase 5以降の各クライアント（classifier_client/analyst_client/
+strategist_client/challenger_fn）を注入しない限り、分類・パターン分析・
+戦略立案・監査はすべて決定論的フォールバック（キーワード頻度比較や
+構造チェックのみ）で動作する。これは配線・自動化の検証を可能にするが、
+実際の分析「精度」を上げるものではない。精度向上には実LLMクライアントの
+注入が必須。
 """
 
 import json
 from dataclasses import dataclass, field, asdict
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Dict, List, Optional
+from statistics import mean
+from typing import Any, Callable, Dict, List, Optional
 
 import yaml
 
@@ -32,11 +43,31 @@ try:
     from .phase2_evidence_engine import EvidenceEngine
     from .phase3_normalizer import Normalizer
     from .phase4_metrics_engine import MetricsEngine
+    from .phase5a_content_classifier import HaikuContentClassifier
+    from .phase5b_pattern_intelligence import PatternInsight, SonnetPatternAnalyst
+    from .phase6_competitor_intelligence import (
+        CompetitorAnalyst,
+        OpusStrategist,
+        compute_relative_power_profiles,
+    )
+    from .phase7_strategy_engine import StrategyPlanner
+    from .phase8_evaluator import AuditAgent, SonnetSelfReviewer
+    from .model_router import ModelRouter
 except ImportError:
     from phase0_target_resolver import TargetResolver, TargetIdentity
     from phase2_evidence_engine import EvidenceEngine
     from phase3_normalizer import Normalizer
     from phase4_metrics_engine import MetricsEngine
+    from phase5a_content_classifier import HaikuContentClassifier
+    from phase5b_pattern_intelligence import PatternInsight, SonnetPatternAnalyst
+    from phase6_competitor_intelligence import (
+        CompetitorAnalyst,
+        OpusStrategist,
+        compute_relative_power_profiles,
+    )
+    from phase7_strategy_engine import StrategyPlanner
+    from phase8_evaluator import AuditAgent, SonnetSelfReviewer
+    from model_router import ModelRouter
 
 
 _DEFAULT_POLICY_PATH = Path(__file__).parent / "phase05_source_policy_gate.yaml"
@@ -126,11 +157,49 @@ class KengoodEngineV2:
       （examples/ichisan_15accounts_analysis.py 参照）。
     """
 
-    def __init__(self, policy_path: Optional[Path] = None):
+    def __init__(
+        self,
+        policy_path: Optional[Path] = None,
+        router: Optional[ModelRouter] = None,
+        classifier_client: Optional[Any] = None,
+        analyst_client: Optional[Any] = None,
+        strategist_client: Optional[Any] = None,
+        challenger_fn: Optional[Callable[[str, str], str]] = None,
+    ):
+        """
+        Args:
+            classifier_client: Phase 5A用（Haiku想定）。省略時はフォールバック分類。
+            analyst_client: Phase 5B/6/7/8のSonnet自己レビュー用。省略時はフォールバック。
+            strategist_client: Phase 6/7のOpus昇格時に使用。省略時はフォールバック。
+            challenger_fn: Phase 8 AUDIT用の `(system, user) -> text` 関数
+                （GPT-5.6 Sol等、Anthropic以外のプロバイダを想定）。省略時はフォールバック監査。
+        """
         self.resolver = TargetResolver()
         self.policy_gate = SourcePolicyGate(policy_path)
         self.evidence_engine = EvidenceEngine()
         self.trace: List[PhaseTraceEntry] = []
+
+        self.router = router or ModelRouter()
+
+        self.classifier = HaikuContentClassifier(
+            client=classifier_client, model=self.router.get_model_config("classifier")["model"]
+        )
+        self.pattern_analyst = SonnetPatternAnalyst(
+            client=analyst_client, model=self.router.get_model_config("analyst")["model"]
+        )
+        self.competitor_analyst = CompetitorAnalyst(
+            client=analyst_client, model=self.router.get_model_config("analyst")["model"]
+        )
+        self.opus_strategist = OpusStrategist(
+            client=strategist_client, model=self.router.get_model_config("strategist")["model"]
+        )
+        self.strategy_planner = StrategyPlanner(
+            client=analyst_client, model=self.router.get_model_config("analyst")["model"]
+        )
+        self.self_reviewer = SonnetSelfReviewer(
+            client=analyst_client, model=self.router.get_model_config("analyst")["model"]
+        )
+        self.audit_agent = AuditAgent(challenger_fn=challenger_fn)
 
     def _log(self, phase: str, summary: str) -> None:
         self.trace.append(PhaseTraceEntry(phase=phase, summary=summary))
@@ -261,6 +330,241 @@ class KengoodEngineV2:
             "trace": [t.to_dict() for t in self.trace],
         }
 
+    # ==================== Phase 5〜8: フルパイプライン ====================
+
+    def run_full_pipeline(
+        self,
+        canonical_name: str,
+        target_type: str,
+        raw_posts_by_account: Dict[str, List[Dict]],
+        company_name: Optional[str] = None,
+        followers_by_account: Optional[Dict[str, int]] = None,
+        extraction_method: str = "official_api",
+        source_type: str = "x_api_v2_oauth",
+        mode: Optional[str] = None,
+        deep: bool = False,
+        audit: bool = False,
+        competitors_summary: Optional[Dict[str, Dict]] = None,
+        business_impact_large: bool = False,
+        multi_platform_complexity: bool = False,
+        is_executive_or_external_proposal: bool = False,
+    ) -> Dict:
+        """
+        Phase 0〜8 を一気通貫で実行する。
+
+        Args:
+            mode/deep/audit: model_router.ModelRouter.resolve_mode() に準拠。
+                FAST: Phase 5A（分類）のみ。
+                STANDARD: Phase 5A/5B/7 + 条件を満たした場合のみOpus/Audit昇格。
+                DEEP: STANDARD + Phase 6（strategist常時）。
+                AUDIT: DEEP + Phase 8 Audit常時実行。
+            competitors_summary: Phase 6用の競合集計指標
+                （{"competitor_a": {"avg_engagement_rate": ..., ...}, ...}）。
+                省略時はPhase 6全体をスキップする
+                （＝いちさんの15アカウントのような「自己ブランド内比較」の
+                ケースでは、外部競合データが無いため既定でスキップされる）。
+
+        Returns:
+            Phase 0〜4の結果に加え、phase5a/phase5b/phase6/phase7/phase8の
+            結果を含む dict。
+        """
+        resolved_mode = self.router.resolve_mode(explicit_mode=mode, deep=deep, audit=audit)
+
+        base_result = self.run(
+            canonical_name=canonical_name,
+            target_type=target_type,
+            raw_posts_by_account=raw_posts_by_account,
+            company_name=company_name,
+            followers_by_account=followers_by_account,
+            extraction_method=extraction_method,
+            source_type=source_type,
+        )
+
+        result = dict(base_result)
+        result["mode"] = resolved_mode
+
+        if base_result["blocked"]:
+            result["phase5a"] = {"skipped": True, "reason": "blocked_by_policy_gate"}
+            result["phase5b"] = {"skipped": True, "reason": "blocked_by_policy_gate"}
+            result["phase6"] = {"skipped": True, "reason": "blocked_by_policy_gate"}
+            result["phase7"] = {"skipped": True, "reason": "blocked_by_policy_gate"}
+            result["phase8"] = {"skipped": True, "reason": "blocked_by_policy_gate"}
+            return result
+
+        accounts_output = base_result["accounts"]
+
+        # ---------- Phase 5A: Content Classification ----------
+        for account_result in accounts_output.values():
+            posts = [p["post"] for p in account_result["posts"]]
+            if not posts:
+                continue
+            classifications, _low_confidence = self.classifier.classify_posts(posts)
+            for post_entry, classification in zip(account_result["posts"], classifications):
+                post_entry["classification"] = classification.to_dict()
+        self._log("phase5a_content_classification", f"mode={resolved_mode}")
+
+        if resolved_mode == "fast":
+            # FAST: Haikuの分類のみ。5B以降は実行しない（設計書 §21）。
+            result["phase5b"] = {"skipped": True, "reason": "fast_mode"}
+            result["phase6"] = {"skipped": True, "reason": "fast_mode"}
+            result["phase7"] = {"skipped": True, "reason": "fast_mode"}
+            result["phase8"] = {"skipped": True, "reason": "fast_mode"}
+            result["accounts"] = accounts_output
+            return result
+
+        # ---------- Phase 5B: Pattern Intelligence / Viral Pattern Engine ----------
+        all_posts = [p for a in accounts_output.values() for p in a["posts"]]
+        groups = self.pattern_analyst.select_representative_samples(all_posts)
+        pattern_insights = self.pattern_analyst.analyze_patterns(
+            groups["top"], groups["middle"], groups["bottom"]
+        )
+        viral_pattern = self.pattern_analyst.build_viral_pattern_engine(groups["top"])
+        self._log(
+            "phase5b_pattern_intelligence",
+            f"insights={len(pattern_insights)} top_n={len(groups['top'])}",
+        )
+        result["phase5b"] = {
+            "insights": [i.to_dict() for i in pattern_insights],
+            "viral_pattern": viral_pattern.to_dict(),
+        }
+
+        # ---------- Phase 6: Competitor Intelligence（任意：競合データがある場合のみ） ----------
+        whitespace: List[str] = []
+        if competitors_summary:
+            target_summary = _aggregate_accounts_summary(accounts_output)
+            profiles = compute_relative_power_profiles(
+                {"target": target_summary, **competitors_summary}
+            )
+            comparison = self.competitor_analyst.analyze_competitors(profiles, target_key="target")
+            escalate_opus = self.competitor_analyst.should_escalate_to_opus(
+                competitor_count=len(competitors_summary),
+                comparison=comparison,
+                multi_platform_complexity=multi_platform_complexity,
+            )
+            opus_deep_dive = self.opus_strategist.deep_dive(comparison) if escalate_opus else None
+            whitespace = comparison.whitespace
+
+            result["phase6"] = {
+                "power_profiles": {k: v.to_dict() for k, v in profiles.items()},
+                "comparison": comparison.to_dict(),
+                "escalated_to_opus": escalate_opus,
+                "opus_deep_dive": opus_deep_dive.to_dict() if opus_deep_dive else None,
+            }
+            self._log(
+                "phase6_competitor_intelligence",
+                f"competitors={len(competitors_summary)} escalated_to_opus={escalate_opus}",
+            )
+        else:
+            result["phase6"] = {"skipped": True, "reason": "no_competitors_summary_provided"}
+
+        # ---------- Phase 7: Strategy Engine ----------
+        opportunities = _build_opportunities(pattern_insights, whitespace)
+        strategies = self.strategy_planner.generate_strategies(opportunities)
+        strategies_output = []
+        for strategy in strategies:
+            escalate = self.strategy_planner.should_escalate_to_opus(
+                strategy,
+                business_impact_large=business_impact_large,
+                multi_channel=multi_platform_complexity,
+                is_executive_or_external_proposal=is_executive_or_external_proposal,
+                user_requested_deep=(resolved_mode in ("deep", "audit")),
+            )
+            strategies_output.append({**strategy.to_dict(), "escalated_to_opus": escalate})
+        result["phase7"] = {"strategies": strategies_output}
+        self._log("phase7_strategy_engine", f"strategies={len(strategies_output)}")
+
+        # ---------- Phase 8: Evaluator / Audit ----------
+        claims = _build_claims_from_accounts(accounts_output)
+        self_review = self.self_reviewer.review(claims)
+        should_audit = self.audit_agent.should_trigger_audit(
+            user_requested_audit=(resolved_mode == "audit"),
+            final_quality_score=self_review.final_quality_score,
+            executive_proposal=is_executive_or_external_proposal,
+        )
+        audit_result = self.audit_agent.audit(claims) if should_audit else None
+
+        result["phase8"] = {
+            "self_review": self_review.to_dict(),
+            "audit_triggered": should_audit,
+            "audit_result": audit_result.to_dict() if audit_result else None,
+        }
+        self._log("phase8_evaluator", f"audit_triggered={should_audit}")
+
+        result["accounts"] = accounts_output
+        result["trace"] = [t.to_dict() for t in self.trace]
+        return result
+
+
+# ==================== フルパイプライン用ヘルパー ====================
+
+def _aggregate_accounts_summary(accounts_output: Dict[str, Dict]) -> Dict[str, Optional[float]]:
+    """複数アカウントの実測値を1つの"target"集計指標へまとめる（Phase6用）"""
+    engagement_rates, reach_effs, velocities = [], [], []
+    hit_rates, viral_rates, total_posts = [], [], 0
+
+    for account_result in accounts_output.values():
+        total_posts += account_result.get("post_count", 0)
+        hit_rates.append(account_result.get("hit_rate"))
+        viral_rates.append(account_result.get("viral_rate"))
+        for post_entry in account_result.get("posts", []):
+            m = post_entry.get("metrics", {})
+            if m.get("engagement_rate") is not None:
+                engagement_rates.append(m["engagement_rate"])
+            if m.get("reach_efficiency") is not None:
+                reach_effs.append(m["reach_efficiency"])
+            if m.get("velocity_per_hour") is not None:
+                velocities.append(m["velocity_per_hour"])
+
+    def _avg(values):
+        clean = [v for v in values if v is not None]
+        return round(mean(clean), 4) if clean else None
+
+    return {
+        "avg_engagement_rate": _avg(engagement_rates),
+        "avg_reach_efficiency": _avg(reach_effs),
+        "avg_velocity": _avg(velocities),
+        "hit_rate": _avg(hit_rates),
+        "viral_rate": _avg(viral_rates),
+        "post_count": total_posts,
+    }
+
+
+def _build_opportunities(pattern_insights: List["PatternInsight"], whitespace: List[str]) -> List[Dict]:
+    """Phase 5B/6の結果からPhase 7へ渡すOpportunity候補を組み立てる"""
+    opportunities = []
+    for i, insight in enumerate(pattern_insights):
+        opportunities.append({
+            "opportunity_id": f"pattern-{i + 1}",
+            "evidence": [],  # フォールバックPatternInsightはEvidence IDを保持しないため空
+            "context": insight.pattern,
+            "opportunity_score": round(insight.confidence * 100, 1),
+        })
+    for ws in whitespace:
+        opportunities.append({
+            "opportunity_id": f"whitespace-{ws}",
+            "evidence": [],
+            "context": f"競合分析によるWhitespace候補: {ws}",
+            "opportunity_score": 70.0,  # 目安値。実運用ではPhase6のconfidenceを反映すべき
+        })
+    return opportunities
+
+
+def _build_claims_from_accounts(accounts_output: Dict[str, Dict]) -> List[Dict]:
+    """Phase 2の claim_classification をPhase 8監査用のClaimリストへ変換する"""
+    claims = []
+    for account, account_result in accounts_output.items():
+        for post_entry in account_result.get("posts", []):
+            evidence = post_entry.get("evidence", {})
+            classification = post_entry.get("claim_classification", {})
+            claims.append({
+                "claim_id": evidence.get("evidence_id"),
+                "statement": f"{account}: {evidence.get('field_name')}={evidence.get('value')}",
+                "evidence_ids": classification.get("supporting_evidence", []),
+                "confidence": classification.get("confidence", 0.0),
+                "counter_evidence": classification.get("counter_evidence", []),
+            })
+    return claims
+
 
 if __name__ == "__main__":
     engine = KengoodEngineV2()
@@ -280,12 +584,13 @@ if __name__ == "__main__":
         ],
     }
 
-    result = engine.run(
+    result = engine.run_full_pipeline(
         canonical_name="いちさん（株式会社PLai代表、AirCle代表）",
         target_type="creator",
         company_name="株式会社PLai",
         raw_posts_by_account=sample_raw_posts,
         followers_by_account={"ichiaimarketer": 15000},
+        mode="standard",
     )
 
     print(json.dumps(result, ensure_ascii=False, indent=2))

@@ -1,20 +1,28 @@
 #!/usr/bin/env python3
 """
 KENGOOD SNS Intelligence Engine v2
-いちさん（株式会社PLai代表、AirCle代表）15アカウント分析 - Phase 0〜4 統合実行
+いちさん（株式会社PLai代表、AirCle代表）15アカウント分析 - Phase 0〜8 フル統合実行
 
 既存の examples/analyze_ichisan_oauth.py（Phase 1: 生データ取得のみ）に対し、
 本スクリプトは Phase 0（Target Resolver）→ Phase 0.5（Source Policy Gate）
 → Phase 1（既存scraper/analyzer）→ Phase 2〜4（Evidence/Normalize/Metrics）
-までを一気通貫で実行し、エビデンストレース付きのJSONを出力する。
+→ Phase 5A〜8（Content Classification〜Evaluator）までを一気通貫で実行し、
+エビデンストレース付きのJSONを出力する。
+
+重要: ANTHROPIC_API_KEY等を注入していないため、Phase 5A以降はすべて
+決定論的フォールバック（キーワード頻度比較・構造チェックのみ）で動作する。
+これはパイプラインの配線・自動化の検証が目的であり、実際の分析「精度」を
+示すものではない。実運用でHaiku/Sonnet/Opusによる意味理解を行うには、
+KengoodEngineV2(classifier_client=..., analyst_client=..., strategist_client=...,
+challenger_fn=...) のようにクライアントを注入する。
 
 実行方法:
     X_BEARER_TOKEN='AAAA...' python3 ichisan_15accounts_analysis.py
-        → X API v2 OAuth で実データを取得して Phase 0〜4 を実行
+        → X API v2 OAuth で実データを取得して Phase 0〜8 を実行
 
     python3 ichisan_15accounts_analysis.py
         → Bearer Token 未設定時は、組み込みのサンプルデータ（DEMO用）で
-          Phase 0〜4 のパイプライン動作を検証する
+          Phase 0〜8 のパイプライン動作を検証する
           （実アカウントへのアクセスは一切行わない）
 """
 
@@ -114,7 +122,7 @@ def main():
     bearer_token = os.getenv("X_BEARER_TOKEN")
 
     print("=" * 80)
-    print("🎯 KENGOOD SNS Intelligence Engine v2 - Phase 0〜4 統合実行")
+    print("🎯 KENGOOD SNS Intelligence Engine v2 - Phase 0〜8 フル統合実行")
     print(f"   対象: {TARGET_CANONICAL_NAME}")
     print(f"   登録アカウント数: {len(ICHISAN_ACCOUNTS)}")
     print("=" * 80)
@@ -137,12 +145,13 @@ def main():
         print(f"   @{handle:20s}: {len(posts):2d} 件")
     print()
 
-    engine = KengoodEngineV2()
-    result = engine.run(
+    engine = KengoodEngineV2()  # client未指定 = 全Phase 5-8がフォールバック動作
+    result = engine.run_full_pipeline(
         canonical_name=TARGET_CANONICAL_NAME,
         target_type="creator",
         company_name=TARGET_COMPANY_NAME,
         raw_posts_by_account=raw_posts_by_account,
+        mode="standard",
     )
 
     if result["blocked"]:
@@ -151,7 +160,7 @@ def main():
         sys.exit(1)
 
     print("=" * 80)
-    print("📈 Phase 0〜4 実行結果サマリー")
+    print(f"📈 Phase 0〜8 実行結果サマリー（mode={result['mode']}）")
     print("=" * 80)
     print(f"identity_confidence: {result['identity']['identity_confidence']}")
     print(f"policy_decision    : {result['policy_decision']['decision']}")
@@ -162,7 +171,19 @@ def main():
         print(f"  viral_rate : {account_result['viral_rate']}")
         print(f"  engagement_rate p50: {account_result['engagement_rate_percentiles']['p50']}")
 
-    output_path = Path("/tmp") / f"kengood_v2_phase0-4_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+    print(f"\n📊 Phase 5B insights: {len(result['phase5b'].get('insights', []))}件")
+    if not result["phase6"].get("skipped"):
+        print(f"📊 Phase 6 whitespace: {result['phase6']['comparison']['whitespace']}")
+    else:
+        print(f"⏭️  Phase 6: スキップ（{result['phase6']['reason']}）")
+    print(f"📊 Phase 7 strategies: {len(result['phase7'].get('strategies', []))}件")
+    print(f"📊 Phase 8 audit_triggered: {result['phase8']['audit_triggered']}")
+    print(
+        "⚠️  上記はすべてclient未注入によるフォールバック結果（キーワード頻度比較のみ）。\n"
+        "    実際の意味理解にはANTHROPIC_API_KEYでのHaiku/Sonnet/Opusクライアント注入が必要。"
+    )
+
+    output_path = Path("/tmp") / f"kengood_v2_phase0-8_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(result, f, ensure_ascii=False, indent=2)
 
