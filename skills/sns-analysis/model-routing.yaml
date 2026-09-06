@@ -1,0 +1,78 @@
+# KENGOOD SNS Intelligence Engine v2
+# Model Router 設定
+#
+# 設計方針（KENGOOD_SNS_Intelligence_Engine_v2.md §26 準拠）：
+# 実際のprovider/model IDは環境設定から注入し、ビジネスロジックへ
+# ハードコードしない。本ファイルの値はデフォルトであり、
+# デプロイ環境ごとに上書きすることを想定する。
+
+version: 1
+
+default_mode: standard
+
+models:
+
+  classifier:
+    provider: anthropic
+    model: claude-haiku-4-5-20251001
+    max_tokens: 1024
+
+  analyst:
+    provider: anthropic
+    model: claude-sonnet-5
+    max_tokens: 2048
+
+  strategist:
+    provider: anthropic
+    model: claude-opus-5
+    max_tokens: 4096
+
+  challenger:
+    provider: openai
+    model: gpt-5.6-sol
+    max_tokens: 2048
+
+# ==================== モード別の使用モデル ====================
+# true      = 常に使用
+# false     = 使用しない
+# conditional = エスカレーション条件を満たした場合のみ使用
+#               （判定は model_router.py の should_escalate_* が担う）
+
+modes:
+
+  fast:
+    classifier: true
+    analyst: false
+    strategist: false
+    challenger: false
+
+  standard:
+    classifier: true
+    analyst: true
+    strategist: conditional
+    challenger: conditional
+
+  deep:
+    classifier: true
+    analyst: true
+    strategist: true
+    challenger: conditional
+
+  audit:
+    classifier: true
+    analyst: true
+    strategist: true
+    challenger: true
+
+# ==================== Adaptive Escalation（§23） ====================
+
+escalation:
+
+  classifier_to_analyst:
+    confidence_below: 0.75
+
+  analyst_to_strategist:
+    confidence_below: 0.85
+
+  strategist_to_challenger:
+    final_quality_below: 85
