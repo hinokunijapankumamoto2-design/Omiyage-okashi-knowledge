@@ -1,0 +1,106 @@
+# KENGOOD SNS Intelligence Engine v2
+# Phase 0.5: Source Policy Gate
+#
+# 設計方針（KENGOOD_SNS_Intelligence_Engine_v2.md §4 準拠）：
+# 「LLMに利用規約判定を最終決定させない」。
+# Haiku等の分類モデルは source_type の一次分類にのみ使用してよく、
+# ALLOW / API_ONLY / PUBLIC_ONLY / USER_DATA_ONLY / MANUAL_ONLY / BLOCK の
+# 最終判断は必ずこの設定ファイルから決定する。
+
+version: 1
+
+# ==================== source_type ごとの最終判断 ====================
+decisions:
+
+  x_api_v2_oauth:
+    decision: API_ONLY
+    description: "X API v2 を Bearer Token で利用する正規の取得経路"
+    requires:
+      - valid_oauth_bearer_token
+      - account_owner_authorization   # 対象アカウント運用者本人の許可・自己管理の確認
+    rate_limit_respect: true
+
+  public_profile_page:
+    decision: PUBLIC_ONLY
+    description: "ログイン不要で閲覧できる公開プロフィール・投稿ページ"
+    requires:
+      - no_login_wall
+      - robots_txt_compliant
+
+  note_search_api:
+    decision: ALLOW
+    description: "note の公開検索結果（言及数の取得）"
+
+  note_official_account_page:
+    decision: PUBLIC_ONLY
+    description: "note公式アカウントの公開投稿一覧"
+
+  youtube_public_page:
+    decision: PUBLIC_ONLY
+    description: "YouTubeチャンネルの公開ページ（登録者数表示など）"
+
+  youtube_data_api:
+    decision: API_ONLY
+    description: "YouTube Data API（APIキー必須）"
+    requires:
+      - valid_api_key
+
+  company_ir_or_recruit_page:
+    decision: PUBLIC_ONLY
+    description: "企業サイトのIR・採用情報など公開ページ"
+
+  manual_input:
+    decision: MANUAL_ONLY
+    description: "スクレイピングが困難な項目のユーザーによる手動入力"
+    requires:
+      - user_confirmed_accuracy
+
+  private_dm_or_login_required_content:
+    decision: BLOCK
+    description: "DM・非公開投稿などログインが必要な非公開情報"
+
+  personal_account_without_consent:
+    decision: BLOCK
+    description: "本人の同意・自己運用の確認が取れない個人アカウントの分析"
+
+  third_party_internal_data:
+    decision: BLOCK
+    description: "競合企業の内部情報・非公開データ"
+
+# ==================== target_type 別の追加ルール ====================
+target_type_rules:
+
+  account:
+    # target_type=account の場合、対象アカウントが「本人自己運用」であることの
+    # 確認（Phase 0 で known_accounts が明示的に渡されているか）を必須とする。
+    require_self_managed_confirmation: true
+
+  creator:
+    require_self_managed_confirmation: true
+
+  company:
+    require_self_managed_confirmation: false
+
+  brand:
+    require_self_managed_confirmation: false
+
+  product:
+    require_self_managed_confirmation: false
+
+  competitor_set:
+    require_self_managed_confirmation: false
+
+# ==================== セキュリティ要件 ====================
+security:
+  bearer_token_storage: env_var_only        # トークンをコード・リポジトリに直書きしない
+  bearer_token_logging: forbidden           # ログ・出力にトークン本体を含めない（先頭数文字のマスク表示のみ許可）
+  pii_in_output: forbidden                  # 出力JSON/HTMLに個人特定情報（電話番号・住所等）を含めない
+  rate_limiting:
+    x_api_v2:
+      requests_per_15min: 15                # Free/Basic tier を想定した保守的な既定値
+  data_retention_days: 90
+
+# ==================== フォールバック挙動 ====================
+fallback:
+  on_missing_required_field: BLOCK
+  on_unknown_source_type: MANUAL_ONLY
