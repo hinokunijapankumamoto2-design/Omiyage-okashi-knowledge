@@ -15,9 +15,9 @@ from enum import Enum
 
 # scraper モジュールをインポート
 try:
-    from .scraper import WebScraper, ScrapedData
+    from .scraper import WebScraper, ScrapedData, PostMetrics
 except ImportError:
-    from scraper import WebScraper, ScrapedData
+    from scraper import WebScraper, ScrapedData, PostMetrics
 
 
 class SNSPlatform(Enum):
@@ -68,6 +68,7 @@ class SNSAnalyzer:
         self.gaps: List[Dict[str, str]] = []
         self.recommendations: List[Dict[str, str]] = []
         self.sources: List[str] = []
+        self.x_posts_by_account: Dict[str, List[PostMetrics]] = {}  # アカウント別X投稿
 
     def add_channel_data(self, platform: str, data: Dict):
         """SNSプラットフォームのデータを追加"""
@@ -331,6 +332,90 @@ class SNSAnalyzer:
 """
         return html
 
+    # ==================== X投稿分析（Playwright対応） ====================
+
+    def add_x_posts(self, handle: str, posts: List[PostMetrics]):
+        """X投稿データをアナライザーに追加"""
+        self.x_posts_by_account[handle] = posts
+
+    def analyze_x_posts(self) -> Dict:
+        """
+        複数Xアカウントの投稿を分析
+        - 最も伸びた投稿
+        - コンテンツテーマ分析
+        - 投稿タイミング分析
+        - パフォーマンス比較
+        """
+        analysis = {
+            "total_posts": 0,
+            "accounts_analyzed": len(self.x_posts_by_account),
+            "top_performing_posts": [],
+            "average_engagement_by_account": {},
+            "content_themes": {},
+            "peak_posting_time": None
+        }
+
+        all_posts = []
+
+        # 各アカウントの投稿を集計
+        for handle, posts in self.x_posts_by_account.items():
+            if not posts:
+                continue
+
+            analysis["total_posts"] += len(posts)
+            all_posts.extend(posts)
+
+            # アカウント別エンゲージメント平均
+            avg_engagement = sum(p.engagement_rate for p in posts) / len(posts) if posts else 0
+            analysis["average_engagement_by_account"][handle] = {
+                "count": len(posts),
+                "avg_likes": sum(p.likes for p in posts) / len(posts) if posts else 0,
+                "avg_retweets": sum(p.retweets for p in posts) / len(posts) if posts else 0,
+                "total_engagement": sum(p.engagement_rate for p in posts)
+            }
+
+        # グローバルトップ投稿（いいね数でソート）
+        all_posts.sort(key=lambda p: p.likes, reverse=True)
+        analysis["top_performing_posts"] = [
+            {
+                "author": p.author,
+                "text": p.text,
+                "likes": p.likes,
+                "retweets": p.retweets,
+                "impressions": p.impressions,
+                "engagement_rate": p.engagement_rate,
+                "url": p.url
+            }
+            for p in all_posts[:10]  # トップ10
+        ]
+
+        return analysis
+
+    def get_top_performing_posts(self, limit: int = 10) -> List[Dict]:
+        """
+        パフォーマンスが高い投稿を取得（いいね数でランク）
+        """
+        all_posts = []
+        for posts in self.x_posts_by_account.values():
+            all_posts.extend(posts)
+
+        all_posts.sort(key=lambda p: p.likes, reverse=True)
+
+        return [
+            {
+                "rank": i + 1,
+                "author": p.author,
+                "text": p.text[:80],
+                "likes": p.likes,
+                "retweets": p.retweets,
+                "impressions": p.impressions,
+                "engagement": p.engagement_rate,
+                "url": p.url,
+                "timestamp": p.timestamp
+            }
+            for i, p in enumerate(all_posts[:limit])
+        ]
+
     def to_json(self) -> str:
         """JSON形式で結果を出力"""
         flow_vs_stock = self.analyze_flow_vs_stock()
@@ -344,6 +429,12 @@ class SNSAnalyzer:
             "recommendations": self.recommendations or self.generate_recommendations(),
             "sources": self.sources
         }
+
+        # X投稿分析データを含める（ある場合）
+        if self.x_posts_by_account:
+            result["x_posts_analysis"] = self.analyze_x_posts()
+            result["top_posts"] = self.get_top_performing_posts(limit=20)
+
         return json.dumps(result, ensure_ascii=False, indent=2)
 
 

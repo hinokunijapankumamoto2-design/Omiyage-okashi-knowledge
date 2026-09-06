@@ -2,18 +2,30 @@
 """
 SNS Analysis Skill - Web Scraper Module
 APIを使わず、公開情報から正しいデータを取得
+Playwright を用いた動的スクレイピング対応
 """
 
 import re
 import json
 import time
+import os
 from datetime import datetime
 from typing import Dict, Optional, List, Tuple
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 from urllib.parse import quote
 import urllib.request
 import urllib.error
 from http.client import HTTPResponse
+
+# Playwright 設定（環境変数で既存ブラウザを使用）
+os.environ['PLAYWRIGHT_BROWSERS_PATH'] = '/opt/pw-browsers'
+os.environ['PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD'] = '1'
+
+try:
+    from playwright.sync_api import sync_playwright, Browser, Page
+    PLAYWRIGHT_AVAILABLE = True
+except ImportError:
+    PLAYWRIGHT_AVAILABLE = False
 
 
 @dataclass
@@ -26,6 +38,23 @@ class ScrapedData:
     source_url: str = ""
     data_quality: str = "unknown"  # high / medium / low
     notes: str = ""  # スクレイピング時の注記
+
+
+@dataclass
+class PostMetrics:
+    """X投稿のメトリクス"""
+    text: str
+    author: str
+    likes: int = 0
+    retweets: int = 0
+    replies: int = 0
+    impressions: int = 0
+    url: str = ""
+    timestamp: str = ""
+    engagement_rate: float = 0.0
+
+    def to_dict(self):
+        return asdict(self)
 
 
 class WebScraper:
@@ -390,45 +419,259 @@ class WebScraper:
         """
         return json.dumps(self.sources, ensure_ascii=False, indent=2)
 
+    # ==================== X（Twitter）投稿取得（Playwright使用） ====================
+
+    def scrape_x_posts(self, handle: str, limit: int = 10) -> List[PostMetrics]:
+        """
+        X（Twitter）アカウントの投稿を取得（Playwright使用）
+
+        Args:
+            handle: Xハンドル（@記号なし）
+            limit: 取得する投稿数
+
+        Returns:
+            PostMetrics のリスト（いいね数でソート済み）
+        """
+        if not PLAYWRIGHT_AVAILABLE:
+            print("❌ Playwright がインストールされていません")
+            return []
+
+        print(f"🔍 X投稿を取得中: @{handle} (最新{limit}件)")
+
+        posts = []
+        try:
+            with sync_playwright() as p:
+                # Chromium を起動（既存ブラウザを使用）
+                browser = p.chromium.launch(
+                    executable_path='/opt/pw-browsers/chromium',
+                    headless=True
+                )
+                page = browser.new_page()
+
+                # X プロフィールにアクセス
+                profile_url = f"https://x.com/{handle}"
+                print(f"   → {profile_url} に接続中...")
+
+                try:
+                    page.goto(profile_url, wait_until='networkidle', timeout=30000)
+                except Exception as e:
+                    print(f"   ⚠️ ページ読み込みタイムアウト: {e}")
+                    browser.close()
+                    return []
+
+                # 投稿フィードをスクロール
+                print(f"   → 投稿フィードをスクロール中...")
+                for i in range(3):  # 3回スクロール
+                    page.evaluate("window.scrollBy(0, 1000)")
+                    time.sleep(1)
+
+                # 投稿要素を抽出
+                print(f"   → 投稿を解析中...")
+                post_elements = page.query_selector_all('article')
+
+                for i, element in enumerate(post_elements[:limit]):
+                    try:
+                        post = self._extract_post_metrics(element)
+                        if post:
+                            posts.append(post)
+                            print(f"      投稿 {i+1}: {post.likes}♥ {post.retweets}🔄 {post.impressions}👁️")
+                    except Exception as e:
+                        print(f"      投稿 {i+1} 抽出失敗: {e}")
+                        continue
+
+                browser.close()
+
+                # いいね数でソート（降順）
+                posts.sort(key=lambda p: p.likes, reverse=True)
+
+                # ソース記録
+                self.sources.append({
+                    "platform": "x",
+                    "url": profile_url,
+                    "accessed_at": self.scraped_at,
+                    "method": "playwright"
+                })
+
+                print(f"✅ {len(posts)}件の投稿を取得しました")
+
+        except Exception as e:
+            print(f"❌ X スクレイピングエラー: {e}")
+
+        return posts
+
+    def _extract_post_metrics(self, element) -> Optional[PostMetrics]:
+        """
+        記事要素から投稿のメトリクスを抽出
+        """
+        try:
+            # テキスト抽出
+            text_elem = element.query_selector('[data-testid="tweetText"]')
+            text = text_elem.inner_text() if text_elem else ""
+
+            # 投稿URL
+            link_elem = element.query_selector('a[href*="/status/"]')
+            url = link_elem.get_attribute('href') if link_elem else ""
+
+            # 作成者
+            author_elem = element.query_selector('[data-testid="User-Name"]')
+            author = author_elem.inner_text() if author_elem else "Unknown"
+
+            # メトリクス抽出（アイコンの隣のテキストから）
+            metrics_container = element.query_selector_all('[role="group"]')
+
+            likes = self._parse_metric(element, "like")
+            retweets = self._parse_metric(element, "retweet")
+            replies = self._parse_metric(element, "reply")
+            impressions = self._parse_metric(element, "analytics")
+
+            # エンゲージメント率計算（合計エンゲージメント）
+            total_engagement = likes + retweets + replies
+
+            # タイムスタンプ
+            time_elem = element.query_selector('time')
+            timestamp = time_elem.get_attribute('datetime') if time_elem else ""
+
+            if text:  # テキストがある場合のみ
+                return PostMetrics(
+                    text=text[:100],  # 最初の100文字
+                    author=author,
+                    likes=likes,
+                    retweets=retweets,
+                    replies=replies,
+                    impressions=impressions,
+                    url=url,
+                    timestamp=timestamp,
+                    engagement_rate=total_engagement
+                )
+        except Exception as e:
+            print(f"        メトリクス抽出エラー: {e}")
+
+        return None
+
+    def _parse_metric(self, element, metric_type: str) -> int:
+        """
+        投稿メトリクス（いいね、リツートなど）を抽出
+        metric_type: "like", "retweet", "reply", "analytics"
+        """
+        try:
+            # Xの構造に応じた抽出（data-testid属性）
+            metric_map = {
+                "like": "favorite",
+                "retweet": "retweet",
+                "reply": "reply",
+                "analytics": "analytics"
+            }
+
+            selector = f'[data-testid="{metric_map.get(metric_type, "")}_button"]'
+            metric_elem = element.query_selector(selector)
+
+            if metric_elem:
+                text = metric_elem.inner_text()
+                # "1.2K", "42", "0" などの形式をパース
+                return self._parse_metric_text(text)
+        except Exception:
+            pass
+
+        return 0
+
+    @staticmethod
+    def _parse_metric_text(text: str) -> int:
+        """
+        「1.2K」「42」などのメトリクステキストを数値に変換
+        """
+        if not text:
+            return 0
+
+        text = text.strip().upper()
+
+        # 数字部分を抽出
+        match = re.match(r'([0-9.]+)\s*([KMB])?', text)
+        if not match:
+            return 0
+
+        num_str, unit = match.groups()
+        num = float(num_str)
+
+        if unit == 'K':
+            return int(num * 1000)
+        elif unit == 'M':
+            return int(num * 1000000)
+        elif unit == 'B':
+            return int(num * 1000000000)
+        else:
+            return int(num)
+
+    def scrape_multiple_x_accounts(self, handles: List[str], limit: int = 10) -> Dict[str, List[PostMetrics]]:
+        """
+        複数のXアカウントの投稿を一括取得
+
+        Args:
+            handles: Xハンドルのリスト
+            limit: 各アカウントから取得する投稿数
+
+        Returns:
+            {handle: [PostMetrics, ...]} の辞書
+        """
+        print(f"\n{'='*60}")
+        print(f"🔍 複数Xアカウントを分析中 ({len(handles)}個)")
+        print(f"{'='*60}\n")
+
+        all_posts = {}
+
+        for handle in handles:
+            print(f"\n📊 @{handle}")
+            posts = self.scrape_x_posts(handle, limit)
+            all_posts[handle] = posts
+            time.sleep(2)  # Rate limit 回避
+
+        return all_posts
+
 
 def main():
     """デモンストレーション"""
-    scraper = WebScraper("菓匠三全")
+    scraper = WebScraper("いちさん (@ichiaimarketer)")
 
     print("=" * 60)
-    print("API なし Web Scraper デモ")
+    print("SNS Scraper デモ（Playwright対応）")
     print("=" * 60)
     print()
 
     # 1. note 言及数取得
+    print("📝 Note 言及数取得...")
     note_mentions = scraper.scrape_note_mentions()
     print(f"✅ note 言及数: {note_mentions.posts} 件")
     print(f"   品質: {note_mentions.data_quality}")
-    print(f"   出典: {note_mentions.source_url}")
     print()
 
-    # 2. note 公式アカウント確認
-    note_official = scraper.scrape_note_official_account("kashosanzen")
-    print(f"✅ note 公式: {note_official.posts} 本")
-    print(f"   注記: {note_official.notes}")
+    # 2. X投稿取得（Playwright）
+    print("🔍 X投稿取得テスト...")
+    if PLAYWRIGHT_AVAILABLE:
+        print("   注: 実際のX接続はbot対策により失敗する場合があります")
+        print("   これは開発環境での制限です\n")
+
+        # テスト用に複数アカウントのハンドルを指定
+        test_handles = [
+            "ichiaimarketer",      # メインアカウント
+            "ClaudeCode_love",     # Claude Code特化
+            "AiAircle34052"        # AirCle公式
+        ]
+
+        print(f"✅ Playwright は利用可能です")
+        print(f"   以下のアカウントから投稿を取得可能:")
+        for handle in test_handles:
+            print(f"     - @{handle}")
+        print()
+
+        # 実際のスクレイピングはコメント（環境制限により実行不可）
+        # posts = scraper.scrape_x_posts("ichiaimarketer", limit=10)
+        # print(f"   取得投稿数: {len(posts)}")
+    else:
+        print("❌ Playwright がインストールされていません")
     print()
 
-    # 3. YouTube チャンネル情報（例）
-    # youtube_data = scraper.scrape_youtube_channel("https://www.youtube.com/@kashosanzen")
-    # print(f"✅ YouTube 登録者: {youtube_data.followers}")
-    # print()
-
-    # 4. 企業情報
-    company_info = scraper.scrape_company_info("https://www.sanzen.co.jp/")
-    if company_info:
-        print(f"✅ 企業情報:")
-        for key, val in company_info.items():
-            print(f"   {key}: {val}")
-    print()
-
-    # 5. ソース一覧
+    # 3. ソース一覧
     print("=" * 60)
-    print("📍 データ取得源（すべてAPI不使用）")
+    print("📍 データ取得元")
     print("=" * 60)
     print(scraper.get_sources_json())
 
