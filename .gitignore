@@ -205,3 +205,7 @@ workspace/**/.last_image_url.txt
 workspace/**/current_mode.txt
 workspace/**/__pycache__/
 workspace/**/*.pyc
+
+# Local env text files
+env.txt
+**/env.txt
