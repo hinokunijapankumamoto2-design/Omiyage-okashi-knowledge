@@ -1,0 +1,36 @@
+{
+  "ichiaimarketer": [
+    {
+      "author": "ichiaimarketer",
+      "text": "[SAMPLE] Claude Codeの活用事例を紹介",
+      "likes": "1.8K",
+      "retweets": "420",
+      "replies": 60,
+      "impressions": "120000",
+      "url": "https://x.com/ichiaimarketer/status/1001",
+      "timestamp": "2026-08-20T10:00:00Z"
+    },
+    {
+      "author": "ichiaimarketer",
+      "text": "[SAMPLE] AirCleコミュニティの近況はいかがですか？",
+      "likes": "540",
+      "retweets": "90",
+      "replies": 20,
+      "impressions": "45000",
+      "url": "https://x.com/ichiaimarketer/status/1002",
+      "timestamp": "2026-08-21T10:00:00Z"
+    }
+  ],
+  "ClaudeCode_love": [
+    {
+      "author": "ClaudeCode_love",
+      "text": "[SAMPLE] Claude Code Tips まとめ",
+      "likes": "980",
+      "retweets": "210",
+      "replies": 15,
+      "impressions": "60000",
+      "url": "https://x.com/ClaudeCode_love/status/2001",
+      "timestamp": "2026-08-22T10:00:00Z"
+    }
+  ]
+}
